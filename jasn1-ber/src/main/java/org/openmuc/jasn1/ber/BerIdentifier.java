@@ -137,7 +137,7 @@ public class BerIdentifier {
 	public int decodeAndCheck(InputStream iStream) throws IOException {
 
 		for (Byte myByte : identifier) {
-			if (iStream.read() != myByte) {
+			if (iStream.read() != (myByte & 0xff)) {
 				throw new IOException("Identifier does not match!");
 			}
 		}
