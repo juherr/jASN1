@@ -1,8 +1,24 @@
 
 configure(allprojects) {
   apply plugin: 'java'
-  version = '1.2.1'
+  version = '1.3'
   group = 'org.openmuc'
+}
+
+project.ext {
+  distributionProjects = subprojects.findAll {
+    it.getPath() == ':jasn1-ber' ||
+    it.getPath() == ':jasn1-compiler'
+  }
+
+  docProjects = subprojects.findAll {
+    it.getPath() == ':jasn1-ber'
+  }
+
+  repositoryProjects = subprojects.findAll {
+    it.getPath() == ':jasn1-ber' ||
+    it.getPath() == ':jasn1-compiler'
+  }
 }
 
 configure(subprojects) {
@@ -16,14 +32,61 @@ configure(subprojects) {
   targetCompatibility = 1.6
 
   repositories {
-    mavenCentral()  
+    mavenCentral()
     flatDir {
-      dirs 'dependencies'
+      dirs 'dependencies', rootDir.getPath() + "/dependencies"
+    }
+  }
+
+  jar {
+    manifest {
+      version = project.version.replace('-','.');
     }
   }
 
   dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
+  }
+
+  task copyLibs(type: Copy) {
+    dependsOn(configurations.default.getAllArtifacts().getBuildDependencies())
+
+    into "build/libsdeps"
+    from configurations.default
+    from configurations.default.getAllArtifacts().getFiles()
+  }
+
+  build.dependsOn(copyLibs)
+
+  eclipse.pathVariables([GRADLE_USER_HOME:file(gradle.gradleUserHomeDir)])
+  tasks.eclipse.dependsOn(cleanEclipse)
+}
+
+configure(repositoryProjects) {
+
+  signing {
+    if ( project.hasProperty('signing.keyId') ) {
+      sign configurations.archives
+    }
+  }
+
+  task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+  }
+
+  task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+  }
+
+  artifacts {
+    archives sourcesJar
+    archives javadocJar
+  }
+
+  javadoc {
+    exclude '**/internal/**'
   }
 
   uploadArchives {
@@ -55,74 +118,95 @@ configure(subprojects) {
     }
   }
 
-  task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = 'sources'
-    from sourceSets.main.allSource
-  }
-
-  task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-  }
-
-  artifacts {
-    archives sourcesJar
-    archives javadocJar
-  }
-
-  signing {
-    if ( project.hasProperty('signing.keyId') ) {
-      sign configurations.archives
-    }
-  }
-
-  task copyLibs(type: Copy) {
-    dependsOn(configurations.default.getAllArtifacts().getBuildDependencies())
-
-    into "build/lib"
-    from configurations.default
-    from configurations.default.getAllArtifacts().getFiles()
-  }
-
-  build.dependsOn(copyLibs)
-
-  eclipse.pathVariables([GRADLE_USER_HOME:file(gradle.gradleUserHomeDir)])
-  tasks.eclipse.dependsOn(cleanEclipse)
 
 }
 
 jar.enabled = false
 
+configure(docProjects) {
+  task copySrc(type: Copy) {
+    dependsOn(sourcesJar)
+    into rootDir.getPath() + "/build/libs"
+    from configurations.archives.getAllArtifacts().getFiles()
+  }
+  copyLibs.dependsOn copySrc
+}
+
+task javadocs(type: Javadoc) {
+
+  source docProjects.collect {
+    project -> project.sourceSets.main.allJava
+  }
+
+  exclude '**/internal/**'
+
+  destinationDir = new File(buildDir, 'javadoc')
+
+  classpath = files(distributionProjects.collect { project ->
+    project.sourceSets.main.compileClasspath })
+
+  classpath += files(distributionProjects.collect { project ->
+    project.sourceSets.main.output })
+}
+
+task writeSettings << {
+  Writer out = new OutputStreamWriter(new FileOutputStream("build/settings.gradle"));
+  out.write("include ");
+  boolean first = true;
+  for (Project myproject: distributionProjects) {
+    if (first == true) {
+      first = false;
+    }
+    else {
+      out.write ", ";
+    }
+    out.write "'" + myproject.name + "'"
+  }
+  out .write "\n\n";
+
+  for (Project myproject: distributionProjects) {
+    out.write 'project(":' + myproject.name + '").projectDir = file("' + myproject.getProjectDir().toString().substring((int)(getProjectDir().toString().size() + 1)) + '")\n';
+  }
+
+  out.close();
+}
+
+task buildDistProjects {
+  dependsOn(distributionProjects.build)
+}
+
 task (tar, type: Tar) {
-  dependsOn(subprojects.build)
-  dependsOn(subprojects.javadoc)
+  dependsOn(writeSettings)
+  dependsOn(distributionProjects.build)
+  dependsOn(javadocs)
 
   compression = Compression.GZIP
 
   into(project.archivesBaseName) {
     from('./') {
-      include 'jasn1-ber/src/**/*'
-      include 'jasn1-ber/build/lib/**/*'
-      include 'jasn1-ber/build/docs/**/*'
-      include 'jasn1-compiler/src/**/*'
-      include 'jasn1-compiler/grammatic/**/*'
-      include 'jasn1-compiler/build/lib/**/*'
-      include 'jasn1-compiler/build/docs/**/*'
-      include 'jasn1-compiler/build.gradle'
-      include 'jasn1-compiler/dependencies/**/*'
-      include 'doc/**/*'
-      include 'licenses/**/*'
+      include 'build.gradle'
+      include 'licenses/**'
+      include 'doc/**'
       include 'sample/**/*.java'
       include 'sample/**/*.txt'
       include 'sample/**/*.asn'
-      include 'build.gradle'
+
+      include 'projects/jasn1-ber/build.gradle'
+      include 'projects/jasn1-ber/src/**'
+      include 'projects/jasn1-ber/build/libsdeps/*.jar'
+      include 'projects/jasn1-ber/build/docs/**'
+
+      include 'projects/jasn1-compiler/build.gradle'
+      include 'projects/jasn1-compiler/src/**'
+      include 'projects/jasn1-compiler/grammatic/**'
+      include 'projects/jasn1-compiler/dependencies/**'
+      include 'projects/jasn1-compiler/build/libsdeps/*.jar'
+      include 'projects/jasn1-compiler/runscripts/**'
+    }
+
+    from('./build/') {
       include 'settings.gradle'
     }
-    from('./') {
-      fileMode = 0755
-      include 'jasn1-compiler/run-scripts/**/*'
-    }
- 
+
   }
 }
-

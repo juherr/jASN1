@@ -9,22 +9,18 @@ Rules (BER).
 
 The software has been tested under Linux and Windows.
 
--The libraries and its dependencies are found in jasn1-ber/build/lib
- and jasn1-compiler/build/lib
--Javadocs can be found in the build/docs folder
-
 For the latest release of this software visit http://www.openmuc.org .
 
 
 Dependencies and Notices:
 -------------------------
 
-The compiler uses the excellent ASN.1 to XML converter from the
-BinaryNotes ASN.1 Framework (http://bnotes.sourceforge.net/ licensed
-under the Apache 2.0 license).
-Copyright 2006-2011 Abdulla Abdurakhmanov (abdulla@latestbit.com)
+The compiler uses code from the excellent ASN.1 to XML converter from
+the BinaryNotes ASN.1 Framework (http://bnotes.sourceforge.net/
+licensed under the Apache 2.0 license).  Copyright 2006-2011 Abdulla
+Abdurakhmanov (abdulla@latestbit.com)
 
-Other dependecies of the jasn1-compiler are:
+Dependecies of the jasn1-compiler are:
 
 - logback-core and logback-classic, License: EPLv1.0 and LGPLv2.1,
   http://logback.qos.ch
@@ -38,6 +34,11 @@ Other dependecies of the jasn1-compiler are:
   Copyright (c) 2012 Terence Parr and Sam Harwell
   All rights reserved.
 
+
+Example:
+--------
+
+For an example on how to use jASN1 see the sample folder.
 
 
 Notes about the ASN1 syntax:
@@ -59,10 +60,6 @@ supports the alternative element type called ANY_NODECODE which can be
 used inside the ASN.1 file in order to generate Java code that will
 not decod nor encode elements of these types.
 
-Example:
---------
-
-For an example on how to use jASN1 see the sample folder.
 
 Develop jASN1:
 --------------
