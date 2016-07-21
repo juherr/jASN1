@@ -1,21 +1,21 @@
 /*
- * Copyright 2011-14 Fraunhofer ISE
+ * Copyright 2011-15 Fraunhofer ISE
  *
- * This file is part of jasn1.
+ * This file is part of jASN1.
  * For more information visit http://www.openmuc.org
  *
- * jasn1 is free software: you can redistribute it and/or modify
+ * jASN1 is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * jasn1 is distributed in the hope that it will be useful,
+ * jASN1 is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with jasn1.  If not, see <http://www.gnu.org/licenses/>.
+ * along with jASN1.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 package org.openmuc.jasn1.ber.types;
@@ -37,7 +37,7 @@ public class BerObjectIdentifier {
 
 	public byte[] code = null;
 
-	public int[] objectIdentifierComponents;
+	public int[] value;
 
 	public BerObjectIdentifier() {
 		id = identifier;
@@ -48,48 +48,46 @@ public class BerObjectIdentifier {
 		this.code = code;
 	}
 
-	public BerObjectIdentifier(int[] objectIdentifierComponents) {
+	public BerObjectIdentifier(int[] value) {
 		id = identifier;
-		if ((objectIdentifierComponents.length < 2)
-				|| ((objectIdentifierComponents[0] == 0 || objectIdentifierComponents[0] == 1) && (objectIdentifierComponents[1] > 39))
-				|| objectIdentifierComponents[0] > 2) {
+		if ((value.length < 2) || ((value[0] == 0 || value[0] == 1) && (value[1] > 39)) || value[0] > 2) {
 			throw new IllegalArgumentException("invalid object identifier components");
 		}
-		for (int objectIdentifierComponent : objectIdentifierComponents) {
+		for (int objectIdentifierComponent : value) {
 			if (objectIdentifierComponent < 0) {
 				throw new IllegalArgumentException("invalid object identifier components");
 			}
 		}
 
-		this.objectIdentifierComponents = objectIdentifierComponents;
+		this.value = value;
 
 	}
 
-	public int encode(BerByteArrayOutputStream berOStream, boolean explicit) throws IOException {
+	public int encode(BerByteArrayOutputStream os, boolean explicit) throws IOException {
 
 		int codeLength;
 
 		if (code != null) {
 			codeLength = code.length;
 			for (int i = code.length - 1; i >= 0; i--) {
-				berOStream.write(code[i]);
+				os.write(code[i]);
 			}
 		}
 		else {
 
-			int firstSubidentifier = 40 * objectIdentifierComponents[0] + objectIdentifierComponents[1];
+			int firstSubidentifier = 40 * value[0] + value[1];
 
 			int subidentifier;
 
 			codeLength = 0;
 
-			for (int i = (objectIdentifierComponents.length - 1); i > 0; i--) {
+			for (int i = (value.length - 1); i > 0; i--) {
 
 				if (i == 1) {
 					subidentifier = firstSubidentifier;
 				}
 				else {
-					subidentifier = objectIdentifierComponents[i];
+					subidentifier = value[i];
 				}
 
 				// get length of subidentifier
@@ -98,45 +96,44 @@ public class BerObjectIdentifier {
 					subIDLength++;
 				}
 
-				berOStream.write(subidentifier & 0x7f);
+				os.write(subidentifier & 0x7f);
 
 				for (int j = 1; j <= (subIDLength - 1); j++) {
-					berOStream.write(((subidentifier >> (7 * j)) & 0xff) | 0x80);
+					os.write(((subidentifier >> (7 * j)) & 0xff) | 0x80);
 				}
 
 				codeLength += subIDLength;
 			}
 
-			codeLength += BerLength.encodeLength(berOStream, codeLength);
+			codeLength += BerLength.encodeLength(os, codeLength);
 
 		}
 		if (explicit) {
-			codeLength += id.encode(berOStream);
+			codeLength += id.encode(os);
 		}
 
 		return codeLength;
 	}
 
-	public int decode(InputStream iStream, boolean explicit) throws IOException {
+	public int decode(InputStream is, boolean explicit) throws IOException {
 
 		int codeLength = 0;
 
 		if (explicit) {
-			codeLength += id.decodeAndCheck(iStream);
+			codeLength += id.decodeAndCheck(is);
 		}
 
 		BerLength length = new BerLength();
-		codeLength += length.decode(iStream);
+		codeLength += length.decode(is);
 
 		if (length.val == 0) {
-			objectIdentifierComponents = new int[0];
+			value = new int[0];
 			return codeLength;
 		}
 
 		byte[] byteCode = new byte[length.val];
-		if (iStream.read(byteCode, 0, length.val) == -1) {
-			throw new IOException("Error Decoding BerObjectIdentifier");
-		}
+		Util.readFully(is, byteCode);
+
 		codeLength += length.val;
 
 		List<Integer> objectIdentifierComponentsList = new ArrayList<Integer>();
@@ -186,9 +183,9 @@ public class BerObjectIdentifier {
 			subIDEndIndex++;
 		}
 
-		objectIdentifierComponents = new int[objectIdentifierComponentsList.size()];
+		value = new int[objectIdentifierComponentsList.size()];
 		for (int i = 0; i < objectIdentifierComponentsList.size(); i++) {
-			objectIdentifierComponents[i] = objectIdentifierComponentsList.get(i);
+			value[i] = objectIdentifierComponentsList.get(i);
 		}
 
 		return codeLength;
@@ -197,14 +194,14 @@ public class BerObjectIdentifier {
 
 	@Override
 	public String toString() {
-		if (objectIdentifierComponents == null || objectIdentifierComponents.length == 0) {
+		if (value == null || value.length == 0) {
 			return "";
 		}
 
 		String objIDString = "";
-		objIDString += objectIdentifierComponents[0];
-		for (int i = 1; i < objectIdentifierComponents.length; i++) {
-			objIDString += "." + objectIdentifierComponents[i];
+		objIDString += value[0];
+		for (int i = 1; i < value.length; i++) {
+			objIDString += "." + value[i];
 		}
 		return objIDString;
 	}

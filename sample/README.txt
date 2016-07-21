@@ -11,16 +11,12 @@ PersonnelRecord.java in the folder named "generated". This generation
 can be repeated using the following command:
 
 Linux:
-../projects/jasn1-compiler/runscripts/jasn1-compiler.sh -f x690BerExample.asn -o "generated/" -ns "generated"
+../projects/jasn1-compiler/run-scripts/jasn1-compiler.sh -o "generated/" -p "generated" x690BerExample.asn
 
 Windows:
-..\projects\jasn1-compiler\runscripts\jasn1-compiler.bat -f x690BerExample.asn -o "generated/" -ns "generated"
+..\projects\jasn1-compiler\run-scripts\jasn1-compiler.bat -o "generated/" -p "generated" x690BerExample.asn
 
 If you need to decode the indefinite length then you can use the -il flag.
-
-jasn1-compiler uses the ASN.1 to XML converter from BinaryNotes. The
-XML is then converted to the Java classes. If you want to see the XML
-that is generated you can execute jasn1-compiler using the -x flag.
 
 These generated classes can then be used together with the jasn1
 library to encode and decode the structures using BER. This is
@@ -30,9 +26,9 @@ To compile and run the EncodeDecodeSample do something like the
 following:
 
 Linux:
-javac -cp ../projects/jasn1/build/libsdeps/jasn1-<version>.jar generated/*.java *.java
-java -cp "../projects/jasn1/build/libsdeps/jasn1-<version>.jar:./" EncodeDecodeSample
+javac -cp ../projects/jasn1/build/libs-all/jasn1-<version>.jar generated/*.java *.java
+java -cp "../projects/jasn1/build/libs-all/jasn1-<version>.jar:./" EncodeDecodeSample
 
 Windows:
-javac -cp ../projects/jasn1/build/libsdeps/jasn1-<version>.jar generated/*.java *.java
-java -cp "../projects/jasn1/build/libsdeps/jasn1-<version>.jar;./" EncodeDecodeSample
+javac -cp ../projects/jasn1/build/libs-all/jasn1-<version>.jar generated/*.java *.java
+java -cp "../projects/jasn1/build/libs-all/jasn1-<version>.jar;./" EncodeDecodeSample

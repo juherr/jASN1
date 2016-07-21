@@ -6,11 +6,11 @@ import java.util.List;
 import org.openmuc.jasn1.ber.BerByteArrayOutputStream;
 import org.openmuc.jasn1.ber.types.string.BerVisibleString;
 
-import generated.ChildInformation;
-import generated.Date;
-import generated.EmployeeNumber;
-import generated.Name;
-import generated.PersonnelRecord;
+import generated.x690_ber_example.ChildInformation;
+import generated.x690_ber_example.Date;
+import generated.x690_ber_example.EmployeeNumber;
+import generated.x690_ber_example.Name;
+import generated.x690_ber_example.PersonnelRecord;
 
 public class EncodeDecodeSample {
 
@@ -30,16 +30,16 @@ public class EncodeDecodeSample {
 				(byte) 0x6e, (byte) 0x1A, (byte) 0x01, (byte) 0x50, (byte) 0x1A, (byte) 0x05, (byte) 0x53, (byte) 0x6d,
 				(byte) 0x69, (byte) 0x74, (byte) 0x68 };
 
-		BerVisibleString title = new BerVisibleString("Director".getBytes("US-ASCII"));
+		BerVisibleString title = new BerVisibleString("Director".getBytes());
 		EmployeeNumber number = new EmployeeNumber(51);
-		Date dateOfHire = new Date("19710917");
-		Name nameOfSpouse = new Name(new BerVisibleString("Mary"), new BerVisibleString("T"), new BerVisibleString(
-				"Smith"));
+		Date dateOfHire = new Date("19710917".getBytes());
+		Name nameOfSpouse = new Name(new BerVisibleString("Mary".getBytes()), new BerVisibleString("T".getBytes()), new BerVisibleString(
+																		 "Smith".getBytes()));
 
 		ChildInformation child1 = new ChildInformation(new Name(new BerVisibleString("Ralph"),
-				new BerVisibleString("T"), new BerVisibleString("Smith")), new Date("19571111"));
-		ChildInformation child2 = new ChildInformation(new Name(new BerVisibleString("Susan"),
-				new BerVisibleString("B"), new BerVisibleString("Jones")), new Date("19590717"));
+									new BerVisibleString("T".getBytes()), new BerVisibleString("Smith".getBytes())), new Date("19571111".getBytes()));
+		ChildInformation child2 = new ChildInformation(new Name(new BerVisibleString("Susan".getBytes()),
+									new BerVisibleString("B".getBytes()), new BerVisibleString("Jones".getBytes())), new Date("19590717".getBytes()));
 
 		List<ChildInformation> childList = new ArrayList<ChildInformation>(2);
 		childList.add(child1);

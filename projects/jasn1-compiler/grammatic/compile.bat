@@ -1,1 +1,0 @@
-java -cp ..\..\Dist\depends\antlr.jar antlr.Tool %1 %2 %3

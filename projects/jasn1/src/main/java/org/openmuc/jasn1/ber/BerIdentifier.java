@@ -1,25 +1,26 @@
 /*
- * Copyright 2011-14 Fraunhofer ISE
+ * Copyright 2011-15 Fraunhofer ISE
  *
- * This file is part of jasn1.
+ * This file is part of jASN1.
  * For more information visit http://www.openmuc.org
  *
- * jasn1 is free software: you can redistribute it and/or modify
+ * jASN1 is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * jasn1 is distributed in the hope that it will be useful,
+ * jASN1 is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with jasn1.  If not, see <http://www.gnu.org/licenses/>.
+ * along with jASN1.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 package org.openmuc.jasn1.ber;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -92,15 +93,19 @@ public class BerIdentifier {
 		}
 	}
 
-	public int encode(BerByteArrayOutputStream berOStream) throws IOException {
+	public int encode(BerByteArrayOutputStream os) throws IOException {
 		for (int i = (identifier.length - 1); i >= 0; i--) {
-			berOStream.write(identifier[i]);
+			os.write(identifier[i]);
 		}
 		return identifier.length;
 	}
 
-	public int decode(InputStream iStream) throws IOException {
-		byte nextByte = (byte) iStream.read();
+	public int decode(InputStream is) throws IOException {
+		int nextByte = is.read();
+		if (nextByte == -1) {
+			throw new EOFException("Unexpected end of input stream.");
+		}
+
 		identifierClass = nextByte & 0xC0;
 		primitive = nextByte & 0x20;
 		tagNumber = nextByte & 0x1f;
@@ -113,7 +118,11 @@ public class BerIdentifier {
 			int counter = 0;
 
 			do {
-				nextByte = (byte) iStream.read();
+				nextByte = is.read();
+				if (nextByte == -1) {
+					throw new EOFException("Unexpected end of input stream.");
+				}
+
 				codeLength++;
 				if (counter >= 6) {
 					throw new IOException("Invalid Tag");
@@ -131,11 +140,22 @@ public class BerIdentifier {
 	/**
 	 * Decodes the Identifier from the ByteArrayInputStream and throws an Exception if it is not equal to itself.
 	 * Returns the number of bytes read from the InputStream.
+	 * 
+	 * @param is
+	 *            the input stream to read the identifier from.
+	 * @return the length of the identifier read.
+	 * @throws IOException
+	 *             if an exception occurs reading the identifier from the stream.
 	 */
-	public int decodeAndCheck(InputStream iStream) throws IOException {
+	public int decodeAndCheck(InputStream is) throws IOException {
 
-		for (Byte myByte : identifier) {
-			if (iStream.read() != (myByte & 0xff)) {
+		for (Byte identifierByte : identifier) {
+			int nextByte = is.read();
+			if (nextByte == -1) {
+				throw new EOFException("Unexpected end of input stream.");
+			}
+
+			if (nextByte != (identifierByte & 0xff)) {
 				throw new IOException("Identifier does not match!");
 			}
 		}
@@ -143,16 +163,17 @@ public class BerIdentifier {
 	}
 
 	public boolean equals(int identifierClass, int primitive, int tagNumber) {
-		return (this.identifierClass == identifierClass && this.primitive == primitive && this.tagNumber == tagNumber);
+		return (this.tagNumber == tagNumber && this.identifierClass == identifierClass && this.primitive == primitive);
 	}
 
 	public boolean equals(BerIdentifier berIdentifier) {
-		return (identifierClass == berIdentifier.identifierClass && primitive == berIdentifier.primitive && tagNumber == berIdentifier.tagNumber);
+		return (tagNumber == berIdentifier.tagNumber && identifierClass == berIdentifier.identifierClass
+				&& primitive == berIdentifier.primitive);
 	}
 
 	@Override
 	public String toString() {
-		return "identifierClass: " + identifierClass + " primitive: " + primitive + "Tag Number: " + tagNumber;
+		return "identifier class: " + identifierClass + ", primitive: " + primitive + ", tag number: " + tagNumber;
 	}
 
 }

@@ -1,25 +1,24 @@
 /*
- * Copyright 2011-14 Fraunhofer ISE
+ * Copyright 2011-15 Fraunhofer ISE
  *
- * This file is part of jasn1-compiler.
+ * This file is part of jASN1.
  * For more information visit http://www.openmuc.org
  *
- * jasn1-compiler is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * jASN1 is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * jasn1-compiler is distributed in the hope that it will be useful,
+ * jASN1 is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with jasn1-compiler.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with jASN1.  If not, see <http://www.gnu.org/licenses/>.
  *
- * This file incorporates work covered by the following copyright and
- * permission notice:
-
+ */
+/**
  Copyright 2006-2011 Abdulla Abdurakhmanov (abdulla@latestbit.com)
  Original sources are available at www.latestbit.com
 
@@ -38,95 +37,122 @@
 
 package org.openmuc.jasn1.compiler;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.HashMap;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.PropertyException;
-
-import org.bn.compiler.parser.ASNLexer;
-import org.bn.compiler.parser.ASNParser;
-import org.bn.compiler.parser.model.ASN1Model;
-import org.bn.compiler.parser.model.ASNModule;
-import org.lineargs.LineArgsParser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.openmuc.jasn1.compiler.model.AsnModel;
+import org.openmuc.jasn1.compiler.model.AsnModule;
+import org.openmuc.jasn1.compiler.parser.ASNLexer;
+import org.openmuc.jasn1.compiler.parser.ASNParser;
 
 public class Compiler {
 
-	private static Logger logger = LoggerFactory.getLogger(Compiler.class);
+	public final static String VERSION = "1.5.0";
 
-	static private ByteArrayOutputStream getXMLStream(String outputDir, String nameSpace, String inputFileName)
-			throws PropertyException, Exception, JAXBException {
+	private String outputBaseDir = "./";
+	private String basePackageName = "";
+	private boolean supportIndefiniteLength = false;
+	private String[] inputFiles = null;
 
-		ByteArrayOutputStream outputXml = new ByteArrayOutputStream(65535);
-
-		JAXBContext jc = JAXBContext.newInstance("org.bn.compiler.parser.model");
-		Marshaller marshaller = jc.createMarshaller();
-		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-		ASN1Model model = createModel(inputFileName);
-
-		model.outputDirectory = outputDir;
-		if (nameSpace != null) {
-			model.moduleNS = nameSpace;
-		}
-		else {
-			model.moduleNS = model.module.moduleIdentifier.name.toLowerCase();
-		}
-
-		marshaller.marshal(model, outputXml);
-
-		return outputXml;
-
-	}
-
-	static private ASN1Model createModel(String inputFileName) throws Exception {
-		InputStream stream = new FileInputStream(inputFileName);
-		ASNLexer lexer = new ASNLexer(stream);
-		ASNParser parser = new ASNParser(lexer);
-		ASNModule module = new ASNModule();
-
-		parser.module_definition(module);
-
-		ASN1Model model = new ASN1Model();
-
-		model.module = module;
-
-		return model;
+	private static void printUsage() {
+		System.out.println(
+				"SYNOPSIS\n\torg.openmuc.jasn1.compiler.Compiler [-o <output_base_dir>] [-p <package_base_name>] [-il] <asn1_file>...");
+		System.out.println(
+				"DESCRIPTION\n\tThe compiler reads the ASN.1 definitions from the given files and generates corresponding Java classes that can be used to conveniently encode/decode BER encoded data.");
+		System.out.println("OPTIONS");
+		System.out.println(
+				"\t-o <output_base_dir>\n\t    The base directory for the generated Java classes. The class files will be saved in subfolders of the base directory corresponding to the name of the defined modules.\n");
+		System.out.println(
+				"\t-p <package_base_name>\n\t    The base package name. Added to this will be a name generated from the module name.\n");
+		System.out.println("\t-il\n\t    Add support for decoding indefinite length in generated classes.\n");
+		System.out.println("\t<asn1_file>\n\t    ASN.1 file defining one or more modules.\n");
 	}
 
 	public static void main(String args[]) throws Exception {
 
-		LineArgsParser parser = new LineArgsParser();
+		Compiler compiler = new Compiler();
+		compiler.compile(args);
+	}
 
-		if (args.length == 0) {
-			parser.printHelp(CompilerArgs.class, System.out);
-		}
-		CompilerArgs arguments = parser.parse(CompilerArgs.class, args);
+	private void compile(String args[]) throws Exception {
 
-		logger.info("outputDir: " + arguments.getOutputDir());
-		logger.info("Compiling file: " + arguments.getInputFileName());
-		if (arguments.getSupportIndefiniteLength() == true) {
-			logger.info("Java classes will support decoding indefinite length.");
+		if (!parseArgs(args)) {
+			printUsage();
+			System.exit(1);
 		}
 
-		ByteArrayOutputStream outputXml = getXMLStream(arguments.getOutputDir(), arguments.getNamespace(),
-				arguments.getInputFileName());
-		InputStream stream = new ByteArrayInputStream(outputXml.toByteArray());
-
-		if (arguments.getGenerateModelOnly()) {
-			System.out.println(new String(outputXml.toByteArray()));
-			return;
+		System.out.println("Generated code will be saved in: " + outputBaseDir);
+		if (supportIndefiniteLength == true) {
+			System.out.println("Java classes will support decoding indefinite length.");
 		}
 
-		XmlToJavaTranslator xmlToJavaTranslator = new XmlToJavaTranslator(stream, arguments.getOutputDir(),
-				arguments.getSupportIndefiniteLength());
-		xmlToJavaTranslator.translate();
+		HashMap<String, AsnModule> modulesByName = new HashMap<>();
 
+		for (String inputFile : inputFiles) {
+			System.out.println("Parsing file: " + inputFile);
+			AsnModel model = getJavaModelFromAsn1File(inputFile);
+			modulesByName.putAll(model.modulesByName);
+		}
+
+		BerClassWriter classWriter = new BerClassWriter(modulesByName, outputBaseDir, basePackageName,
+				supportIndefiniteLength);
+
+		System.out.println("Generating Java classes...");
+
+		classWriter.translate();
+		System.out.println("done");
+	}
+
+	private AsnModel getJavaModelFromAsn1File(String inputFileName) throws Exception {
+		InputStream stream = new FileInputStream(inputFileName);
+		ASNLexer lexer = new ASNLexer(stream);
+		ASNParser parser = new ASNParser(lexer);
+
+		AsnModel model = new AsnModel();
+		parser.module_definitions(model);
+
+		return model;
+	}
+
+	private boolean parseArgs(String[] args) {
+		if (args.length < 1) {
+			return false;
+		}
+
+		for (int i = 0; i < args.length; i++) {
+			if (args[i].equals("-o")) {
+				i++;
+				if (i == args.length) {
+					return false;
+				}
+				outputBaseDir = args[i];
+			}
+			else if (args[i].equals("-p")) {
+				i++;
+				if (i == args.length) {
+					return false;
+				}
+				basePackageName = args[i];
+			}
+			else if (args[i].equals("-il")) {
+				supportIndefiniteLength = true;
+			}
+			else {
+				inputFiles = new String[args.length - i];
+				for (int j = 0; j < inputFiles.length; j++) {
+					if (args[i].startsWith("-")) {
+						return false;
+					}
+					inputFiles[j] = args[i++];
+				}
+			}
+		}
+
+		if (inputFiles == null) {
+			return false;
+		}
+		return true;
 	}
 
 }

@@ -1,25 +1,26 @@
 /*
- * Copyright 2011-14 Fraunhofer ISE
+ * Copyright 2011-15 Fraunhofer ISE
  *
- * This file is part of jasn1.
+ * This file is part of jASN1.
  * For more information visit http://www.openmuc.org
  *
- * jasn1 is free software: you can redistribute it and/or modify
+ * jASN1 is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * jasn1 is distributed in the hope that it will be useful,
+ * jASN1 is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with jasn1.  If not, see <http://www.gnu.org/licenses/>.
+ * along with jASN1.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 package org.openmuc.jasn1.ber.types;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -35,7 +36,7 @@ public class BerReal {
 
 	public byte[] code = null;
 
-	public double val;
+	public double value;
 
 	public BerReal() {
 		id = identifier;
@@ -46,19 +47,19 @@ public class BerReal {
 		this.code = code;
 	}
 
-	public BerReal(double val) {
+	public BerReal(double value) {
 		id = identifier;
-		this.val = val;
+		this.value = value;
 	}
 
-	public int encode(BerByteArrayOutputStream berOStream, boolean explicit) throws IOException {
+	public int encode(BerByteArrayOutputStream os, boolean explicit) throws IOException {
 
 		int codeLength;
 
 		if (code != null) {
 			codeLength = code.length;
 			for (int i = code.length - 1; i >= 0; i--) {
-				berOStream.write(code[i]);
+				os.write(code[i]);
 			}
 		}
 		else {
@@ -70,10 +71,10 @@ public class BerReal {
 			// we use binary encoding, with base 2 and F==0
 			// F is only needed when encoding with base 8 or 16
 
-			Long longVal = Double.doubleToLongBits(val);
+			Long longVal = Double.doubleToLongBits(value);
 
 			byte sign = 0;
-			if (val < 0) {
+			if (value < 0) {
 				sign = 0x40;
 			}
 			byte exponentFormat = 0;
@@ -84,10 +85,10 @@ public class BerReal {
 			if (exponent == 0x7ff) {
 				if (mantissa == 0x0010000000000000L) {
 					if (sign == 0) {
-						berOStream.write(0x40);
+						os.write(0x40);
 					}
 					else {
-						berOStream.write(0x41);
+						os.write(0x41);
 					}
 					codeLength++;
 				}
@@ -116,7 +117,7 @@ public class BerReal {
 					mantissaLength++;
 				}
 				for (int i = 0; i < mantissaLength; i++) {
-					berOStream.write(((int) (mantissa >> 8 * (i))) & 0xff);
+					os.write(((int) (mantissa >> 8 * (i))) & 0xff);
 				}
 				codeLength += mantissaLength;
 
@@ -126,7 +127,7 @@ public class BerReal {
 					expLength++;
 				}
 				for (int i = 0; i < expLength; i++) {
-					berOStream.write((exponent >> 8 * (i)) & 0xff);
+					os.write((exponent >> 8 * (i)) & 0xff);
 				}
 				codeLength += expLength;
 
@@ -134,48 +135,51 @@ public class BerReal {
 					exponentFormat = (byte) (expLength - 1);
 				}
 				else {
-					berOStream.write(expLength);
+					os.write(expLength);
 					codeLength++;
 					exponentFormat = 0x03;
 				}
 
-				berOStream.write(0x80 | sign | exponentFormat);
+				os.write(0x80 | sign | exponentFormat);
 
 				codeLength++;
 			}
-			codeLength += BerLength.encodeLength(berOStream, codeLength);
+			codeLength += BerLength.encodeLength(os, codeLength);
 		}
 
 		if (explicit) {
-			codeLength += id.encode(berOStream);
+			codeLength += id.encode(os);
 		}
 
 		return codeLength;
 	}
 
-	public int decode(InputStream iStream, boolean explicit) throws IOException {
+	public int decode(InputStream is, boolean explicit) throws IOException {
 
 		int codeLength = 0;
 
 		if (explicit) {
-			codeLength += id.decodeAndCheck(iStream);
+			codeLength += id.decodeAndCheck(is);
 		}
 
 		BerLength length = new BerLength();
-		codeLength += length.decode(iStream);
+		codeLength += length.decode(is);
 
 		if (length.val == 0) {
-			val = 0;
+			value = 0;
 			return codeLength;
 		}
 
 		if (length.val == 1) {
-			int myByte = iStream.read();
-			if (myByte == 0x40) {
-				val = Double.POSITIVE_INFINITY;
+			int nextByte = is.read();
+			if (nextByte == -1) {
+				throw new EOFException("Unexpected end of input stream.");
 			}
-			else if (myByte == 0x41) {
-				val = Double.NEGATIVE_INFINITY;
+			if (nextByte == 0x40) {
+				value = Double.POSITIVE_INFINITY;
+			}
+			else if (nextByte == 0x41) {
+				value = Double.NEGATIVE_INFINITY;
 			}
 			else {
 				throw new IOException("invalid real encoding");
@@ -184,9 +188,7 @@ public class BerReal {
 		}
 
 		byte[] byteCode = new byte[length.val];
-		if (iStream.read(byteCode, 0, length.val) < length.val) {
-			throw new IOException("Error Decoding BerInteger");
-		}
+		Util.readFully(is, byteCode);
 
 		codeLength += length.val;
 
@@ -214,14 +216,19 @@ public class BerReal {
 			mantissa |= byteCode[i + tempLength] << (8 * (length.val - tempLength - i - 1));
 		}
 
-		val = sign * mantissa * Math.pow(2, exponent);
+		value = sign * mantissa * Math.pow(2, exponent);
 
 		return codeLength;
 	}
 
 	public void encodeAndSave(int encodingSizeGuess) throws IOException {
-		BerByteArrayOutputStream berOStream = new BerByteArrayOutputStream(encodingSizeGuess);
-		encode(berOStream, false);
-		code = berOStream.getArray();
+		BerByteArrayOutputStream os = new BerByteArrayOutputStream(encodingSizeGuess);
+		encode(os, false);
+		code = os.getArray();
+	}
+
+	@Override
+	public String toString() {
+		return "" + value;
 	}
 }

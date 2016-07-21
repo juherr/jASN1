@@ -1,3 +1,31 @@
+v1.5.0 10-Dec-2015
+------------------
+
+- version of jasn1 compiler is inserted in generated class header
+  comment
+- added toString() method to all types
+- a correct EOFException is now thrown when an unexpected end of input
+  stream is reached while decoding.
+- removed some unnecessary checks while decoding sequences.
+- made encoding sequences, sets and choices more efficient by encoding
+  the identfier directly.
+- made jasn-compiler significantly faster by removing unnecessary
+  conversion to XML structure.
+- removed logger and command line parsing dependencies of the
+  jasn1-compiler.
+
+New features thanks to funding by the European Space Agency & Telespazio VEGA:
+
+- added support for parsing explicit and implicit retagging such as
+  MyType2 :== [2] MyType1
+- added support for parsing inter-dependent ASN.1 modules from several
+  files
+- added support for implicitly tagged choices whithin choices by
+  forcing the tag to be explicit
+- added support for parsing size constraints such as (SIZE(n..m))
+- added support for parsing constraints of the form "(FROM (ALL EXCEPT
+  " "))"
+
 v1.4 28-Jul-2014
 ----------------
 - renamed jasn1-ber project to jasn1
