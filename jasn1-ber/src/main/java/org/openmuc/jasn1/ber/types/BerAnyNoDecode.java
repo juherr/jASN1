@@ -18,23 +18,37 @@
  * along with jasn1-ber.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package org.openmuc.jasn1.ber.types.string;
+package org.openmuc.jasn1.ber.types;
 
-import org.openmuc.jasn1.ber.BerIdentifier;
-import org.openmuc.jasn1.ber.types.BerOctetString;
+import java.io.IOException;
+import java.io.InputStream;
 
-public class BerNumericString extends BerOctetString {
+import org.openmuc.jasn1.ber.BerByteArrayOutputStream;
+import org.openmuc.jasn1.ber.BerLength;
 
-	public final static BerIdentifier identifier = new BerIdentifier(BerIdentifier.UNIVERSAL_CLASS,
-			BerIdentifier.PRIMITIVE, BerIdentifier.NUMERIC_STRING_TAG);
+public class BerAnyNoDecode {
 
-	public BerNumericString() {
-		id = identifier;
+	public int length;
+
+	public BerAnyNoDecode() {
 	}
 
-	public BerNumericString(byte[] octetString) {
-		id = identifier;
-		this.octetString = octetString;
+	public BerAnyNoDecode(int length) {
+		this.length = length;
+	}
+
+	public int encode(BerByteArrayOutputStream berOStream, boolean explicit) throws IOException {
+		return length;
+	}
+
+	public int decode(InputStream iStream, boolean explicit) throws IOException {
+
+		BerLength length = new BerLength();
+		int codeLength = length.decode(iStream);
+		this.length = length.val;
+
+		return codeLength + length.val;
+
 	}
 
 }

@@ -2,7 +2,6 @@
 
 package org.bn.compiler.parser;
 
-
 public interface ASNTokenTypes {
 	int EOF = 1;
 	int NULL_TREE_LOOKAHEAD = 3;
@@ -10,6 +9,7 @@ public interface ASNTokenTypes {
 	int ABSTRACT_SYNTAX_KW = 5;
 	int ALL_KW = 6;
 	int ANY_KW = 7;
+	int ANY_NODECODE_KW = 160;
 	int ARGUMENT_KW = 8;
 	int APPLICATION_KW = 9;
 	int AUTOMATIC_KW = 10;

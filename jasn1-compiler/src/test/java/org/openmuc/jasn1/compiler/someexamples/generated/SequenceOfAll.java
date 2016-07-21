@@ -521,8 +521,9 @@ public final class SequenceOfAll {
 				return codeLength;
 			}
 			if (berIdentifier.equals(BerIdentifier.CONTEXT_CLASS, BerIdentifier.CONSTRUCTED, 9)) {
-				BerLength tempLength = new BerLength();
-				codeLength += tempLength.decode(iStream);
+				any = new BerAny();
+				subCodeLength += any.decode(iStream, false);
+				subCodeLength += berIdentifier.decode(iStream);
 			}
 			else {
 				throw new IOException("Identifier does not macht required sequence element identifer.");
@@ -867,8 +868,9 @@ public final class SequenceOfAll {
 				decodedIdentifier = true;
 			}
 			if (berIdentifier.equals(BerIdentifier.CONTEXT_CLASS, BerIdentifier.CONSTRUCTED, 9)) {
-				BerLength tempLength = new BerLength();
-				codeLength += tempLength.decode(iStream);
+				any = new BerAny();
+				subCodeLength += any.decode(iStream, false);
+				decodedIdentifier = false;
 			}
 			else {
 				throw new IOException("Identifier does not macht required sequence element identifer.");

@@ -1,22 +1,21 @@
 /*
- * Copyright 2011-13 Fraunhofer ISE
- * Author(s): Stefan Feuerhahn
+ * Copyright 2011-14 Fraunhofer ISE
  *
- * This file is part of jASN1.
+ * This file is part of jasn1-compiler.
  * For more information visit http://www.openmuc.org
  *
- * jASN1 is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 2.1 of the License, or
+ * jasn1-compiler is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * jASN1 is distributed in the hope that it will be useful,
+ * jasn1-compiler is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with jASN1.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with jasn1-compiler.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 package org.openmuc.jasn1.compiler;
@@ -354,36 +353,26 @@ public class XmlToJavaTranslator {
 								+ ", BerIdentifier.PRIMITIVE" + ", " + getTagNum(sequenceElement) + ")) {");
 					}
 
-					if (getASNType(sequenceElement).equals("asnAny")) {
-						if (hasExplicitTag(sequenceElement)) {
-							write("BerLength tempLength = new BerLength();");
-							write("codeLength += tempLength.decode(iStream);");
-						}
-						else {
+					if (getASNType(sequenceElement).equals("asnAny")
+							|| getASNType(sequenceElement).equals("asnAnyNoDecode")) {
+						if (!hasExplicitTag(sequenceElement)) {
 							throw new IOException("ANY within CHOICE has no tag: "
 									+ getElementType(sequenceElement, true));
 						}
 					}
-					else {
+					else if (hasExplicitTag(sequenceElement)) {
 
-						if (hasExplicitTag(sequenceElement)) {
-
-							write("codeLength += new BerLength().decode(iStream);");
-							explicitEncoding = "true";
-						}
+						write("codeLength += new BerLength().decode(iStream);");
+						explicitEncoding = "true";
 					}
+
 				}
 
-				if (getASNType(sequenceElement).equals("asnAny")) {
-					write("codeLength += tempLength.val;");
-				}
-				else {
-					write(getSequenceElementName(sequenceElement) + " = new " + getElementType(sequenceElement, true)
-							+ "();");
+				write(getSequenceElementName(sequenceElement) + " = new " + getElementType(sequenceElement, true)
+						+ "();");
 
-					write("codeLength += " + getSequenceElementName(sequenceElement) + ".decode(iStream, "
-							+ explicitEncoding + ");");
-				}
+				write("codeLength += " + getSequenceElementName(sequenceElement) + ".decode(iStream, "
+						+ explicitEncoding + ");");
 
 				write("return codeLength;");
 
@@ -391,7 +380,8 @@ public class XmlToJavaTranslator {
 
 			}
 			else {
-				if (getASNType(sequenceElement).equals("asnAny")) {
+				if (getASNType(sequenceElement).equals("asnAny")
+						|| getASNType(sequenceElement).equals("asnAnyNoDecode")) {
 					throw new IOException("ANY within CHOICE has no tag: " + getElementType(sequenceElement, true));
 				}
 
@@ -421,16 +411,11 @@ public class XmlToJavaTranslator {
 
 					write("if (berIdentifier.equals(" + getElementType(sequenceElement, true) + ".identifier)) {");
 
-					if (getASNType(sequenceElement).equals("asnAny")) {
-						write("codeLength += tempLength.val;");
-					}
-					else {
-						write(getSequenceElementName(sequenceElement) + " = new "
-								+ getElementType(sequenceElement, true) + "();");
+					write(getSequenceElementName(sequenceElement) + " = new " + getElementType(sequenceElement, true)
+							+ "();");
 
-						write("codeLength += " + getSequenceElementName(sequenceElement) + ".decode(iStream, "
-								+ explicitEncoding + ");");
-					}
+					write("codeLength += " + getSequenceElementName(sequenceElement) + ".decode(iStream, "
+							+ explicitEncoding + ");");
 
 					write("return codeLength;");
 
@@ -854,90 +839,112 @@ public class XmlToJavaTranslator {
 
 				String explicitEncoding;
 
-				if (getASNType(sequenceElement).equals("asnAny")) {
+				// if (getASNType(sequenceElement).equals("asnAny")) {
+				//
+				// if (hasExplicitTag(sequenceElement)) {
+				// write("if (berIdentifier.equals(BerIdentifier." + getTagClass(sequenceElement)
+				// + ", BerIdentifier.CONSTRUCTED" + ", " + getTagNum(sequenceElement) + ")) {");
+				//
+				// write("BerLength tempLength = new BerLength();");
+				// write("codeLength += tempLength.decode(iStream);");
+				// write("}");
+				// }
+				// else {
+				// throw new IOException("ANY within SEQUENCE has no explicit tag: "
+				// + getElementType(sequenceElement, true));
+				// }
+				// }
+				// else if (getASNType(sequenceElement).equals("asnAnyNoDecode")) {
+				//
+				// if (hasExplicitTag(sequenceElement)) {
+				// write("if (berIdentifier.equals(BerIdentifier." + getTagClass(sequenceElement)
+				// + ", BerIdentifier.CONSTRUCTED" + ", " + getTagNum(sequenceElement) + ")) {");
+				//
+				// write("BerLength tempLength = new BerLength();");
+				// write("codeLength += tempLength.decode(iStream);");
+				// write("}");
+				// }
+				// else {
+				// throw new IOException("ANY within SEQUENCE has no explicit tag: "
+				// + getElementType(sequenceElement, true));
+				// }
+				// }
+				// else {
 
+				if (getASNType(sequenceElement).equals("asnChoice")) {
 					if (hasExplicitTag(sequenceElement)) {
 						write("if (berIdentifier.equals(BerIdentifier." + getTagClass(sequenceElement)
 								+ ", BerIdentifier.CONSTRUCTED" + ", " + getTagNum(sequenceElement) + ")) {");
 
-						write("BerLength tempLength = new BerLength();");
-						write("codeLength += tempLength.decode(iStream);");
-						write("}");
+						write("subCodeLength += new BerLength().decode(iStream);");
+						explicitEncoding = "null";
 					}
 					else {
-						throw new IOException("ANY within SEQUENCE has no explicit tag: "
-								+ getElementType(sequenceElement, true));
+						explicitEncoding = "berIdentifier";
 					}
+
+					write(getSequenceElementName(sequenceElement) + " = new " + getElementType(sequenceElement, true)
+							+ "();");
+
+					write("choiceDecodeLength = " + getSequenceElementName(sequenceElement) + ".decode(iStream, "
+							+ explicitEncoding + ");");
+					write("if (choiceDecodeLength != 0) {");
+					write("subCodeLength += choiceDecodeLength;");
+
+					write("subCodeLength += berIdentifier.decode(iStream);");
+					write("}");
+					write("else {");
+					write(getSequenceElementName(sequenceElement) + " = null;");
+					write("}\n");
+
+					if (hasExplicitTag(sequenceElement)) {
+						write("}");
+					}
+
 				}
 				else {
 
-					if (getASNType(sequenceElement).equals("asnChoice")) {
-						if (hasExplicitTag(sequenceElement)) {
+					explicitEncoding = "false";
+
+					if (hasTag(sequenceElement)) {
+						if (hasExplicitTag(sequenceElement) || !isPrimitive(getASNType(sequenceElement))) {
 							write("if (berIdentifier.equals(BerIdentifier." + getTagClass(sequenceElement)
 									+ ", BerIdentifier.CONSTRUCTED" + ", " + getTagNum(sequenceElement) + ")) {");
-
-							write("subCodeLength += new BerLength().decode(iStream);");
-							explicitEncoding = "null";
 						}
 						else {
-							explicitEncoding = "berIdentifier";
+							write("if (berIdentifier.equals(BerIdentifier." + getTagClass(sequenceElement)
+									+ ", BerIdentifier.PRIMITIVE" + ", " + getTagNum(sequenceElement) + ")) {");
 						}
 
-						write(getSequenceElementName(sequenceElement) + " = new "
-								+ getElementType(sequenceElement, true) + "();");
-
-						write("choiceDecodeLength = " + getSequenceElementName(sequenceElement) + ".decode(iStream, "
-								+ explicitEncoding + ");");
-						write("if (choiceDecodeLength != 0) {");
-						write("subCodeLength += choiceDecodeLength;");
-
-						write("subCodeLength += berIdentifier.decode(iStream);");
-						write("}");
-						write("else {");
-						write(getSequenceElementName(sequenceElement) + " = null;");
-						write("}\n");
-
-						if (hasExplicitTag(sequenceElement)) {
-							write("}");
+						if (getASNType(sequenceElement).equals("asnAny")
+								|| getASNType(sequenceElement).equals("asnAnyNoDecode")) {
+							if (!hasExplicitTag(sequenceElement)) {
+								throw new IOException("ANY within SEQUENCE has no tag: "
+										+ getElementType(sequenceElement, true));
+							}
 						}
-
+						else if (hasExplicitTag(sequenceElement)) {
+							write("subCodeLength += new BerLength().decode(iStream);");
+							explicitEncoding = "true";
+						}
 					}
 					else {
-
-						explicitEncoding = "false";
-
-						if (hasTag(sequenceElement)) {
-							if (hasExplicitTag(sequenceElement) || !isPrimitive(getASNType(sequenceElement))) {
-								write("if (berIdentifier.equals(BerIdentifier." + getTagClass(sequenceElement)
-										+ ", BerIdentifier.CONSTRUCTED" + ", " + getTagNum(sequenceElement) + ")) {");
-							}
-							else {
-								write("if (berIdentifier.equals(BerIdentifier." + getTagClass(sequenceElement)
-										+ ", BerIdentifier.PRIMITIVE" + ", " + getTagNum(sequenceElement) + ")) {");
-							}
-							if (hasExplicitTag(sequenceElement)) {
-								write("subCodeLength += new BerLength().decode(iStream);");
-								explicitEncoding = "true";
-							}
-						}
-						else {
-							write("if (berIdentifier.equals(" + getElementType(sequenceElement, true)
-									+ ".identifier)) {");
-						}
-
-						write(getSequenceElementName(sequenceElement) + " = new "
-								+ getElementType(sequenceElement, true) + "();");
-
-						write("subCodeLength += " + getSequenceElementName(sequenceElement) + ".decode(iStream, "
-								+ explicitEncoding + ");");
-
-						write("subCodeLength += berIdentifier.decode(iStream);");
-
-						write("}");
-
+						write("if (berIdentifier.equals(" + getElementType(sequenceElement, true) + ".identifier)) {");
 					}
 
+					write(getSequenceElementName(sequenceElement) + " = new " + getElementType(sequenceElement, true)
+							+ "();");
+
+					write("subCodeLength += " + getSequenceElementName(sequenceElement) + ".decode(iStream, "
+							+ explicitEncoding + ");");
+
+					write("subCodeLength += berIdentifier.decode(iStream);");
+
+					write("}");
+
 				}
+
+				// }
 
 				if (!isOptional(sequenceElement)
 						&& (!getASNType(sequenceElement).equals("asnChoice") || hasExplicitTag(sequenceElement))) {
@@ -972,86 +979,94 @@ public class XmlToJavaTranslator {
 			write("}");
 
 			String explicitEncoding;
-			if (getASNType(sequenceElement).equals("asnAny")) {
+			// if (getASNType(sequenceElement).equals("asnAny")) {
+			//
+			// if (hasExplicitTag(sequenceElement)) {
+			// write("if (berIdentifier.equals(BerIdentifier." + getTagClass(sequenceElement)
+			// + ", BerIdentifier.CONSTRUCTED" + ", " + getTagNum(sequenceElement) + ")) {");
+			//
+			// write("BerLength tempLength = new BerLength();");
+			// write("codeLength += tempLength.decode(iStream);");
+			// write("}");
+			// }
+			// else {
+			// throw new IOException("ANY within SEQUENCE has no explicit tag: "
+			// + getElementType(sequenceElement, true));
+			// }
+			// }
+			// else {
 
+			if (getASNType(sequenceElement).equals("asnChoice")) {
 				if (hasExplicitTag(sequenceElement)) {
 					write("if (berIdentifier.equals(BerIdentifier." + getTagClass(sequenceElement)
 							+ ", BerIdentifier.CONSTRUCTED" + ", " + getTagNum(sequenceElement) + ")) {");
 
-					write("BerLength tempLength = new BerLength();");
-					write("codeLength += tempLength.decode(iStream);");
-					write("}");
+					write("subCodeLength += new BerLength().decode(iStream);");
+					explicitEncoding = "null";
 				}
 				else {
-					throw new IOException("ANY within SEQUENCE has no explicit tag: "
-							+ getElementType(sequenceElement, true));
+					explicitEncoding = "berIdentifier";
 				}
+
+				write(getSequenceElementName(sequenceElement) + " = new " + getElementType(sequenceElement, true)
+						+ "();");
+
+				write("choiceDecodeLength = " + getSequenceElementName(sequenceElement) + ".decode(iStream, "
+						+ explicitEncoding + ");");
+				write("if (choiceDecodeLength != 0) {");
+				write("decodedIdentifier = false;");
+				write("subCodeLength += choiceDecodeLength;");
+
+				write("}");
+
+				if (hasExplicitTag(sequenceElement)) {
+					write("}");
+				}
+
 			}
 			else {
 
-				if (getASNType(sequenceElement).equals("asnChoice")) {
-					if (hasExplicitTag(sequenceElement)) {
+				explicitEncoding = "false";
+
+				if (hasTag(sequenceElement)) {
+					if (hasExplicitTag(sequenceElement) || !isPrimitive(getASNType(sequenceElement))) {
 						write("if (berIdentifier.equals(BerIdentifier." + getTagClass(sequenceElement)
 								+ ", BerIdentifier.CONSTRUCTED" + ", " + getTagNum(sequenceElement) + ")) {");
-
-						write("subCodeLength += new BerLength().decode(iStream);");
-						explicitEncoding = "null";
 					}
 					else {
-						explicitEncoding = "berIdentifier";
+						write("if (berIdentifier.equals(BerIdentifier." + getTagClass(sequenceElement)
+								+ ", BerIdentifier.PRIMITIVE" + ", " + getTagNum(sequenceElement) + ")) {");
 					}
 
-					write(getSequenceElementName(sequenceElement) + " = new " + getElementType(sequenceElement, true)
-							+ "();");
-
-					write("choiceDecodeLength = " + getSequenceElementName(sequenceElement) + ".decode(iStream, "
-							+ explicitEncoding + ");");
-					write("if (choiceDecodeLength != 0) {");
-					write("decodedIdentifier = false;");
-					write("subCodeLength += choiceDecodeLength;");
-
-					write("}");
-
-					if (hasExplicitTag(sequenceElement)) {
-						write("}");
+					if (getASNType(sequenceElement).equals("asnAny")
+							|| getASNType(sequenceElement).equals("asnAnyNoDecode")) {
+						if (!hasExplicitTag(sequenceElement)) {
+							throw new IOException("ANY within SEQUENCE has no tag: "
+									+ getElementType(sequenceElement, true));
+						}
 					}
-
+					else if (hasExplicitTag(sequenceElement)) {
+						write("subCodeLength += new BerLength().decode(iStream);");
+						explicitEncoding = "true";
+					}
 				}
 				else {
-
-					explicitEncoding = "false";
-
-					if (hasTag(sequenceElement)) {
-						if (hasExplicitTag(sequenceElement) || !isPrimitive(getASNType(sequenceElement))) {
-							write("if (berIdentifier.equals(BerIdentifier." + getTagClass(sequenceElement)
-									+ ", BerIdentifier.CONSTRUCTED" + ", " + getTagNum(sequenceElement) + ")) {");
-						}
-						else {
-							write("if (berIdentifier.equals(BerIdentifier." + getTagClass(sequenceElement)
-									+ ", BerIdentifier.PRIMITIVE" + ", " + getTagNum(sequenceElement) + ")) {");
-						}
-						if (hasExplicitTag(sequenceElement)) {
-							write("subCodeLength += new BerLength().decode(iStream);");
-							explicitEncoding = "true";
-						}
-					}
-					else {
-						write("if (berIdentifier.equals(" + getElementType(sequenceElement, true) + ".identifier)) {");
-					}
-
-					write(getSequenceElementName(sequenceElement) + " = new " + getElementType(sequenceElement, true)
-							+ "();");
-
-					write("subCodeLength += " + getSequenceElementName(sequenceElement) + ".decode(iStream, "
-							+ explicitEncoding + ");");
-
-					write("decodedIdentifier = false;");
-
-					write("}");
-
+					write("if (berIdentifier.equals(" + getElementType(sequenceElement, true) + ".identifier)) {");
 				}
 
+				write(getSequenceElementName(sequenceElement) + " = new " + getElementType(sequenceElement, true)
+						+ "();");
+
+				write("subCodeLength += " + getSequenceElementName(sequenceElement) + ".decode(iStream, "
+						+ explicitEncoding + ");");
+
+				write("decodedIdentifier = false;");
+
+				write("}");
+
 			}
+
+			// }
 
 			if (!isOptional(sequenceElement)
 					&& (!getASNType(sequenceElement).equals("asnChoice") || hasExplicitTag(sequenceElement))) {
