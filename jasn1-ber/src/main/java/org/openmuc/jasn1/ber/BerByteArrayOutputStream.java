@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 
-public final class BerByteArrayOutputStream extends OutputStream {
+public class BerByteArrayOutputStream extends OutputStream {
 
 	public byte[] buffer;
 	public int index;
