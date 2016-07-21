@@ -171,6 +171,15 @@ public class BerIntegerTest {
 		Assert.assertEquals(5555, asn1Integer.val);
 	}
 
+	@Test
+	public void explicitDecoding3() throws IOException {
+		byte[] byteCode = new byte[] { 0x02, 0x01, (byte) 0xc0 };
+		ByteArrayInputStream berInputStream = new ByteArrayInputStream(byteCode);
+		BerInteger asn1Integer = new BerInteger();
+		asn1Integer.decode(berInputStream, true);
+		Assert.assertEquals(-64, asn1Integer.val);
+	}
+
 	public static String getByteArrayString(byte[] byteArray) {
 		StringBuilder builder = new StringBuilder();
 		int l = 1;
