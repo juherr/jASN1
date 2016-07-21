@@ -1,16 +1,8 @@
 
 configure(allprojects) {
   apply plugin: 'java'
-
-  version = '1.2'
+  version = '1.2.1'
   group = 'org.openmuc'
-
-  repositories {
-    mavenCentral()  
-    flatDir {
-      dirs 'dependencies'
-    }
-  }
 }
 
 configure(subprojects) {
@@ -22,6 +14,13 @@ configure(subprojects) {
 
   sourceCompatibility = 1.6
   targetCompatibility = 1.6
+
+  repositories {
+    mavenCentral()  
+    flatDir {
+      dirs 'dependencies'
+    }
+  }
 
   dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
@@ -67,13 +66,12 @@ configure(subprojects) {
   }
 
   artifacts {
-    archives jar
     archives sourcesJar
     archives javadocJar
   }
 
   signing {
-    if ( hasProperty('project.properties.signing.keyId') ) {
+    if ( project.hasProperty('signing.keyId') ) {
       sign configurations.archives
     }
   }

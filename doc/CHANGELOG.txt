@@ -1,3 +1,7 @@
+v1.2.1 27-Jan-2014
+------------------
+- removed final from BerByteArrayOutputStream 
+
 v1.2 10-Jan-2014
 ----------------
 - ANY elements are now encoded/decoded.
