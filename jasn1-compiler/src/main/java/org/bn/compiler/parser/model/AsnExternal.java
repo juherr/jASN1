@@ -4,23 +4,25 @@ package org.bn.compiler.parser.model;
 //DefinitionofEXTERNAL
 // 
 public class AsnExternal {
-    final String  BUILTINTYPE = "EXTERNAL";
+	final String BUILTINTYPE = "EXTERNAL";
 
-    // Default Constructor
+	// Default Constructor
 
-    public String name;
+	public String name;
 
-    //~--- constructors -------------------------------------------------------
+	// ~--- constructors -------------------------------------------------------
 
-    public AsnExternal() {}
+	public AsnExternal() {
+	}
 
-    //~--- methods ------------------------------------------------------------
+	// ~--- methods ------------------------------------------------------------
 
-    public String toString() {
-        String ts = "";
+	@Override
+	public String toString() {
+		String ts = "";
 
-        ts += BUILTINTYPE;
+		ts += BUILTINTYPE;
 
-        return ts;
-    }
+		return ts;
+	}
 }

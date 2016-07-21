@@ -4,32 +4,32 @@ package org.bn.compiler.parser.model;
 //DefinitionofASNModuleIdentifier
 //
 public class AsnModuleIdentifier {
-    public AsnOidComponentList componentList;
+	public AsnOidComponentList componentList;
 
-    // Default Constructor
+	// Default Constructor
 
-    public String              name;
+	public String name;
 
-    //~--- constructors -------------------------------------------------------
+	// ~--- constructors -------------------------------------------------------
 
-    public AsnModuleIdentifier() {
-        componentList = new AsnOidComponentList();
-    }
+	public AsnModuleIdentifier() {
+		componentList = new AsnOidComponentList();
+	}
 
-    // toString Implementation
+	// toString Implementation
 
-    //~--- methods ------------------------------------------------------------
+	// ~--- methods ------------------------------------------------------------
 
-    public String toString() {
-        String ts = "";
+	@Override
+	public String toString() {
+		String ts = "";
 
-        ts = name + "  ";
+		ts = name + "  ";
 
-        if (componentList != null) {
-            ts += componentList;
-        }
+		if (componentList != null) {
+			ts += componentList;
+		}
 
-        return ts;
-    }
+		return ts;
+	}
 }
-

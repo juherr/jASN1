@@ -1,24 +1,25 @@
 package org.bn.compiler.parser.model;
 
 public class AsnChoiceValue {
-    public String   name;
-    public AsnValue value;
+	public String name;
+	public AsnValue value;
 
-    //~--- constructors -------------------------------------------------------
+	// ~--- constructors -------------------------------------------------------
 
-    // Default Constructor
-    public AsnChoiceValue() {}
+	// Default Constructor
+	public AsnChoiceValue() {
+	}
 
-    //~--- methods ------------------------------------------------------------
+	// ~--- methods ------------------------------------------------------------
 
-    // toString Method
-    public String toString() {
-        String ts = "";
+	// toString Method
+	@Override
+	public String toString() {
+		String ts = "";
 
-        ts += name;
-        ts += "\t" + ":" + value;
+		ts += name;
+		ts += "\t" + ":" + value;
 
-        return ts;
-    }
+		return ts;
+	}
 }
-

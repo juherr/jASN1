@@ -8,27 +8,28 @@ import java.util.Iterator;
 //~--- classes ----------------------------------------------------------------
 
 public class AsnSequenceOfValue {
-    boolean          isValPresent;
-    public ArrayList value;
+	boolean isValPresent;
+	public ArrayList value;
 
-    //~--- constructors -------------------------------------------------------
+	// ~--- constructors -------------------------------------------------------
 
-    // Default Constructor
-    public AsnSequenceOfValue() {
-        value = new ArrayList();
-    }
+	// Default Constructor
+	public AsnSequenceOfValue() {
+		value = new ArrayList();
+	}
 
-    //~--- methods ------------------------------------------------------------
+	// ~--- methods ------------------------------------------------------------
 
-    // toString Method
-    public String toString() {
-        String   ts = "";
-        Iterator i  = value.iterator();
+	// toString Method
+	@Override
+	public String toString() {
+		String ts = "";
+		Iterator i = value.iterator();
 
-        while (i.hasNext()) {
-            ts += i.next();
-        }
+		while (i.hasNext()) {
+			ts += i.next();
+		}
 
-        return ts;
-    }
+		return ts;
+	}
 }

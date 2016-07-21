@@ -99,10 +99,12 @@ public class PresentationLayerTest {
 		StringBuilder builder = new StringBuilder();
 		int l = 1;
 		for (byte b : byteArray) {
-			if ((l != 1) && ((l - 1) % 8 == 0))
+			if ((l != 1) && ((l - 1) % 8 == 0)) {
 				builder.append(' ');
-			if ((l != 1) && ((l - 1) % 16 == 0))
+			}
+			if ((l != 1) && ((l - 1) % 16 == 0)) {
 				builder.append('\n');
+			}
 			l++;
 			builder.append("0x");
 			String hexString = Integer.toHexString(b & 0xff);

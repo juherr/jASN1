@@ -7,46 +7,48 @@ import java.util.Iterator;
 //~--- classes ----------------------------------------------------------------
 
 public class AsnSequenceSet {
-    final String              BUILTINTYPE  = "SEQUENCE";
-    final String              BUILTINTYPE1 = "SET";
-    public AsnElementTypeList elementTypeList;
-    public boolean            isSequence;
-    public String             name;    // Name of Sequence
+	final String BUILTINTYPE = "SEQUENCE";
+	final String BUILTINTYPE1 = "SET";
+	public AsnElementTypeList elementTypeList;
+	public boolean isSequence;
+	public String name; // Name of Sequence
 
-    //~--- constructors -------------------------------------------------------
+	// ~--- constructors -------------------------------------------------------
 
-    // Default Constructor
-    public AsnSequenceSet() {
-        name       = "";
-        isSequence = false;
-    }
+	// Default Constructor
+	public AsnSequenceSet() {
+		name = "";
+		isSequence = false;
+	}
 
-    //~--- methods ------------------------------------------------------------
+	// ~--- methods ------------------------------------------------------------
 
-    // toString definition
-    public String toString() {
-        String ts = "";
+	// toString definition
+	@Override
+	public String toString() {
+		String ts = "";
 
-        ts += (name);
+		ts += (name);
 
-        if (isSequence) {
-            ts += "\t::=" + BUILTINTYPE + "\t";
-        } else {
-            ts += "\t::=" + BUILTINTYPE1 + "\t";
-        }
+		if (isSequence) {
+			ts += "\t::=" + BUILTINTYPE + "\t";
+		}
+		else {
+			ts += "\t::=" + BUILTINTYPE1 + "\t";
+		}
 
-        ts += "{";
+		ts += "{";
 
-        if (elementTypeList != null) {
-            Iterator e = elementTypeList.elements.iterator();
+		if (elementTypeList != null) {
+			Iterator e = elementTypeList.elements.iterator();
 
-            while (e.hasNext()) {
-                ts += e.next();
-            }
-        }
+			while (e.hasNext()) {
+				ts += e.next();
+			}
+		}
 
-        ts += "}";
+		ts += "}";
 
-        return ts;
-    }
+		return ts;
+	}
 }

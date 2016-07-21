@@ -8,40 +8,42 @@ import java.util.Iterator;
 //~--- classes ----------------------------------------------------------------
 
 public class AsnCharacterStringValue {
-    String           cStr;
-    public ArrayList charDefsList;
-    public boolean   isCharDefList;
-    boolean          isQuadruple;
-    public boolean   isTuple;
-    public ArrayList tupleQuad;
+	String cStr;
+	public ArrayList charDefsList;
+	public boolean isCharDefList;
+	boolean isQuadruple;
+	public boolean isTuple;
+	public ArrayList tupleQuad;
 
-    //~--- constructors -------------------------------------------------------
+	// ~--- constructors -------------------------------------------------------
 
-    // Default Constructor
-    public AsnCharacterStringValue() {
-        charDefsList = new ArrayList();
-        tupleQuad    = new ArrayList();
-    }
+	// Default Constructor
+	public AsnCharacterStringValue() {
+		charDefsList = new ArrayList();
+		tupleQuad = new ArrayList();
+	}
 
-    //~--- methods ------------------------------------------------------------
+	// ~--- methods ------------------------------------------------------------
 
-    public String toString() {
-        String ts = "";
+	@Override
+	public String toString() {
+		String ts = "";
 
-        if (isTuple || isQuadruple) {
-            Iterator i = tupleQuad.iterator();
+		if (isTuple || isQuadruple) {
+			Iterator i = tupleQuad.iterator();
 
-            while (i.hasNext()) {
-                ts += i.next() + "\n";
-            }
-        } else if (isCharDefList) {
-            Iterator i = charDefsList.iterator();
+			while (i.hasNext()) {
+				ts += i.next() + "\n";
+			}
+		}
+		else if (isCharDefList) {
+			Iterator i = charDefsList.iterator();
 
-            while (i.hasNext()) {
-                ts += i.next();
-            }
-        }
+			while (i.hasNext()) {
+				ts += i.next();
+			}
+		}
 
-        return ts;
-    }
+		return ts;
+	}
 }

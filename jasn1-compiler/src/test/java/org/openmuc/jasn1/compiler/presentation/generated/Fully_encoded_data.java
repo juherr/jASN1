@@ -12,7 +12,7 @@ import org.openmuc.jasn1.ber.*;
 import org.openmuc.jasn1.ber.types.*;
 import org.openmuc.jasn1.ber.types.string.*;
 
-public class Fully_encoded_data {
+public final class Fully_encoded_data {
 
 	public final static BerIdentifier identifier = new BerIdentifier(BerIdentifier.UNIVERSAL_CLASS, BerIdentifier.CONSTRUCTED, 16);
 	protected BerIdentifier id;

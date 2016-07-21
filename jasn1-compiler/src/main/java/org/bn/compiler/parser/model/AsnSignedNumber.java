@@ -7,28 +7,30 @@ import java.math.BigInteger;
 //~--- classes ----------------------------------------------------------------
 
 public class AsnSignedNumber {
-    public BigInteger num;
-    public boolean    positive;
+	public BigInteger num;
+	public boolean positive;
 
-    //~--- constructors -------------------------------------------------------
+	// ~--- constructors -------------------------------------------------------
 
-    // Default Constructor
-    public AsnSignedNumber() {
-        positive = true;
-    }
+	// Default Constructor
+	public AsnSignedNumber() {
+		positive = true;
+	}
 
-    //~--- methods ------------------------------------------------------------
+	// ~--- methods ------------------------------------------------------------
 
-    // toString() Method Definition
-    public String toString() {
-        String ts = "";
+	// toString() Method Definition
+	@Override
+	public String toString() {
+		String ts = "";
 
-        if (num != null) {
-            ts += (num);
-        } else {
-            ts += ("Signed Number is Null");
-        }
+		if (num != null) {
+			ts += (num);
+		}
+		else {
+			ts += ("Signed Number is Null");
+		}
 
-        return ts;
-    }
+		return ts;
+	}
 }

@@ -3,105 +3,107 @@ package org.bn.compiler.parser.model;
 //~--- JDK imports ------------------------------------------------------------
 
 import java.lang.reflect.Field;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 
 //~--- classes ----------------------------------------------------------------
 
 public class OperationMacro {
-    public String    argumentName;            // Argument     Type Name
-    public Object    argumentType;            // Holds the argument Type
-    public String    argumentTypeIdentifier;    // Argument NamedType identifier
-    public ArrayList errorList;
-    public boolean   isArgumentName;
-    public boolean   isErrors;
-    public boolean   isLinkedOperation;
-    public boolean   isResult;
-    public boolean   isResultName;
-    public ArrayList linkedOpList;
-    public String    name;
-    public String    resultName;              // Result Type Name
-    public Object    resultType;              // Holds the resultType
-    public String    resultTypeIdentifier;    // Result NamedType identifier
+	public String argumentName; // Argument Type Name
+	public Object argumentType; // Holds the argument Type
+	public String argumentTypeIdentifier; // Argument NamedType identifier
+	public ArrayList errorList;
+	public boolean isArgumentName;
+	public boolean isErrors;
+	public boolean isLinkedOperation;
+	public boolean isResult;
+	public boolean isResultName;
+	public ArrayList linkedOpList;
+	public String name;
+	public String resultName; // Result Type Name
+	public Object resultType; // Holds the resultType
+	public String resultTypeIdentifier; // Result NamedType identifier
 
-    //~--- constructors -------------------------------------------------------
+	// ~--- constructors -------------------------------------------------------
 
-    // Default Constructors
-    public OperationMacro() {
-        errorList    = new ArrayList();
-        linkedOpList = new ArrayList();
-    }
+	// Default Constructors
+	public OperationMacro() {
+		errorList = new ArrayList();
+		linkedOpList = new ArrayList();
+	}
 
-    //~--- methods ------------------------------------------------------------
+	// ~--- methods ------------------------------------------------------------
 
-    // Get the first linked operationName
-    public String get_firstLinkedOpName() {
-        Object obj = linkedOpList.get(0);
+	// Get the first linked operationName
+	public String get_firstLinkedOpName() {
+		Object obj = linkedOpList.get(0);
 
-        if ((AsnValue.class).isInstance(obj)) {
-            return "isValue";
-        } else if ((AsnDefinedType.class).isInstance(obj)) {
-            return ((AsnDefinedType) obj).typeName;
-        } else {
-            String nameoftype = null;
+		if ((AsnValue.class).isInstance(obj)) {
+			return "isValue";
+		}
+		else if ((AsnDefinedType.class).isInstance(obj)) {
+			return ((AsnDefinedType) obj).typeName;
+		}
+		else {
+			String nameoftype = null;
 
-            try {
-                Field nameField;
-                Class c = obj.getClass();
+			try {
+				Field nameField;
+				Class c = obj.getClass();
 
-                nameField  = c.getField("name");
-                nameoftype = (String) nameField.get(obj);
-            } catch (Exception e) {
-                e.printStackTrace(System.err);
-            }
+				nameField = c.getField("name");
+				nameoftype = (String) nameField.get(obj);
+			} catch (Exception e) {
+				e.printStackTrace(System.err);
+			}
 
-            return nameoftype;
-        }
-    }
+			return nameoftype;
+		}
+	}
 
-    // toString() definition
-    public String toString() {
-        String ts = "";
+	// toString() definition
+	@Override
+	public String toString() {
+		String ts = "";
 
-        ts += (name + "\t::=\t OPERATION");
+		ts += (name + "\t::=\t OPERATION");
 
-        if (isArgumentName) {
-            ts += ("ARGUMENT\t\t" + argumentName);
-        }
+		if (isArgumentName) {
+			ts += ("ARGUMENT\t\t" + argumentName);
+		}
 
-        if (isResult) {
-            ts += ("RESULT\t\t" + resultName);
-        }
+		if (isResult) {
+			ts += ("RESULT\t\t" + resultName);
+		}
 
-        if (isLinkedOperation) {
-            ts += ("LINKED OPERATION\t");
+		if (isLinkedOperation) {
+			ts += ("LINKED OPERATION\t");
 
-            Iterator e = linkedOpList.iterator();
+			Iterator e = linkedOpList.iterator();
 
-            if (e.hasNext()) {
-                while (e.hasNext()) {
-                    ts += (e.next());
-                }
-            }
+			if (e.hasNext()) {
+				while (e.hasNext()) {
+					ts += (e.next());
+				}
+			}
 
-            ts += ("}");
-        }
+			ts += ("}");
+		}
 
-        if (isErrors) {
-            ts += ("ERRORS\t{");
+		if (isErrors) {
+			ts += ("ERRORS\t{");
 
-            Iterator e = errorList.iterator();
+			Iterator e = errorList.iterator();
 
-            if (e.hasNext()) {
-                while (e.hasNext()) {
-                    ts += e.next();
-                }
-            }
+			if (e.hasNext()) {
+				while (e.hasNext()) {
+					ts += e.next();
+				}
+			}
 
-            ts += ("}");
-        }
+			ts += ("}");
+		}
 
-        return ts;
-    }
+		return ts;
+	}
 }

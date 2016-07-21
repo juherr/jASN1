@@ -1,24 +1,25 @@
 package org.bn.compiler.parser.model;
 
 public class AsnObjectIdentifier {
-    public final String  BUILTINTYPE = "OBJECT IDENTIFIER";
-    public String name;
+	public final String BUILTINTYPE = "OBJECT IDENTIFIER";
+	public String name;
 
-    //~--- constructors -------------------------------------------------------
+	// ~--- constructors -------------------------------------------------------
 
-    // Default Constructor
-    public AsnObjectIdentifier() {
-        name = "";
-    }
+	// Default Constructor
+	public AsnObjectIdentifier() {
+		name = "";
+	}
 
-    //~--- methods ------------------------------------------------------------
+	// ~--- methods ------------------------------------------------------------
 
-    // toString() definition
-    public String toString() {
-        String ts = "";
+	// toString() definition
+	@Override
+	public String toString() {
+		String ts = "";
 
-        ts += name + "\t::=\t" + BUILTINTYPE;
+		ts += name + "\t::=\t" + BUILTINTYPE;
 
-        return ts;
-    }
+		return ts;
+	}
 }

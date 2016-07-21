@@ -10,37 +10,38 @@ import java.util.Iterator;
 //DefinitionofENUMERATED
 // 
 public class AsnEnum {
-    final String              BUILTINTYPE = "ENUMERATED";
-    public String             name;
-    public AsnNamedNumberList namedNumberList;
-    public String             snaccName;    // specifically added for snacc code generation
-    public Boolean            isEnum = true;
+	final String BUILTINTYPE = "ENUMERATED";
+	public String name;
+	public AsnNamedNumberList namedNumberList;
+	public String snaccName; // specifically added for snacc code generation
+	public Boolean isEnum = true;
 
-    //~--- constructors -------------------------------------------------------
+	// ~--- constructors -------------------------------------------------------
 
-    // Default Constructor
-    public AsnEnum() {
-        name      = "";
-        snaccName = "";
-    }
+	// Default Constructor
+	public AsnEnum() {
+		name = "";
+		snaccName = "";
+	}
 
-    //~--- methods ------------------------------------------------------------
+	// ~--- methods ------------------------------------------------------------
 
-    public String toString() {
-        String ts = "";
+	@Override
+	public String toString() {
+		String ts = "";
 
-        ts += name + "\t::=" + BUILTINTYPE + "\t{";
+		ts += name + "\t::=" + BUILTINTYPE + "\t{";
 
-        if (namedNumberList != null) {
-            Iterator nl = namedNumberList.namedNumbers.iterator();
+		if (namedNumberList != null) {
+			Iterator nl = namedNumberList.namedNumbers.iterator();
 
-            while (nl.hasNext()) {
-                ts += nl.next();
-            }
-        }
+			while (nl.hasNext()) {
+				ts += nl.next();
+			}
+		}
 
-        ts += "}";
+		ts += "}";
 
-        return ts;
-    }
+		return ts;
+	}
 }

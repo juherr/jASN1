@@ -12,9 +12,9 @@ import org.openmuc.jasn1.ber.*;
 import org.openmuc.jasn1.ber.types.*;
 import org.openmuc.jasn1.ber.types.string.*;
 
-public class PDV_list {
+public final class PDV_list {
 
-	public static class SubChoice_presentation_data_values {
+	public final static class SubChoice_presentation_data_values {
 
 		public byte[] code = null;
 		public BerAny single_ASN1_type = null;

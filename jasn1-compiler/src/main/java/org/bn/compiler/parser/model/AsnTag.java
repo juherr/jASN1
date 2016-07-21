@@ -1,34 +1,35 @@
 package org.bn.compiler.parser.model;
 
 public class AsnTag {
-    public AsnClassNumber classNumber;
-    public String         clazz;
+	public AsnClassNumber classNumber;
+	public String clazz;
 
-    //~--- constructors -------------------------------------------------------
+	// ~--- constructors -------------------------------------------------------
 
-    // Default Constructor
-    public AsnTag() {
-        clazz = "";
-    }
+	// Default Constructor
+	public AsnTag() {
+		clazz = "";
+	}
 
-    //~--- methods ------------------------------------------------------------
+	// ~--- methods ------------------------------------------------------------
 
-    // toString() definition
-    public String toString() {
-        String ts = "";
+	// toString() definition
+	@Override
+	public String toString() {
+		String ts = "";
 
-        ts += ("[");
+		ts += ("[");
 
-        if (clazz != "") {
-            ts += (clazz);
-        }
+		if (clazz != "") {
+			ts += (clazz);
+		}
 
-        if (classNumber != null) {
-            ts += (classNumber);
-        }
+		if (classNumber != null) {
+			ts += (classNumber);
+		}
 
-        ts += ("]");
+		ts += ("]");
 
-        return ts;
-    }
+		return ts;
+	}
 }

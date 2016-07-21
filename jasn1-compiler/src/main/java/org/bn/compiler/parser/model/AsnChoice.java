@@ -10,35 +10,36 @@ import java.util.Iterator;
 //DefinitionofChoice
 // 
 public class AsnChoice {
-    final String              BUILTINTYPE = "CHOICE";
-    public AsnElementTypeList elementTypeList;
-    public String             name;
-    public final boolean            isChoice = true;
+	final String BUILTINTYPE = "CHOICE";
+	public AsnElementTypeList elementTypeList;
+	public String name;
+	public final boolean isChoice = true;
 
-    //~--- constructors -------------------------------------------------------
+	// ~--- constructors -------------------------------------------------------
 
-    // Default Constructor
-    public AsnChoice() {
-        name = "";
-    }
+	// Default Constructor
+	public AsnChoice() {
+		name = "";
+	}
 
-    //~--- methods ------------------------------------------------------------
+	// ~--- methods ------------------------------------------------------------
 
-    public String toString() {
-        String ts = "";
+	@Override
+	public String toString() {
+		String ts = "";
 
-        ts += name + "\t::=\t" + BUILTINTYPE + "\t {";
+		ts += name + "\t::=\t" + BUILTINTYPE + "\t {";
 
-        if (elementTypeList != null) {
-            Iterator e = elementTypeList.elements.iterator();
+		if (elementTypeList != null) {
+			Iterator e = elementTypeList.elements.iterator();
 
-            while (e.hasNext()) {
-                ts += e.next();
-            }
-        }
+			while (e.hasNext()) {
+				ts += e.next();
+			}
+		}
 
-        ts += "}";
+		ts += "}";
 
-        return ts;
-    }
+		return ts;
+	}
 }

@@ -4,26 +4,26 @@ package org.bn.compiler.parser.model;
 //DefinitionofBoolean
 // 
 public class AsnBoolean {
-    public final String BUILTINTYPE = "BOOLEAN";
-    public String       name;
+	public final String BUILTINTYPE = "BOOLEAN";
+	public String name;
 
-    //~--- constructors -------------------------------------------------------
+	// ~--- constructors -------------------------------------------------------
 
-    // Default Constructor
-    public AsnBoolean() {
-        name = "";
-    }
+	// Default Constructor
+	public AsnBoolean() {
+		name = "";
+	}
 
-    // toString definition
+	// toString definition
 
-    //~--- methods ------------------------------------------------------------
+	// ~--- methods ------------------------------------------------------------
 
-    public String toString() {
-        String ts = "";
+	@Override
+	public String toString() {
+		String ts = "";
 
-        ts += name + "\t::=\t" + BUILTINTYPE;
+		ts += name + "\t::=\t" + BUILTINTYPE;
 
-        return ts;
-    }
+		return ts;
+	}
 }
-

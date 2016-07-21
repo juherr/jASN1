@@ -1,34 +1,36 @@
 package org.bn.compiler.parser.model;
 
 public class AsnNamedNumber {
-    public AsnDefinedValue definedValue;
-    public boolean         isSignedNumber;
-    public String          name;
-    public AsnSignedNumber signedNumber;
+	public AsnDefinedValue definedValue;
+	public boolean isSignedNumber;
+	public String name;
+	public AsnSignedNumber signedNumber;
 
-    //~--- constructors -------------------------------------------------------
+	// ~--- constructors -------------------------------------------------------
 
-    // Default Constructor
-    public AsnNamedNumber() {
-        name = "";
-    }
+	// Default Constructor
+	public AsnNamedNumber() {
+		name = "";
+	}
 
-    //~--- methods ------------------------------------------------------------
+	// ~--- methods ------------------------------------------------------------
 
-    // toString() Method Definition
-    public String toString() {
-        String ts = "";
+	// toString() Method Definition
+	@Override
+	public String toString() {
+		String ts = "";
 
-        ts += (name + "\t(");
+		ts += (name + "\t(");
 
-        if (isSignedNumber) {
-            ts += (signedNumber);
-        } else {
-            ts += (definedValue);
-        }
+		if (isSignedNumber) {
+			ts += (signedNumber);
+		}
+		else {
+			ts += (definedValue);
+		}
 
-        ts += (")");
+		ts += (")");
 
-        return ts;
-    }
+		return ts;
+	}
 }
