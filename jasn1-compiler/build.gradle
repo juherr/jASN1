@@ -1,0 +1,8 @@
+
+dependencies {
+  compile files('dependencies/antlr.jar','dependencies/lineargs.jar')
+  compile group: 'org.slf4j', name: 'slf4j-api', version: '1.6.1'
+  compile group: 'ch.qos.logback', name: 'logback-classic', version: '0.9.29'
+  testCompile project(':jasn1-ber')
+}
+

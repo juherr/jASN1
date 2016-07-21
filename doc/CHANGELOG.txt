@@ -1,0 +1,15 @@
+1.0.1 Jan-13-2012
+-----------------
+- fixed bug in coding of several byte length field
+
+1.0.0 Dec-06-2011
+-----------------
+- added getByteBuffer() function for BerByteArrayOutputStream so arrays don't always have to be copied
+- add code byte array and encodeAndSave function to all structures for better encoding performance when
+  encoding the same structure several times 
+- numerous bug fixes
+- all basic types are now supported
+
+0.9.0 Nov-21-2011
+-----------------
+- first version

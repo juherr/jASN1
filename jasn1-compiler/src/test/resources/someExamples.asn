@@ -1,0 +1,60 @@
+SOME_EXAMPLE DEFINITIONS::=
+BEGIN
+
+SequenceOfAll ::= SEQUENCE {
+
+	integer INTEGER,
+	myBoolean BOOLEAN,
+	bitString BIT STRING,
+	enumerated ENUMERATED {test1(1), test2(2)},
+	generalizedTime GeneralizedTime,
+	myNull NULL,
+	objectIdentifier OBJECT IDENTIFIER,
+	octetString OCTET STRING,
+	real REAL,
+
+	--all the strings
+	bmpString BMPString,
+	generalString GeneralString,
+	graphicString GraphicString,
+	iA5String IA5String,
+	numericString NumericString,
+	printableString PrintableString,
+	teletexString TeletexString,
+	universalString UniversalString,
+	utf8String UTF8String,
+	videotexString VideotexString,
+	visibleString VisibleString,
+	any [9] ANY
+}
+
+MySequence ::= [APPLICATION 3] IMPLICIT SEQUENCE {
+	implVisibleString [0] IMPLICIT ImplVisibleString
+}
+
+--not supported yet
+--MyBoxedSequence ::= [APPLICATION 2] IMPLICIT MySequence
+
+ImplInteger	::= [APPLICATION 3] IMPLICIT INTEGER
+ImplBoolean	::= [APPLICATION 3] IMPLICIT BOOLEAN
+ImplBitString	::= [APPLICATION 3] IMPLICIT BIT STRING
+ImplEnum	::= [APPLICATION 3] IMPLICIT ENUMERATED {test1(1),test2(2)}
+ImplGeneralizedTime	::= [APPLICATION 3] IMPLICIT GeneralizedTime
+ImplNull	::= [APPLICATION 3] IMPLICIT NULL
+ImplObjectIdentifier	::= [APPLICATION 3] IMPLICIT OBJECT IDENTIFIER
+ImplOctetString	::= [APPLICATION 3] IMPLICIT OCTET STRING
+ImplReal	::= [APPLICATION 3] IMPLICIT REAL
+
+ImplBMPString ::= [APPLICATION 3] IMPLICIT BMPString
+ImplGeneralString ::= [APPLICATION 3] IMPLICIT GeneralString
+ImplGraphicString ::= [APPLICATION 3] IMPLICIT GraphicString
+ImplIA5String ::= [APPLICATION 3] IMPLICIT IA5String
+ImplNumericString ::= [APPLICATION 3] IMPLICIT NumericString
+ImplPrintableString ::= [APPLICATION 3] IMPLICIT PrintableString
+ImplTeletexString ::= [APPLICATION 3] IMPLICIT TeletexString
+ImplUniversalString ::= [APPLICATION 3] IMPLICIT UniversalString
+ImplUTF8String ::= [APPLICATION 3] IMPLICIT UTF8String
+ImplVideotexString ::= [APPLICATION 3] IMPLICIT VideotexString
+ImplVisibleString ::= [APPLICATION 3] IMPLICIT VisibleString
+
+END
