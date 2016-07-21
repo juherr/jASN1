@@ -36,6 +36,9 @@ ASN1 syntax:
 
 The software has been tested under Linux and Windows.
 
+-The library and its dependencies are found in the build/lib folder
+-Javadocs can be found in the build/docs folder
+
 For the latest release of this software visit http://www.openmuc.org .
 
 Notes about the ASN1 syntax:
@@ -66,7 +69,8 @@ Rebuild jASN1:
 
 After modifying the jASN1 code it can be rebuild using Gradle. The
 Gradle build files are included with this distribution. Install Gradle
-first. Then run "gradle clean build" to start the build process.
+first (at least version 1.0-milestone-7) . Then run "gradle clean
+build" to rebuild everything.
 
 Please send us any code improvements so we can integrate them in our
 distribution.

@@ -1,6 +1,6 @@
 
 configure(allprojects) {
-  version = '1.0.6'
+  version = '1.0.7'
 
   apply plugin: 'java'
 
@@ -21,14 +21,15 @@ configure(subprojects) {
     testCompile group: 'junit', name: 'junit', version: '4.+'
   }
 
-  task copyLibs(dependsOn: configurations.default.buildArtifacts, type: Copy) {
+  task copyLibs(dependsOn: configurations.default.getAllArtifacts().getBuildDependencies(), type: Copy) {
     into "build/lib"
     from configurations.default
-    from configurations.default.allArtifactFiles
+    from configurations.default.getAllArtifacts().getFiles()
   }
 
-  eclipseClasspath.variables = [GRADLE_HOME:file(gradle.gradleUserHomeDir)]
-  eclipse.dependsOn(cleanEclipse)
+  eclipse.pathVariables([GRADLE_HOME:file(gradle.gradleUserHomeDir)])
+  tasks.eclipse.dependsOn(cleanEclipse)
+
 }
 
 
@@ -44,9 +45,11 @@ task (tar, type: Tar) {
     from('./') {
       include 'jasn1-ber/src/**/*'
       include 'jasn1-ber/build/lib/**/*'
+      include 'jasn1-ber/build/docs/**/*'
       include 'jasn1-compiler/src/**/*'
       include 'jasn1-compiler/grammatic/**/*'
       include 'jasn1-compiler/build/lib/**/*'
+      include 'jasn1-compiler/build/docs/**/*'
       include 'jasn1-compiler/build.gradle'
       include 'jasn1-compiler/dependencies/**/*'
       include 'doc/**/*'
@@ -63,13 +66,8 @@ task (tar, type: Tar) {
     }
  
   }
+}
 
-  into(project.archivesBaseName + '/jasn1-compiler/doc') {
-  from "./jasn1-compiler/build/docs/"
-  }
-
-  into(project.archivesBaseName + '/jasn1-ber/doc') {
-  from "./jasn1-ber/build/docs/"
-  }
-
+artifacts {
+  archives tar
 }
