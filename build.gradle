@@ -1,6 +1,6 @@
 
 configure(allprojects) {
-  version = '1.1.1'
+  version = '1.1.2'
 
   apply plugin: 'java'
 
@@ -21,23 +21,26 @@ configure(subprojects) {
     testCompile group: 'junit', name: 'junit', version: '4.+'
   }
 
-  task copyLibs(dependsOn: configurations.default.getAllArtifacts().getBuildDependencies(), type: Copy) {
+  task copyLibs(type: Copy) {
+    dependsOn(configurations.default.getAllArtifacts().getBuildDependencies())
+
     into "build/lib"
     from configurations.default
     from configurations.default.getAllArtifacts().getFiles()
   }
+
+  build.dependsOn(copyLibs)
 
   eclipse.pathVariables([GRADLE_USER_HOME:file(gradle.gradleUserHomeDir)])
   tasks.eclipse.dependsOn(cleanEclipse)
 
 }
 
+jar.enabled = false
 
 task (tar, type: Tar) {
-  dependsOn('jasn1-compiler:copyLibs')
-  dependsOn('jasn1-ber:copyLibs')
-  dependsOn('jasn1-compiler:javadoc')
-  dependsOn('jasn1-ber:javadoc')
+  dependsOn(subprojects.build)
+  dependsOn(subprojects.javadoc)
 
   compression = Compression.GZIP
 
@@ -68,6 +71,3 @@ task (tar, type: Tar) {
   }
 }
 
-artifacts {
-  archives tar
-}
