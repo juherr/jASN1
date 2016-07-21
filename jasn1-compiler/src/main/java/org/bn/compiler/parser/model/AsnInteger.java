@@ -10,38 +10,39 @@ import java.util.Iterator;
 //DefinitionofINTEGER
 // 
 public class AsnInteger {
-    public final String       BUILTINTYPE = "INTEGER";
-    public AsnConstraint      constraint;
-    public String             name;
-    public AsnNamedNumberList namedNumberList;
+	public final String BUILTINTYPE = "INTEGER";
+	public AsnConstraint constraint;
+	public String name;
+	public AsnNamedNumberList namedNumberList;
 
-    //~--- constructors -------------------------------------------------------
+	// ~--- constructors -------------------------------------------------------
 
-    // Default Constructor
-    public AsnInteger() {
-        name = "";
-    }
+	// Default Constructor
+	public AsnInteger() {
+		name = "";
+	}
 
-    //~--- methods ------------------------------------------------------------
+	// ~--- methods ------------------------------------------------------------
 
-    // toString() definition
-    public String toString() {
-        String ts = "";
+	// toString() definition
+	@Override
+	public String toString() {
+		String ts = "";
 
-        ts += name + "\t::=" + BUILTINTYPE + "\t";
+		ts += name + "\t::=" + BUILTINTYPE + "\t";
 
-        if (namedNumberList != null) {
-            Iterator nl = namedNumberList.namedNumbers.iterator();
+		if (namedNumberList != null) {
+			Iterator nl = namedNumberList.namedNumbers.iterator();
 
-            while (nl.hasNext()) {
-                ts += nl.next();
-            }
-        }
+			while (nl.hasNext()) {
+				ts += nl.next();
+			}
+		}
 
-        if (constraint != null) {
-            ts += constraint;
-        }
+		if (constraint != null) {
+			ts += constraint;
+		}
 
-        return ts;
-    }
+		return ts;
+	}
 }

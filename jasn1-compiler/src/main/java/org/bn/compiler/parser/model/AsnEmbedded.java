@@ -4,21 +4,23 @@ package org.bn.compiler.parser.model;
 //DefinitionofEMBEDDEDPDVTYPE
 // 
 public class AsnEmbedded {
-    final String  BUILTINTYPE = "EMBEDDED PDV";
-    public String name;
+	final String BUILTINTYPE = "EMBEDDED PDV";
+	public String name;
 
-    //~--- constructors -------------------------------------------------------
+	// ~--- constructors -------------------------------------------------------
 
-    // Default Constructor
-    public AsnEmbedded() {}
+	// Default Constructor
+	public AsnEmbedded() {
+	}
 
-    //~--- methods ------------------------------------------------------------
+	// ~--- methods ------------------------------------------------------------
 
-    public String toString() {
-        String ts = "";
+	@Override
+	public String toString() {
+		String ts = "";
 
-        ts += BUILTINTYPE;
+		ts += BUILTINTYPE;
 
-        return ts;
-    }
+		return ts;
+	}
 }

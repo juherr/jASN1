@@ -9,33 +9,35 @@ import java.util.Iterator;
 
 //To hold all the parsed Modules
 
-/**This class defines the class holding for ASN.1 modules and basic Types
+/**
+ * This class defines the class holding for ASN.1 modules and basic Types
  */
 public class ASNModules {
-    ArrayList module_list;
+	ArrayList module_list;
 
-    //~--- constructors -------------------------------------------------------
+	// ~--- constructors -------------------------------------------------------
 
-    // Default Constructor
-    ASNModules() {
-        module_list = new ArrayList();
-    }
+	// Default Constructor
+	ASNModules() {
+		module_list = new ArrayList();
+	}
 
-    //~--- methods ------------------------------------------------------------
+	// ~--- methods ------------------------------------------------------------
 
-    public void add(ASNModule module) {
-        module_list.add(module);
-    }
+	public void add(ASNModule module) {
+		module_list.add(module);
+	}
 
-    // toString Method
-    public String toString() {
-        String   ts = "";
-        Iterator i  = module_list.iterator();
+	// toString Method
+	@Override
+	public String toString() {
+		String ts = "";
+		Iterator i = module_list.iterator();
 
-        while (i.hasNext()) {
-            ts += i.next();
-        }
+		while (i.hasNext()) {
+			ts += i.next();
+		}
 
-        return ts;
-    }
+		return ts;
+	}
 }

@@ -7,19 +7,19 @@ import java.util.ArrayList;
 //~--- classes ----------------------------------------------------------------
 
 public class AsnNamedNumberList {
-    public ArrayList namedNumbers;
+	public ArrayList namedNumbers;
 
-    //~--- constructors -------------------------------------------------------
+	// ~--- constructors -------------------------------------------------------
 
-    // Default Constructor
-    public AsnNamedNumberList() {
-        namedNumbers = new ArrayList();
-    }
+	// Default Constructor
+	public AsnNamedNumberList() {
+		namedNumbers = new ArrayList();
+	}
 
-    //~--- methods ------------------------------------------------------------
+	// ~--- methods ------------------------------------------------------------
 
-    // Return the total number of elements in the list
-    public int count() {
-        return namedNumbers.size();
-    }
+	// Return the total number of elements in the list
+	public int count() {
+		return namedNumbers.size();
+	}
 }

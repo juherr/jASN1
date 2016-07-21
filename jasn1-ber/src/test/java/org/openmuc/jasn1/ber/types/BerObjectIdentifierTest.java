@@ -9,9 +9,9 @@ import org.openmuc.jasn1.ber.BerByteArrayOutputStream;
 
 public class BerObjectIdentifierTest {
 
-	private byte[] expectedBytes = new byte[] { 0x06, 0x05, 0x28, (byte) 0xca, 0x22, 0x02, 0x03 };
-	private byte[] expectedBytes2 = new byte[] { 0x06, 0x07, 0x60, (byte) 0x85, 0x74, 0x05, 0x08, 0x01, 0x01 };
-	private int[] objectIdentifierComponents = new int[] { 1, 0, 9506, 2, 3 };
+	private final byte[] expectedBytes = new byte[] { 0x06, 0x05, 0x28, (byte) 0xca, 0x22, 0x02, 0x03 };
+	private final byte[] expectedBytes2 = new byte[] { 0x06, 0x07, 0x60, (byte) 0x85, 0x74, 0x05, 0x08, 0x01, 0x01 };
+	private final int[] objectIdentifierComponents = new int[] { 1, 0, 9506, 2, 3 };
 
 	@Test
 	public void explicitEncoding() throws IOException {

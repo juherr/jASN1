@@ -4,26 +4,26 @@ package org.bn.compiler.parser.model;
 //DefinitionofAnyType
 //
 public class AsnAny {
-    final String   BUILTINTYPE = "ANY";
-    public String  definedByType;
-    public boolean isDefinedBy;
-    public String  name;
+	final String BUILTINTYPE = "ANY";
+	public String definedByType;
+	public boolean isDefinedBy;
+	public String name;
 
-    //~--- constructors -------------------------------------------------------
+	// ~--- constructors -------------------------------------------------------
 
-    // Default Constructor
-    public AsnAny() {
-        name          = "";
-        isDefinedBy   = false;
-        definedByType = "";
-    }
+	// Default Constructor
+	public AsnAny() {
+		name = "";
+		isDefinedBy = false;
+		definedByType = "";
+	}
 
-    //~--- methods ------------------------------------------------------------
+	// ~--- methods ------------------------------------------------------------
 
-    public String toString() {
-        return name;
-    }
+	@Override
+	public String toString() {
+		return name;
+	}
 }
 
-
-//~ Formatted by Jindent --- http://www.jindent.com
+// ~ Formatted by Jindent --- http://www.jindent.com

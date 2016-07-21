@@ -7,20 +7,21 @@ import java.util.ArrayList;
 //~--- classes ----------------------------------------------------------------
 
 public class AsnElementTypeList {
-    public ArrayList elements;
+	public ArrayList elements;
 
-    //~--- constructors -------------------------------------------------------
+	// ~--- constructors -------------------------------------------------------
 
-    // Default Constructor
-    public AsnElementTypeList() {
-        elements = new ArrayList();
-    }
+	// Default Constructor
+	public AsnElementTypeList() {
+		elements = new ArrayList();
+	}
 
-    //~--- methods ------------------------------------------------------------
+	// ~--- methods ------------------------------------------------------------
 
-    public String toString() {
-        String ts = "";
+	@Override
+	public String toString() {
+		String ts = "";
 
-        return ts;
-    }
+		return ts;
+	}
 }

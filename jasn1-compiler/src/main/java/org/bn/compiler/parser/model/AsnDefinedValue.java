@@ -1,30 +1,30 @@
 package org.bn.compiler.parser.model;
 
 public class AsnDefinedValue {
-    public boolean isDotPresent;
-    public String  moduleIdentifier;
-    public String  name;
+	public boolean isDotPresent;
+	public String moduleIdentifier;
+	public String name;
 
-    //~--- constructors -------------------------------------------------------
+	// ~--- constructors -------------------------------------------------------
 
-    // Default Constructor
-    public AsnDefinedValue() {
-        boolean dotpresent = false;
-    }
+	// Default Constructor
+	public AsnDefinedValue() {
+	}
 
-    //~--- methods ------------------------------------------------------------
+	// ~--- methods ------------------------------------------------------------
 
-    // toString() Method Definition
-    public String toString() {
-        String ts = "";
+	// toString() Method Definition
+	@Override
+	public String toString() {
+		String ts = "";
 
-        if (isDotPresent) {
-            ts += (moduleIdentifier + "." + name);
-        } else {
-            ts += name;
-        }
+		if (isDotPresent) {
+			ts += (moduleIdentifier + "." + name);
+		}
+		else {
+			ts += name;
+		}
 
-        return ts;
-    }
+		return ts;
+	}
 }
-

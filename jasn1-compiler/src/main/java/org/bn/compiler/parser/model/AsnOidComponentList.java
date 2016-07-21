@@ -11,35 +11,36 @@ import java.util.Iterator;
 //DefinitionofOID_Component_LIST
 //
 public class AsnOidComponentList {
-    public ArrayList       components;
-    public AsnDefinedValue defval;
-    public boolean         isDefinitive;
+	public ArrayList components;
+	public AsnDefinedValue defval;
+	public boolean isDefinitive;
 
-    //~--- constructors -------------------------------------------------------
+	// ~--- constructors -------------------------------------------------------
 
-    // Default Constructor
-    public AsnOidComponentList() {
-        components = new ArrayList();
-    }
+	// Default Constructor
+	public AsnOidComponentList() {
+		components = new ArrayList();
+	}
 
-    //~--- methods ------------------------------------------------------------
+	// ~--- methods ------------------------------------------------------------
 
-    // toString Method
-    public String toString() {
-        String ts = "";
+	// toString Method
+	@Override
+	public String toString() {
+		String ts = "";
 
-        if (isDefinitive) {
-            ts += defval;
-        }
+		if (isDefinitive) {
+			ts += defval;
+		}
 
-        if (components != null) {
-            Iterator i = components.iterator();
+		if (components != null) {
+			Iterator i = components.iterator();
 
-            while (i.hasNext()) {
-                ts += (i.next());
-            }
-        }
+			while (i.hasNext()) {
+				ts += (i.next());
+			}
+		}
 
-        return ts;
-    }
+		return ts;
+	}
 }

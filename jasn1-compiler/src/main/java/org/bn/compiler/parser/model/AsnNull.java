@@ -4,25 +4,26 @@ package org.bn.compiler.parser.model;
 //DefinitionofNULL
 // 
 public class AsnNull {
-    final String  BUILTINTYPE = "NULL";
-    public String name;
-    public boolean isNull = true;
+	final String BUILTINTYPE = "NULL";
+	public String name;
+	public boolean isNull = true;
 
-    //~--- constructors -------------------------------------------------------
+	// ~--- constructors -------------------------------------------------------
 
-    // Default Constructor
-    public AsnNull() {
-        name = "";
-    }
+	// Default Constructor
+	public AsnNull() {
+		name = "";
+	}
 
-    //~--- methods ------------------------------------------------------------
+	// ~--- methods ------------------------------------------------------------
 
-    // toString() definition
-    public String toString() {
-        String ts = "";
+	// toString() definition
+	@Override
+	public String toString() {
+		String ts = "";
 
-        ts += name + "\t::=\t" + BUILTINTYPE;
+		ts += name + "\t::=\t" + BUILTINTYPE;
 
-        return ts;
-    }
+		return ts;
+	}
 }

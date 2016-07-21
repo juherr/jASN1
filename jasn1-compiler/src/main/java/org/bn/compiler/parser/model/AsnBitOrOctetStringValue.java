@@ -8,36 +8,37 @@ import java.util.Iterator;
 //~--- classes ----------------------------------------------------------------
 
 public class AsnBitOrOctetStringValue {
-    public String    bhStr;
-    public ArrayList idlist;
-    public boolean   isBString;
-    public boolean   isHString;
+	public String bhStr;
+	public ArrayList idlist;
+	public boolean isBString;
+	public boolean isHString;
 
-    //~--- constructors -------------------------------------------------------
+	// ~--- constructors -------------------------------------------------------
 
-    // Default Constructor
-    public AsnBitOrOctetStringValue() {
-        idlist = new ArrayList();
-    }
+	// Default Constructor
+	public AsnBitOrOctetStringValue() {
+		idlist = new ArrayList();
+	}
 
-    //~--- methods ------------------------------------------------------------
+	// ~--- methods ------------------------------------------------------------
 
-    public String toString() {
-        String ts = "";
+	@Override
+	public String toString() {
+		String ts = "";
 
-        if (isHString || isBString) {
-            ts += bhStr;
-        } else {
-            if (idlist != null) {
-                Iterator e = idlist.iterator();
+		if (isHString || isBString) {
+			ts += bhStr;
+		}
+		else {
+			if (idlist != null) {
+				Iterator e = idlist.iterator();
 
-                while (e.hasNext()) {
-                    ts += e.next();
-                }
-            }
-        }
+				while (e.hasNext()) {
+					ts += e.next();
+				}
+			}
+		}
 
-        return ts;
-    }
+		return ts;
+	}
 }
-

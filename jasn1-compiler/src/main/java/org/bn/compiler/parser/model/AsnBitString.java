@@ -10,42 +10,42 @@ import java.util.Iterator;
 //DefinitionofBITSTRINGType
 //
 public class AsnBitString {
-    //public final String              BUILTINTYPE = "BIT     STRING";
-    public final String  BUILTINTYPE = "BIT STRING";
-    public AsnConstraint      constraint;
-    public String             name;
-    public AsnNamedNumberList namedNumberList;
+	// public final String BUILTINTYPE = "BIT     STRING";
+	public final String BUILTINTYPE = "BIT STRING";
+	public AsnConstraint constraint;
+	public String name;
+	public AsnNamedNumberList namedNumberList;
 
-    //~--- constructors -------------------------------------------------------
+	// ~--- constructors -------------------------------------------------------
 
-    // Default Constructor
-    public AsnBitString() {
-        name = "";
-    }
+	// Default Constructor
+	public AsnBitString() {
+		name = "";
+	}
 
-    //~--- methods ------------------------------------------------------------
+	// ~--- methods ------------------------------------------------------------
 
-    // toString definition
-    public String toString() {
-        String ts = "";
+	// toString definition
+	@Override
+	public String toString() {
+		String ts = "";
 
-        ts += (name + "\t::=\t" + BUILTINTYPE + "\n {");
+		ts += (name + "\t::=\t" + BUILTINTYPE + "\n {");
 
-        if (namedNumberList != null) {
-            Iterator nl = namedNumberList.namedNumbers.iterator();
+		if (namedNumberList != null) {
+			Iterator nl = namedNumberList.namedNumbers.iterator();
 
-            while (nl.hasNext()) {
-                ts += nl.next();
-            }
-        }
+			while (nl.hasNext()) {
+				ts += nl.next();
+			}
+		}
 
-        ts += "}";
+		ts += "}";
 
-        if (constraint != null) {
-            ts += constraint;
-        }
+		if (constraint != null) {
+			ts += constraint;
+		}
 
-        return ts;
-    }
+		return ts;
+	}
 }
-

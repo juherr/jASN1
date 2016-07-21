@@ -1,26 +1,29 @@
 package org.bn.compiler.parser.model;
 
 public class AsnClassNumber {
-    public String  name;
-    public Integer num;
+	public String name;
+	public Integer num;
 
-    //~--- constructors -------------------------------------------------------
+	// ~--- constructors -------------------------------------------------------
 
-    // Default Constructor
-    public AsnClassNumber() {}
+	// Default Constructor
+	public AsnClassNumber() {
+	}
 
-    //~--- methods ------------------------------------------------------------
+	// ~--- methods ------------------------------------------------------------
 
-    // toString definition
-    public String toString() {
-        String ts = "";
+	// toString definition
+	@Override
+	public String toString() {
+		String ts = "";
 
-        if (num != null) {
-            ts += (num);
-        } else {
-            ts += (name);
-        }
+		if (num != null) {
+			ts += (num);
+		}
+		else {
+			ts += (name);
+		}
 
-        return ts;
-    }
+		return ts;
+	}
 }

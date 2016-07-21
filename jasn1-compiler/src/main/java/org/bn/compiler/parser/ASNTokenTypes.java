@@ -2,9 +2,6 @@
 
 package org.bn.compiler.parser;
 
-import org.bn.compiler.parser.model.*;
-import java.math.*;
-import java.util.*;
 
 public interface ASNTokenTypes {
 	int EOF = 1;

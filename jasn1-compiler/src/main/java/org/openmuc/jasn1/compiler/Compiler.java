@@ -51,10 +51,12 @@ public class Compiler {
 		ASN1Model model = createModel(inputFileName);
 
 		model.outputDirectory = outputDir;
-		if (nameSpace != null)
+		if (nameSpace != null) {
 			model.moduleNS = nameSpace;
-		else
+		}
+		else {
 			model.moduleNS = model.module.moduleIdentifier.name.toLowerCase();
+		}
 
 		marshaller.marshal(model, outputXml);
 

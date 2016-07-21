@@ -1,24 +1,25 @@
 package org.bn.compiler.parser.model;
 
 public class AsnReal {
-    public final String BUILTINTYPE = "REAL";
-    public String       name;
+	public final String BUILTINTYPE = "REAL";
+	public String name;
 
-    //~--- constructors -------------------------------------------------------
+	// ~--- constructors -------------------------------------------------------
 
-    // Default Constructor
-    public AsnReal() {
-        name = "";
-    }
+	// Default Constructor
+	public AsnReal() {
+		name = "";
+	}
 
-    //~--- methods ------------------------------------------------------------
+	// ~--- methods ------------------------------------------------------------
 
-    // toString Definition
-    public String toString() {
-        String ts = "";
+	// toString Definition
+	@Override
+	public String toString() {
+		String ts = "";
 
-        ts += name + "\t::=\t" + BUILTINTYPE;
+		ts += name + "\t::=\t" + BUILTINTYPE;
 
-        return ts;
-    }
+		return ts;
+	}
 }
