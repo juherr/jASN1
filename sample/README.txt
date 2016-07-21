@@ -11,10 +11,10 @@ PersonnelRecord.java in the folder named "generated". This generation
 can be repeated using the following command:
 
 Linux:
-../jasn1-compiler/run-scripts/jasn1-compiler.sh -f x690BerExample.asn -o "generated/" -ns "generated"
+../projects/jasn1-compiler/runscripts/jasn1-compiler.sh -f x690BerExample.asn -o "generated/" -ns "generated"
 
 Windows:
-..\jasn1-compiler\run-scripts\jasn1-compiler.bat -f x690BerExample.asn -o "generated/" -ns "generated"
+..\projects\jasn1-compiler\runscripts\jasn1-compiler.bat -f x690BerExample.asn -o "generated/" -ns "generated"
 
 If you need to decode the indefinite length then you can use the -il flag.
 
@@ -30,9 +30,9 @@ To compile and run the EncodeDecodeSample do something like the
 following:
 
 Linux:
-javac -cp ../jasn1-ber/build/lib/jasn1-ber-<version>.jar generated/*.java *.java
-java -cp "../jasn1-ber/build/lib/jasn1-ber-<version>.jar:./" EncodeDecodeSample
+javac -cp ../projects/jasn1-ber/build/libsdeps/jasn1-ber-<version>.jar generated/*.java *.java
+java -cp "../projects/jasn1-ber/build/libsdeps/jasn1-ber-<version>.jar:./" EncodeDecodeSample
 
 Windows:
-javac -cp ../jasn1-ber/build/lib/jasn1-ber-<version>.jar generated/*.java *.java
-java -cp "../jasn1-ber/build/lib/jasn1-ber-<version>.jar;./" EncodeDecodeSample
+javac -cp ../projects/jasn1-ber/build/libsdeps/jasn1-ber-<version>.jar generated/*.java *.java
+java -cp "../projects/jasn1-ber/build/libsdeps/jasn1-ber-<version>.jar;./" EncodeDecodeSample

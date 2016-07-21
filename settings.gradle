@@ -1,3 +1,4 @@
+include 'jasn1-ber', 'jasn1-compiler'
 
-include 'jasn1-compiler', 'jasn1-ber'
-
+project(":jasn1-ber").projectDir = file("projects/jasn1-ber")
+project(":jasn1-compiler").projectDir = file("projects/jasn1-compiler")

@@ -1,3 +1,11 @@
+v1.3 14-May-2014
+----------------
+- fixed decoding of CHOICEs within SETs
+- made decoding SETs more efficient
+- minor fixes to build file to work with Gradle v1.11
+- fixed decoding large BerIntegers (thanks to Helge Parzyjegla,
+  University of Rostock)
+
 v1.2.1 27-Jan-2014
 ------------------
 - removed final from BerByteArrayOutputStream 
