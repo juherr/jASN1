@@ -14,7 +14,7 @@ public class SomeExamplesCompilingTest {
 
 		String[] args = new String[] { "-f", "src/test/resources/someExamples.asn", "-o",
 				"src/test/java/org/openmuc/jasn1/compiler/someexamples/generated", "-ns",
-				"org.openmuc.jasn1.compiler.someexamples.generated" };
+				"org.openmuc.jasn1.compiler.someexamples.generated", "-il" };
 		Compiler.main(args);
 
 	}

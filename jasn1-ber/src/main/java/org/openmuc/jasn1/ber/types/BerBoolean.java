@@ -67,7 +67,7 @@ public class BerBoolean {
 			codeLength = 1;
 
 			if (val) {
-				berOStream.write(1);
+				berOStream.write(0xff);
 			}
 			else {
 				berOStream.write(0);

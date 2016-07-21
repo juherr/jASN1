@@ -12,7 +12,7 @@ import org.openmuc.jasn1.ber.*;
 import org.openmuc.jasn1.ber.types.*;
 import org.openmuc.jasn1.ber.types.string.*;
 
-public class MySequence {
+public class My_Sequence {
 
 	public final static BerIdentifier identifier = new BerIdentifier(BerIdentifier.APPLICATION_CLASS, BerIdentifier.CONSTRUCTED, 3);
 	protected BerIdentifier id;
@@ -20,16 +20,16 @@ public class MySequence {
 	public byte[] code = null;
 	public ImplVisibleString implVisibleString = null;
 
-	public MySequence() {
+	public My_Sequence() {
 		id = identifier;
 	}
 
-	public MySequence(byte[] code) {
+	public My_Sequence(byte[] code) {
 		id = identifier;
 		this.code = code;
 	}
 
-	public MySequence(ImplVisibleString implVisibleString) {
+	public My_Sequence(ImplVisibleString implVisibleString) {
 		id = identifier;
 		this.implVisibleString = implVisibleString;
 	}
@@ -63,6 +63,7 @@ public class MySequence {
 	public int decode(InputStream iStream, boolean explicit) throws IOException {
 		int codeLength = 0;
 		int subCodeLength = 0;
+		int choiceDecodeLength = 0;
 		BerIdentifier berIdentifier = new BerIdentifier();
 		boolean decodedIdentifier = false;
 
@@ -72,6 +73,32 @@ public class MySequence {
 
 		BerLength length = new BerLength();
 		codeLength += length.decode(iStream);
+
+		if (length.val == -1) {
+			subCodeLength += berIdentifier.decode(iStream);
+
+			if (berIdentifier.tagNumber == 0 && berIdentifier.identifierClass == 0 && berIdentifier.primitive == 0) {
+				if (iStream.read() != 0) {
+					throw new IOException("Decoded sequence has wrong end of contents octets");
+				}
+				codeLength += subCodeLength + 1;
+				return codeLength;
+			}
+			if (berIdentifier.equals(BerIdentifier.CONTEXT_CLASS, BerIdentifier.PRIMITIVE, 0)) {
+				implVisibleString = new ImplVisibleString();
+				subCodeLength += implVisibleString.decode(iStream, false);
+				subCodeLength += berIdentifier.decode(iStream);
+			}
+			else {
+				throw new IOException("Identifier does not macht required sequence element identifer.");
+			}
+			if (berIdentifier.tagNumber != 0 || berIdentifier.identifierClass != 0 || berIdentifier.primitive != 0
+			|| iStream.read() != 0) {
+				throw new IOException("Decoded sequence has wrong end of contents octets");
+			}
+			codeLength += subCodeLength + 1;
+			return codeLength;
+		}
 
 		if (subCodeLength < length.val) {
 			if (decodedIdentifier == false) {

@@ -16,6 +16,8 @@ Linux:
 Windows:
 ..\jasn1-compiler\run-scripts\jasn1-compiler.bat -f x690BerExample.asn -o "generated/" -ns "generated"
 
+If you need to decode the indefinite length then you can use the -il flag.
+
 jasn1-compiler uses the ASN.1 to XML converter from BinaryNotes. The
 XML is then converted to the Java classes. If you want to see the XML
 that is generated you can execute jasn1-compiler using the -x flag.

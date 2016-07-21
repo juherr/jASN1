@@ -1,9 +1,10 @@
-SOME_EXAMPLE DEFINITIONS::=
+SOME_EXAMPLE DEFINITIONS IMPLICIT TAGS ::=
 BEGIN
 
 SequenceOfAll ::= SEQUENCE {
 
-	integer INTEGER,
+	myInteger [30] INTEGER,
+	myInteger2 [31] IMPLICIT INTEGER,
 	myBoolean BOOLEAN,
 	bitString BIT STRING,
 	enumerated ENUMERATED {test1(1), test2(2)},
@@ -25,11 +26,23 @@ SequenceOfAll ::= SEQUENCE {
 	utf8String UTF8String,
 	videotexString VideotexString,
 	visibleString VisibleString,
-	any [9] ANY
+	any [9] EXPLICIT ANY,
+	my-sequence My-Sequence,
+	my-choice My-Choice
 }
 
-MySequence ::= [APPLICATION 3] IMPLICIT SEQUENCE {
+My-Sequence ::= [APPLICATION 3] IMPLICIT SEQUENCE {
 	implVisibleString [0] IMPLICIT ImplVisibleString
+}
+
+My-Choice ::= CHOICE {
+	my-choice2 My-Choice2,
+	myboolean BOOLEAN
+}
+
+My-Choice2 ::= CHOICE {
+	myint INTEGER,
+	myboolean BOOLEAN
 }
 
 --not supported yet

@@ -38,6 +38,12 @@ public class BerLength {
 
 		if ((val & 0x80) != 0) {
 			int lengthLength = val & 0x7f;
+
+			if (lengthLength == 0) {
+				val = -1;
+				return 1;
+			}
+
 			if (lengthLength > 4) {
 				throw new IOException("Length is out of bound!");
 			}
