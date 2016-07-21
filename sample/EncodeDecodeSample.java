@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.openmuc.jasn1.ber.BerByteArrayOutputStream;
-import org.openmuc.jasn1.ber.types.BerVisibleString;
+import org.openmuc.jasn1.ber.types.string.BerVisibleString;
 
 import generated.ChildInformation;
 import generated.Date;

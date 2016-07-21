@@ -1,6 +1,6 @@
 
 configure(allprojects) {
-  version = '1.0.1'
+  version = '1.0.3'
 
   apply plugin: 'java'
 
@@ -21,26 +21,10 @@ configure(subprojects) {
     testCompile group: 'junit', name: 'junit', version: '4.+'
   }
 
-  task delLibs(type: Delete) { delete 'lib/' }
-
   task copyLibs(dependsOn: configurations.default.buildArtifacts, type: Copy) {
-    into "lib"
+    into "build/lib"
     from configurations.default
     from configurations.default.allArtifactFiles
-  }
-
-  task delJavadoc(type: Delete) { delete 'doc/javadoc/' }
-
-  task copyJavadoc(type: Copy) {
-    dependsOn(javadoc)
-
-    into "doc"
-    from "build/docs/"
-  }
-
-  clean {
-    dependsOn(delLibs)
-    dependsOn(delJavadoc)
   }
 
   eclipseClasspath.variables = [GRADLE_HOME:file(gradle.gradleUserHomeDir)]
@@ -51,20 +35,18 @@ configure(subprojects) {
 task (tar, type: Tar) {
   dependsOn('jasn1-compiler:copyLibs')
   dependsOn('jasn1-ber:copyLibs')
-  dependsOn('jasn1-compiler:copyJavadoc')
-  dependsOn('jasn1-ber:copyJavadoc')
+  dependsOn('jasn1-compiler:javadoc')
+  dependsOn('jasn1-ber:javadoc')
 
   compression = Compression.GZIP
 
   into(project.archivesBaseName) {
     from('./') {
       include 'jasn1-ber/src/**/*'
-      include 'jasn1-ber/lib/**/*'
-      include 'jasn1-ber/doc/**/*'
+      include 'jasn1-ber/build/lib/**/*'
       include 'jasn1-compiler/src/**/*'
       include 'jasn1-compiler/grammatic/**/*'
-      include 'jasn1-compiler/lib/**/*'
-      include 'jasn1-compiler/doc/**/*'
+      include 'jasn1-compiler/build/lib/**/*'
       include 'jasn1-compiler/build.gradle'
       include 'jasn1-compiler/dependencies/**/*'
       include 'doc/**/*'
@@ -79,6 +61,15 @@ task (tar, type: Tar) {
       fileMode = 0755
       include 'jasn1-compiler/run-scripts/**/*'
     }
+ 
+  }
+
+  into(project.archivesBaseName + '/jasn1-compiler/doc') {
+  from "./jasn1-compiler/build/docs/"
+  }
+
+  into(project.archivesBaseName + '/jasn1-ber/doc') {
+  from "./jasn1-ber/build/docs/"
   }
 
 }

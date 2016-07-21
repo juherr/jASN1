@@ -1,3 +1,11 @@
+1.0.3 Jan-19-2012
+-----------------
+- modified BerByteArrayOutputStream so its buffer and index are public and added two new constructors
+
+1.0.2 Jan-17-2012
+-----------------
+- added BerBitString(byte[]) constructor
+
 1.0.1 Jan-13-2012
 -----------------
 - fixed bug in coding of several byte length field

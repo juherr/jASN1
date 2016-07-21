@@ -27,8 +27,8 @@ import java.nio.ByteBuffer;
 
 public class BerByteArrayOutputStream extends OutputStream {
 
-	byte[] buffer;
-	int index;
+	public byte[] buffer;
+	public int index;
 	boolean automaticResize;
 
 	/**
@@ -52,6 +52,18 @@ public class BerByteArrayOutputStream extends OutputStream {
 	public BerByteArrayOutputStream(int bufferSize, boolean automaticResize) {
 		buffer = new byte[bufferSize];
 		index = bufferSize - 1;
+		this.automaticResize = automaticResize;
+	}
+
+	public BerByteArrayOutputStream(byte[] buffer, int startingIndex) {
+		this.buffer = buffer;
+		index = startingIndex;
+		automaticResize = false;
+	}
+
+	public BerByteArrayOutputStream(byte[] buffer, int startingIndex, boolean automaticResize) {
+		this.buffer = buffer;
+		index = startingIndex;
 		this.automaticResize = automaticResize;
 	}
 
@@ -101,6 +113,11 @@ public class BerByteArrayOutputStream extends OutputStream {
 		}
 	}
 
+	/**
+	 * Returns a new array containing the subarray of the stream array that
+	 * contains the coded content.
+	 * 
+	 */
 	public byte[] getArray() {
 		if (index == -1) {
 			return buffer;
