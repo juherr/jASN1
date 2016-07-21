@@ -75,6 +75,8 @@ public class PDV_list {
 
 		public int decode(InputStream iStream, BerIdentifier berIdentifier) throws IOException {
 			int codeLength = 0;
+			int choiceDecodeLength = 0;
+			BerIdentifier passedIdentifier = berIdentifier;
 			if (berIdentifier == null) {
 				berIdentifier = new BerIdentifier();
 				codeLength += berIdentifier.decode(iStream);
@@ -85,15 +87,21 @@ public class PDV_list {
 				codeLength += tempLength.val;
 				return codeLength;
 			}
+
 			if (berIdentifier.equals(BerIdentifier.CONTEXT_CLASS, BerIdentifier.PRIMITIVE, 1)) {
 				octet_aligned = new BerOctetString();
 				codeLength += octet_aligned.decode(iStream, false);
 				return codeLength;
 			}
+
 			if (berIdentifier.equals(BerIdentifier.CONTEXT_CLASS, BerIdentifier.PRIMITIVE, 2)) {
 				arbitrary = new BerBitString();
 				codeLength += arbitrary.decode(iStream, false);
 				return codeLength;
+			}
+
+			if (passedIdentifier != null) {
+				return 0;
 			}
 			throw new IOException("Error decoding BerChoice: Identifier matched to no item.");
 		}
@@ -165,6 +173,7 @@ public class PDV_list {
 	public int decode(InputStream iStream, boolean explicit) throws IOException {
 		int codeLength = 0;
 		int subCodeLength = 0;
+		int choiceDecodeLength = 0;
 		BerIdentifier berIdentifier = new BerIdentifier();
 		boolean decodedIdentifier = false;
 
@@ -206,8 +215,11 @@ public class PDV_list {
 				decodedIdentifier = true;
 			}
 			presentation_data_values = new SubChoice_presentation_data_values();
-			subCodeLength += presentation_data_values.decode(iStream, berIdentifier);
-			decodedIdentifier = false;
+			choiceDecodeLength = presentation_data_values.decode(iStream, berIdentifier);
+			if (choiceDecodeLength != 0) {
+				decodedIdentifier = false;
+				subCodeLength += choiceDecodeLength;
+			}
 		}
 		if (subCodeLength != length.val) {
 			throw new IOException("Decoded sequence has wrong length tag");

@@ -1,10 +1,30 @@
+1.1.0 Feb-14-2012
+----------------
+
+- the default tagging can now be changed to implicit using the
+  following kind of statement: SAMPLE DEFINITIONS IMPLICIT TAGS ::=
+  ...
+
+- the character '-' is now replaced by the '_' character in the name
+  of Java classes
+
+- support for indefinit length when decoding (not for encoding), has
+  to explicitely enabled using the -il option
+
+- SEQUENCE elements of type CHOICE that have not explicit tag are now
+  supported by jASN1
+
+- CHOICEs can now have sub CHOICES without tags. Only a warning is
+  printed that this could one CHOICE could be integrated into another
+  for better performance
+
 1.0.7 Feb-6-2012
------------------
+----------------
 - minor changes to gradle build file
 - bug fix in decoding empty OctetString
 
 1.0.6 Feb-1-2012
------------------
+----------------
 - added a Windows batch file to execute jasn1-compiler in Windows
 
 1.0.5 Jan-30-2012
