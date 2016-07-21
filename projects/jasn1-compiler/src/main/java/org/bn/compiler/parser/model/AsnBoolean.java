@@ -2,7 +2,7 @@ package org.bn.compiler.parser.model;
 
 //
 //DefinitionofBoolean
-// 
+//
 public class AsnBoolean {
 	public final String BUILTINTYPE = "BOOLEAN";
 	public String name;

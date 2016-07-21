@@ -2,7 +2,7 @@ package org.bn.compiler.parser.model;
 
 //
 //DefinitionofEXTERNAL
-// 
+//
 public class AsnExternal {
 	final String BUILTINTYPE = "EXTERNAL";
 

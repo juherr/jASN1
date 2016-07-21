@@ -8,7 +8,7 @@ import java.util.Iterator;
 
 //
 //DefinitionofChoice
-// 
+//
 public class AsnChoice {
 	final String BUILTINTYPE = "CHOICE";
 	public AsnElementTypeList elementTypeList;

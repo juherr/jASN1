@@ -8,7 +8,7 @@ import java.util.Iterator;
 
 //
 //DefinitionofENUMERATED
-// 
+//
 public class AsnEnum {
 	final String BUILTINTYPE = "ENUMERATED";
 	public String name;
