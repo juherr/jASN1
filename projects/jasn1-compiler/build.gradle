@@ -1,10 +1,23 @@
 
 dependencies {
-  compile files('dependencies/lineargs-1.0.1.jar')
   compile group: 'antlr', name: 'antlr', version: '2.7.7'
-  compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.7'
-  compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.2'
-  testCompile project(':jasn1')
+  compile project(':jasn1')
+}
+
+sourceSets {
+  main {
+    java.srcDirs = ['src/main/java', 'src/main/java-gen']
+  }
+  test {
+    java.srcDirs = ['src/test/java', 'src/test/java-gen']
+  }
+}
+
+jar {
+  manifest {
+    name = 'jASN1 Compiler'
+    instruction 'Export-Package', '!*.internal.*,*'
+  }
 }
 
 uploadArchives {
@@ -12,10 +25,8 @@ uploadArchives {
     mavenDeployer {
  
 	pom.project {
-	  name 'jasn1-compiler'
-	  packaging 'jar'
-	  description 'jasn1-compiler is a compiler that generates Java classes out of ASN.1 code that can be used to encode/decode BER data.'
-	  url 'http://www.openmuc.org/'
+	  name 'jASN1 Compiler'
+	  description 'jASN1 Compiler generates Java classes out of ASN.1 code that can be used to encode/decode BER data.'
  
 	  licenses {
 	    license {

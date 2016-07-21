@@ -1,41 +1,50 @@
+buildscript {
+  repositories {
+    maven {
+      url "https://plugins.gradle.org/m2/"
+    }
+  }
+  dependencies {
+    classpath "net.saliman:gradle-cobertura-plugin:2.2.8"
+  }
+}
+
+plugins {
+  id "org.sonarqube" version "1.0"
+}
+
+apply from: "configuration.gradle"
 
 configure(allprojects) {
+  version = cfgVersion
+}
+
+configure(javaProjects) {
+
   apply plugin: 'java'
-  version = '1.4'
-  group = 'org.openmuc'
-}
-
-project.ext {
-  distributionProjects = subprojects.findAll {
-    it.getPath() == ':jasn1' ||
-    it.getPath() == ':jasn1-compiler'
-  }
-
-  docProjects = subprojects.findAll {
-    it.getPath() == ':jasn1'
-  }
-
-  repositoryProjects = subprojects.findAll {
-    it.getPath() == ':jasn1' ||
-    it.getPath() == ':jasn1-compiler'
-  }
-}
-
-configure(subprojects) {
-
   apply plugin: 'eclipse'
   apply plugin: 'osgi'
   apply plugin: 'maven'
   apply plugin: 'signing'
+  apply plugin: 'net.saliman.cobertura'
 
-  sourceCompatibility = 1.6
-  targetCompatibility = 1.6
+  group = cfgGroup
 
-  repositories {
-    mavenCentral()
-    flatDir {
-      dirs 'dependencies', rootDir.getPath() + "/dependencies"
+  sourceCompatibility = 1.7
+  targetCompatibility = 1.7
+
+  repositories { mavenCentral() }
+
+  sourceSets {
+    sample
+    itest {
+      compileClasspath += sourceSets.main.runtimeClasspath
     }
+  }
+
+  dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    itestCompile group: 'junit', name: 'junit', version: '4.12'
   }
 
   jar {
@@ -44,31 +53,75 @@ configure(subprojects) {
     }
   }
 
-  dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.11'
+  cobertura {
+  
+    dependencies {
+      testCompile 'org.slf4j:slf4j-simple:1.6.1'
+    }
+    coverageFormats = ['html', 'xml']				
+    coverageIgnoreTrivial = true					
+    coverageIgnores = ['org.slf4j.Logger.*']			
+    coverageReportDir = new File("$buildDir/reports/cobertura")
+    coverageTestTasks {
+      project.tasks.withType(Test).matching {it.name == 'test'}
+    }
+ 	  
   }
 
-  task copyLibs(type: Copy) {
+  sonarqube {
+    properties {
+      property "sonar.java.coveragePlugin", "cobertura"
+      property "sonar.cobertura.reportPath", "build/reports/cobertura/coverage.xml"
+    }
+  }
+  
+  task jarAll(type: Copy) {
     dependsOn(configurations.default.getAllArtifacts().getBuildDependencies())
 
-    into "build/libsdeps"
-    from configurations.default
+    //only the jar file created:
     from configurations.default.getAllArtifacts().getFiles()
+
+    ext.isDocProject = false;
+    docProjects.findAll {
+      if (it.getPath() == project.path) {
+        isDocProject = true;
+      }
+    }
+    
+    if (isDocProject) {
+      //configurations.archives also contains source and javadoc files
+      configurations.archives.getArtifacts().all {
+        if (it.file.name.endsWith("sources.jar") || it.file.name.endsWith("javadoc.jar")) {
+          from project.files(it.file)
+        }
+      }
+    }
+
+    if (cfgCopyDependencies) {
+      if (cfgCopyToRoot) {
+        into rootDir.getPath() + "/build/libs-all"
+      }
+      else {
+        into "build/libs-all"
+      }
+      //includes all the dependencies:
+      from configurations.default
+    }
+    else {
+      if (cfgCopyToRoot) {
+        into rootDir.getPath() + "/build/libs-all"
+      }
+      else {
+        into "build/libs-all"
+      }
+    }
   }
 
-  build.dependsOn(copyLibs)
+  build.dependsOn(jarAll)
 
   eclipse.pathVariables([GRADLE_USER_HOME:file(gradle.gradleUserHomeDir)])
   tasks.eclipse.dependsOn(cleanEclipse)
-}
 
-configure(repositoryProjects) {
-
-  signing {
-    if ( project.hasProperty('signing.keyId') ) {
-      sign configurations.archives
-    }
-  }
 
   task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'
@@ -87,52 +140,73 @@ configure(repositoryProjects) {
 
   javadoc {
     exclude '**/internal/**'
+    exclude '**/java-gen/**'
   }
 
-  uploadArchives {
-    repositories {
-      mavenDeployer {
-	beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+}
 
-	repository(url: project.properties.sonatypeRepository) {
-	  authentication(userName: project.properties.sonatypeUser, password: project.properties.sonatypePass)
-	}
-	snapshotRepository(url: project.properties.sonatypeSnapshotRepository) {
-	  authentication(userName: project.properties.sonatypeUser, password: project.properties.sonatypePass)
-	}
-	
-	pom.project {
-	  scm {
-	    url 'none'
-	    connection 'none'
-	  }
 
-	  developers {
-	    developer {
-	      id 'sfeuerhahn'
-	      name 'Stefan Feuerhahn'
-	    }
-	  }
-	}
+configure(repositoryProjects) {
+
+  if (cfgSignPom) {
+    signing {
+      if ( project.hasProperty('signing.keyId') ) {
+	sign configurations.archives
       }
     }
   }
+  
+  uploadArchives {
+    repositories {
+      mavenDeployer {
 
+        if (cfgSignPom) {
+          beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+        }
 
+        repository(url: cfgRepository) {
+          authentication(userName: cfgRepositoryUser, password: cfgRepositoryPass)
+          if (cfgRepository != null && System.getProperty('https.proxyHost') != null && ((System.getProperty('https.nonProxyHosts') == null) || !cfgRepository.contains(System.getProperty('https.nonProxyHosts')))) {
+            proxy(host: System.getProperty('https.proxyHost'), port:  Integer.parseInt(System.getProperty('https.proxyPort')), type: 'https')
+          }
+        }
+        snapshotRepository(url: cfgSnapshotRepository) {
+          authentication(userName: cfgRepositoryUser, password: cfgRepositoryPass)
+          if (cfgSnapshotRepository != null && System.getProperty('https.proxyHost') != null && ((System.getProperty('https.nonProxyHosts') == null) || !cfgSnapshotRepository.contains(System.getProperty('https.nonProxyHosts')))) {
+            proxy(host: System.getProperty('https.proxyHost'), port:  Integer.parseInt(System.getProperty('https.proxyPort')), type: 'https')
+          }
+        }
+
+        pom.project {
+          
+          //additional pom information can be found in subproject build.gradle files
+
+          packaging 'jar'
+          url 'http://www.openmuc.org/'
+
+          scm {
+            url 'none'
+            connection 'none'
+          }
+
+          developers {
+            developer {
+              id 'sfeuerhahn'
+              name 'Stefan Feuerhahn'
+            }
+          }
+        }
+      }
+    }
+  }
 }
-
-jar.enabled = false
 
 configure(docProjects) {
-  task copySrc(type: Copy) {
-    dependsOn(sourcesJar)
-    into rootDir.getPath() + "/build/libs"
-    from configurations.archives.getAllArtifacts().getFiles()
-  }
-  copyLibs.dependsOn copySrc
+  jarAll.dependsOn sourcesJar
+  jarAll.dependsOn javadocJar
 }
 
-task javadocs(type: Javadoc) {
+task javadocAll(type: Javadoc) {
 
   source docProjects.collect {
     project -> project.sourceSets.main.allJava
@@ -140,7 +214,7 @@ task javadocs(type: Javadoc) {
 
   exclude '**/internal/**'
 
-  destinationDir = new File(buildDir, 'javadoc')
+  destinationDir = new File(buildDir, 'docs/javadoc-all')
 
   classpath = files(distributionProjects.collect { project ->
     project.sourceSets.main.compileClasspath })
@@ -149,23 +223,29 @@ task javadocs(type: Javadoc) {
     project.sourceSets.main.output })
 }
 
+
 task writeSettings << {
   Writer out = new OutputStreamWriter(new FileOutputStream("build/settings.gradle"));
   out.write("include ");
   boolean first = true;
   for (Project myproject: distributionProjects) {
-    if (first == true) {
-      first = false;
+    if (!myproject.getProjectDir().equals(getProjectDir())) {
+      if (first == true) {
+        first = false;
+      }
+      else {
+        out.write ", ";
+      }
+      out.write "'" + myproject.name + "'"
     }
-    else {
-      out.write ", ";
-    }
-    out.write "'" + myproject.name + "'"
   }
   out .write "\n\n";
 
   for (Project myproject: distributionProjects) {
-    out.write 'project(":' + myproject.name + '").projectDir = file("' + myproject.getProjectDir().toString().substring((int)(getProjectDir().toString().size() + 1)) + '")\n';
+    if (!myproject.getProjectDir().equals(getProjectDir())) {
+      println myproject.name
+      out.write 'project(":' + myproject.name + '").projectDir = file("' + myproject.getProjectDir().toString().substring((int)(getProjectDir().toString().size() + 1)) + '")\n';
+    }
   }
 
   out.close();
@@ -175,38 +255,28 @@ task buildDistProjects {
   dependsOn(distributionProjects.build)
 }
 
-task (tar, type: Tar) {
+tasks.withType(Tar) {
+
   dependsOn(writeSettings)
   dependsOn(distributionProjects.build)
-  dependsOn(javadocs)
+  dependsOn(javadocAll)
 
   compression = Compression.GZIP
+  
+  destinationDir = file('build/distributions/')
+}
 
-  into(project.archivesBaseName) {
-    from('./') {
-      include 'build.gradle'
-      include 'licenses/**'
-      include 'doc/**'
-      include 'sample/**/*.java'
-      include 'sample/**/*.txt'
-      include 'sample/**/*.asn'
+task (tarFull, type: Tar) {
+  archiveName = project.name + "-" + project.version + "_full.tgz"
+}
 
-      include 'projects/jasn1/build.gradle'
-      include 'projects/jasn1/src/**'
-      include 'projects/jasn1/build/libsdeps/*.jar'
-      include 'projects/jasn1/build/docs/**'
 
-      include 'projects/jasn1-compiler/build.gradle'
-      include 'projects/jasn1-compiler/src/**'
-      include 'projects/jasn1-compiler/grammatic/**'
-      include 'projects/jasn1-compiler/dependencies/**'
-      include 'projects/jasn1-compiler/build/libsdeps/*.jar'
-      include 'projects/jasn1-compiler/runscripts/**'
-    }
+task (tar, type: Tar) {
+  archiveName = project.name + "-" + project.version + ".tgz"
+}
 
-    from('./build/') {
-      include 'settings.gradle'
-    }
-
+if (!javaProjects.contains(project)) {
+  task clean (type: Delete) {
+    delete "build"
   }
 }

@@ -1,25 +1,26 @@
 /*
- * Copyright 2011-14 Fraunhofer ISE
+ * Copyright 2011-15 Fraunhofer ISE
  *
- * This file is part of jasn1.
+ * This file is part of jASN1.
  * For more information visit http://www.openmuc.org
  *
- * jasn1 is free software: you can redistribute it and/or modify
+ * jASN1 is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * jasn1 is distributed in the hope that it will be useful,
+ * jASN1 is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with jasn1.  If not, see <http://www.gnu.org/licenses/>.
+ * along with jASN1.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 package org.openmuc.jasn1.ber.types;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -35,20 +36,20 @@ public class BerBitString {
 
 	public byte[] code = null;
 
-	public byte[] bitString;
+	public byte[] value;
 	public int numBits;
 
 	public BerBitString() {
 		id = identifier;
 	}
 
-	public BerBitString(byte[] bitString, int numBits) {
+	public BerBitString(byte[] value, int numBits) {
 		id = identifier;
-		if ((numBits < (((bitString.length - 1) * 8) + 1)) || (numBits > (bitString.length * 8))) {
+		if ((numBits < (((value.length - 1) * 8) + 1)) || (numBits > (value.length * 8))) {
 			throw new IllegalArgumentException("numBits out of bound.");
 		}
 
-		this.bitString = bitString;
+		this.value = value;
 		this.numBits = numBits;
 
 	}
@@ -58,61 +59,79 @@ public class BerBitString {
 		this.code = code;
 	}
 
-	public int encode(BerByteArrayOutputStream berOStream, boolean explicit) throws IOException {
+	public int encode(BerByteArrayOutputStream os, boolean explicit) throws IOException {
 
 		int codeLength;
 
 		if (code != null) {
 			codeLength = code.length;
 			for (int i = code.length - 1; i >= 0; i--) {
-				berOStream.write(code[i]);
+				os.write(code[i]);
 			}
 		}
 		else {
 
-			for (int i = (bitString.length - 1); i >= 0; i--) {
-				berOStream.write(bitString[i]);
+			for (int i = (value.length - 1); i >= 0; i--) {
+				os.write(value[i]);
 			}
-			berOStream.write(bitString.length * 8 - numBits);
+			os.write(value.length * 8 - numBits);
 
-			codeLength = bitString.length + 1;
+			codeLength = value.length + 1;
 
-			codeLength += BerLength.encodeLength(berOStream, codeLength);
+			codeLength += BerLength.encodeLength(os, codeLength);
 
 		}
 
 		if (explicit) {
-			codeLength += id.encode(berOStream);
+			codeLength += id.encode(os);
 		}
 
 		return codeLength;
 	}
 
-	public int decode(InputStream iStream, boolean explicit) throws IOException {
+	public int decode(InputStream is, boolean explicit) throws IOException {
 		// could be encoded in primitiv and constructed mode
 		// only primitiv mode is implemented
 
 		int codeLength = 0;
 
 		if (explicit) {
-			codeLength += id.decodeAndCheck(iStream);
+			codeLength += id.decodeAndCheck(is);
 		}
 
 		BerLength length = new BerLength();
-		codeLength += length.decode(iStream);
+		codeLength += length.decode(is);
 
-		bitString = new byte[length.val - 1];
-		numBits = (bitString.length * 8) - iStream.read();
+		value = new byte[length.val - 1];
 
-		if (bitString.length > 0) {
-			if (iStream.read(bitString, 0, bitString.length) < bitString.length) {
-				throw new IOException("Error Decoding BerBitString");
-			}
+		int nextByte = is.read();
+		if (nextByte == -1) {
+			throw new EOFException("Unexpected end of input stream.");
 		}
 
-		codeLength += bitString.length + 1;
+		numBits = (value.length * 8) - nextByte;
+
+		if (value.length > 0) {
+			Util.readFully(is, value);
+		}
+
+		codeLength += value.length + 1;
 
 		return codeLength;
 
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < numBits; i++) {
+			if (((value[i / 8] & 0xff) & (0x80 >> (i % 8))) == (0x80 >> (i % 8))) {
+				sb.append('1');
+			}
+			else {
+				sb.append('0');
+			}
+		}
+		return sb.toString();
 	}
 }

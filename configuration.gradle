@@ -1,0 +1,70 @@
+
+project.ext {
+
+  cfgVersion = '1.5.0'
+  
+  cfgGroup = 'org.openmuc'
+
+  cfgCopyDependencies = true
+
+  cfgCopyToRoot = false
+
+  cfgSignPom = true
+
+  cfgRepository = project.properties.sonatypeRepository
+
+  cfgSnapshotRepository = project.properties.sonatypeSnapshotRepository
+
+  cfgRepositoryUser = project.properties.sonatypeUser
+
+  cfgRepositoryPass = project.properties.sonatypePass
+
+  javaProjects = subprojects
+
+  distributionProjects = javaProjects
+
+  docProjects = distributionProjects.findAll {
+    it.getPath() == ':jasn1'
+  }
+
+  repositoryProjects = javaProjects
+
+}
+
+tasks.withType(Tar) {
+
+  into(project.name) {
+    from('./') {
+      include 'build.gradle'
+      include 'configuration.gradle'
+      include 'license/**'
+      include 'doc/*.txt'
+      include 'doc/userguide/' + project.name + '-doc*.html'
+      include 'doc/userguide/' + project.name + '-doc_img/**'
+
+      include 'sample/**/*.java'
+      include 'sample/**/*.txt'
+      include 'sample/**/*.asn'
+
+      include 'projects/jasn1/build.gradle'
+      include 'projects/jasn1/src/**'
+      include 'projects/jasn1/build/libs-all/**'
+      include 'projects/jasn1/build/docs/javadoc/**'
+
+      include 'projects/jasn1-compiler/build.gradle'
+      include 'projects/jasn1-compiler/src/**'
+      include 'projects/jasn1-compiler/antlr/**'
+      include 'projects/jasn1-compiler/dependencies/**'
+      include 'projects/jasn1-compiler/build/libs-all/**'
+      include 'projects/jasn1-compiler/run-scripts/**'
+    }
+
+    if (name.equals("tar") ){
+      exclude '**/dependencies/**/src'
+    }
+
+    from('./build/') {
+      include 'settings.gradle'
+    }
+  }
+}

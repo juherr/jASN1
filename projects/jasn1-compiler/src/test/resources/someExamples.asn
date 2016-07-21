@@ -3,7 +3,7 @@ BEGIN
 
 SequenceOfAll ::= SEQUENCE {
 
-	myInteger [30] INTEGER,
+	myInteger [30] INTEGER OPTIONAL,
 	myInteger2 [31] IMPLICIT INTEGER,
 	myBoolean BOOLEAN,
 	bitString BIT STRING,
@@ -13,6 +13,10 @@ SequenceOfAll ::= SEQUENCE {
 	objectIdentifier OBJECT IDENTIFIER,
 	octetString OCTET STRING,
 	real REAL,
+	testIntegerWithValues IntegerWithValues,
+	testOctetStringWithSize OctetStringWithSize,
+	testSequenceWithSize SequenceWithSize,
+	
 
 	--all the strings
 	bmpString BMPString,
@@ -69,5 +73,26 @@ ImplUniversalString ::= [APPLICATION 3] IMPLICIT UniversalString
 ImplUTF8String ::= [APPLICATION 3] IMPLICIT UTF8String
 ImplVideotexString ::= [APPLICATION 3] IMPLICIT VideotexString
 ImplVisibleString ::= [APPLICATION 3] IMPLICIT VisibleString
+
+IntegerWithValues ::= INTEGER {
+	acceptance (0),
+	user_rejection (1),
+	provider_rejection (2)
+}
+
+OctetStringWithSize ::= OCTET STRING (SIZE (8))
+
+OctetStringWithSize2 ::= OCTET STRING (SIZE (8..12))
+
+
+SequenceWithSize ::= [APPLICATION 9] IMPLICIT SEQUENCE (SIZE (8..12)) OF ImplVisibleString
+
+SequenceWithSize2 ::= [APPLICATION 9] IMPLICIT SEQUENCE (SIZE (8)) OF ImplVisibleString
+
+SequenceWithSize3 ::= [APPLICATION 9] IMPLICIT SEQUENCE SIZE (8..12) OF ImplVisibleString
+
+SequenceWithSize4 ::= [APPLICATION 9] IMPLICIT SEQUENCE SIZE (8) OF ImplVisibleString
+
+IdentifierString        ::=   VisibleString (FROM (ALL EXCEPT " "))
 
 END
