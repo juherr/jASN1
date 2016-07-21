@@ -337,6 +337,8 @@ public class XmlToJavaTranslator {
 					}
 					else {
 						explicitEncoding = "berIdentifier";
+						throw new IOException("Element " + getSequenceElementName(sequenceElement)
+								+ " is a CHOICE and has an implicit tag");
 					}
 
 				}
