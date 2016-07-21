@@ -1,11 +1,11 @@
 
 jASN1 can be used for ASN.1 BER encoding/decoding using Java. It
 consists of two projects: jasn1-compiler (licensed under GPLv3) and
-jasn1-ber (licensed under LGPLv2.1). The jasn1-compiler is an
+the jasn1 library (licensed under LGPLv2.1). The jasn1-compiler is an
 application that creates Java classes from ASN.1 syntax. These
-generated classes can then be used together with the jasn1-ber library
-to efficiently encode and decode messages using the Basic Encoding
-Rules (BER).
+generated classes can then be used together with the jasn1 library to
+efficiently encode and decode messages using the Basic Encoding Rules
+(BER).
 
 The software has been tested under Linux and Windows.
 
@@ -58,7 +58,7 @@ In some cases it could be favorable not to decode elements of type ANY
 because it would involve big array copying. Therefor the compiler
 supports the alternative element type called ANY_NODECODE which can be
 used inside the ASN.1 file in order to generate Java code that will
-not decod nor encode elements of these types.
+not decode nor encode elements of these types.
 
 
 Develop jASN1:

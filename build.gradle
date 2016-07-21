@@ -1,22 +1,22 @@
 
 configure(allprojects) {
   apply plugin: 'java'
-  version = '1.3'
+  version = '1.4'
   group = 'org.openmuc'
 }
 
 project.ext {
   distributionProjects = subprojects.findAll {
-    it.getPath() == ':jasn1-ber' ||
+    it.getPath() == ':jasn1' ||
     it.getPath() == ':jasn1-compiler'
   }
 
   docProjects = subprojects.findAll {
-    it.getPath() == ':jasn1-ber'
+    it.getPath() == ':jasn1'
   }
 
   repositoryProjects = subprojects.findAll {
-    it.getPath() == ':jasn1-ber' ||
+    it.getPath() == ':jasn1' ||
     it.getPath() == ':jasn1-compiler'
   }
 }
@@ -191,10 +191,10 @@ task (tar, type: Tar) {
       include 'sample/**/*.txt'
       include 'sample/**/*.asn'
 
-      include 'projects/jasn1-ber/build.gradle'
-      include 'projects/jasn1-ber/src/**'
-      include 'projects/jasn1-ber/build/libsdeps/*.jar'
-      include 'projects/jasn1-ber/build/docs/**'
+      include 'projects/jasn1/build.gradle'
+      include 'projects/jasn1/src/**'
+      include 'projects/jasn1/build/libsdeps/*.jar'
+      include 'projects/jasn1/build/docs/**'
 
       include 'projects/jasn1-compiler/build.gradle'
       include 'projects/jasn1-compiler/src/**'

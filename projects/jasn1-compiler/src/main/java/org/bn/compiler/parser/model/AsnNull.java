@@ -2,7 +2,7 @@ package org.bn.compiler.parser.model;
 
 //
 //DefinitionofNULL
-// 
+//
 public class AsnNull {
 	final String BUILTINTYPE = "NULL";
 	public String name;

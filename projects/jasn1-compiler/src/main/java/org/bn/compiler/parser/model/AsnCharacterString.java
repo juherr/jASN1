@@ -2,7 +2,7 @@ package org.bn.compiler.parser.model;
 
 //
 //DefinitionofCharacterString
-// 
+//
 public class AsnCharacterString {
 	public final String BUILTINTYPE = "CHARACTER STRING";
 	public AsnConstraint constraint;

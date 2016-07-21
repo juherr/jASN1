@@ -2,9 +2,9 @@
 dependencies {
   compile files('dependencies/lineargs-1.0.1.jar')
   compile group: 'antlr', name: 'antlr', version: '2.7.7'
-  compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.5'
-  compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.0.13'
-  testCompile project(':jasn1-ber')
+  compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.7'
+  compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.2'
+  testCompile project(':jasn1')
 }
 
 uploadArchives {

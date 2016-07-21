@@ -2,7 +2,7 @@ package org.bn.compiler.parser.model;
 
 //
 //DefinitionofEMBEDDEDPDVTYPE
-// 
+//
 public class AsnEmbedded {
 	final String BUILTINTYPE = "EMBEDDED PDV";
 	public String name;

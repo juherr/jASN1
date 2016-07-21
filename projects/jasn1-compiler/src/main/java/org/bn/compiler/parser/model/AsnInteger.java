@@ -8,7 +8,7 @@ import java.util.Iterator;
 
 //
 //DefinitionofINTEGER
-// 
+//
 public class AsnInteger {
 	public final String BUILTINTYPE = "INTEGER";
 	public AsnConstraint constraint;
