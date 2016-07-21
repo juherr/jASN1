@@ -7,6 +7,7 @@ import java.util.ArrayList;
 
 import org.bn.compiler.parser.model.ASNModule;
 import org.bn.compiler.parser.model.AsnAny;
+import org.bn.compiler.parser.model.AsnAnyNoDecode;
 import org.bn.compiler.parser.model.AsnBitOrOctetStringValue;
 import org.bn.compiler.parser.model.AsnBitString;
 import org.bn.compiler.parser.model.AsnBoolean;
@@ -818,6 +819,10 @@ public class ASNParser extends antlr.LLkParser implements ASNTokenTypes {
 							((AsnAny) obj).name = up.getText();
 							module.asnTypes.anys.add(obj);
 						}
+						else if ((AsnAnyNoDecode.class).isInstance(obj)) {
+							((AsnAnyNoDecode) obj).name = up.getText();
+							module.asnTypes.anys_nodecode.add(obj);
+						}
 						else if ((AsnBitString.class).isInstance(obj)) {
 							((AsnBitString) obj).name = up.getText();
 							module.asnTypes.bitStrings.add(obj);
@@ -1427,6 +1432,7 @@ public class ASNParser extends antlr.LLkParser implements ASNTokenTypes {
 
 		try { // for error handling
 			switch (LA(1)) {
+			case ANY_NODECODE_KW:
 			case ANY_KW:
 			case BIT_KW:
 			case BMP_STR_KW:
@@ -1757,6 +1763,12 @@ public class ASNParser extends antlr.LLkParser implements ASNTokenTypes {
 
 		try { // for error handling
 			switch (LA(1)) {
+			case ANY_NODECODE_KW: {
+				{
+					obj = any_nodecode_type();
+				}
+				break;
+			}
 			case ANY_KW: {
 				{
 					obj = any_type();
@@ -2051,6 +2063,121 @@ public class ASNParser extends antlr.LLkParser implements ASNTokenTypes {
 		return obj;
 	}
 
+	public final Object any_nodecode_type() throws RecognitionException, TokenStreamException {
+		Object obj;
+
+		Token lid = null;
+		obj = null;
+		AsnAnyNoDecode an = new AsnAnyNoDecode();
+
+		try { // for error handling
+			{
+				match(ANY_NODECODE_KW);
+				{
+					switch (LA(1)) {
+					case DEFINED_KW: {
+						match(DEFINED_KW);
+						match(BY_KW);
+						if (inputState.guessing == 0) {
+							an.isDefinedBy = true;
+						}
+						lid = LT(1);
+						match(LOWER);
+						if (inputState.guessing == 0) {
+							an.definedByType = lid.getText();
+						}
+						break;
+					}
+					case ANY_NODECODE_KW:
+					case ANY_KW:
+					case BIT_KW:
+					case BMP_STR_KW:
+					case BOOLEAN_KW:
+					case CHARACTER_KW:
+					case CHOICE_KW:
+					case DEFAULT_KW:
+					case EMBEDDED_KW:
+					case END_KW:
+					case ENUMERATED_KW:
+					case ERROR_KW:
+					case ERRORS_KW:
+					case EXTERNAL_KW:
+					case FALSE_KW:
+					case GENERALIZED_TIME_KW:
+					case GENERAL_STR_KW:
+					case GRAPHIC_STR_KW:
+					case IA5_STRING_KW:
+					case INTEGER_KW:
+					case INTERSECTION_KW:
+					case LINKED_KW:
+					case MINUS_INFINITY_KW:
+					case NULL_KW:
+					case NUMERIC_STR_KW:
+					case OBJECT_KW:
+					case OCTET_KW:
+					case OPERATION_KW:
+					case OPTIONAL_KW:
+					case PLUS_INFINITY_KW:
+					case PRINTABLE_STR_KW:
+					case REAL_KW:
+					case RELATIVE_KW:
+					case RESULT_KW:
+					case SEQUENCE_KW:
+					case SET_KW:
+					case TELETEX_STR_KW:
+					case TRUE_KW:
+					case UNION_KW:
+					case UNIVERSAL_STR_KW:
+					case UTC_TIME_KW:
+					case UTF8_STR_KW:
+					case VIDEOTEX_STR_KW:
+					case VISIBLE_STR_KW:
+					case ASSIGN_OP:
+					case BAR:
+					case COLON:
+					case COMMA:
+					case EXCLAMATION:
+					case INTERSECTION:
+					case L_BRACE:
+					case L_BRACKET:
+					case MINUS:
+					case R_BRACE:
+					case R_PAREN:
+					case NUMBER:
+					case UPPER:
+					case LOWER:
+					case B_STRING:
+					case H_STRING:
+					case C_STRING:
+					case 145:
+					case ISO646_STR_KW:
+					case T61_STR_KW:
+					case LITERAL_ACCESS:
+					case EXCEPT: {
+						break;
+					}
+					default: {
+						throw new NoViableAltException(LT(1), getFilename());
+					}
+					}
+				}
+			}
+			if (inputState.guessing == 0) {
+				obj = an;
+				an = null;
+			}
+		} catch (RecognitionException ex) {
+			if (inputState.guessing == 0) {
+				reportError(ex);
+				recover(ex, _tokenSet_22);
+			}
+			else {
+				throw ex;
+			}
+		}
+		return obj;
+	}
+
 	public final Object any_type() throws RecognitionException, TokenStreamException {
 		Object obj;
 
@@ -2076,6 +2203,7 @@ public class ASNParser extends antlr.LLkParser implements ASNTokenTypes {
 						}
 						break;
 					}
+					case ANY_NODECODE_KW:
 					case ANY_KW:
 					case BIT_KW:
 					case BMP_STR_KW:
@@ -2900,6 +3028,7 @@ public class ASNParser extends antlr.LLkParser implements ASNTokenTypes {
 						}
 						break;
 					}
+					case ANY_NODECODE_KW:
 					case ANY_KW:
 					case BIT_KW:
 					case BMP_STR_KW:
@@ -3034,6 +3163,7 @@ public class ASNParser extends antlr.LLkParser implements ASNTokenTypes {
 						match(L_PAREN);
 						{
 							switch (LA(1)) {
+							case ANY_NODECODE_KW:
 							case ANY_KW:
 							case BIT_KW:
 							case BMP_STR_KW:
@@ -3575,6 +3705,7 @@ public class ASNParser extends antlr.LLkParser implements ASNTokenTypes {
 						}
 						break;
 					}
+					case ANY_NODECODE_KW:
 					case ANY_KW:
 					case BIT_KW:
 					case BMP_STR_KW:
@@ -3971,6 +4102,7 @@ public class ASNParser extends antlr.LLkParser implements ASNTokenTypes {
 						}
 						break;
 					}
+					case ANY_NODECODE_KW:
 					case ANY_KW:
 					case BIT_KW:
 					case BMP_STR_KW:
@@ -4104,6 +4236,7 @@ public class ASNParser extends antlr.LLkParser implements ASNTokenTypes {
 						match(STRING_KW);
 						break;
 					}
+					case ANY_NODECODE_KW:
 					case ANY_KW:
 					case BIT_KW:
 					case BMP_STR_KW:
@@ -4664,6 +4797,7 @@ public class ASNParser extends antlr.LLkParser implements ASNTokenTypes {
 								}
 								break;
 							}
+							case ANY_NODECODE_KW:
 							case ANY_KW:
 							case BIT_KW:
 							case BMP_STR_KW:
@@ -5050,6 +5184,7 @@ public class ASNParser extends antlr.LLkParser implements ASNTokenTypes {
 
 		try { // for error handling
 			switch (LA(1)) {
+			case ANY_NODECODE_KW:
 			case ANY_KW:
 			case BIT_KW:
 			case BMP_STR_KW:
@@ -5439,6 +5574,7 @@ public class ASNParser extends antlr.LLkParser implements ASNTokenTypes {
 									}
 									break;
 								}
+								case ANY_NODECODE_KW:
 								case ANY_KW:
 								case BIT_KW:
 								case BMP_STR_KW:

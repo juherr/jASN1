@@ -8,7 +8,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openmuc.jasn1.ber.BerByteArrayOutputStream;
-import org.openmuc.jasn1.ber.types.BerAny;
+import org.openmuc.jasn1.ber.types.BerAnyNoDecode;
 import org.openmuc.jasn1.ber.types.BerInteger;
 import org.openmuc.jasn1.ber.types.BerObjectIdentifier;
 import org.openmuc.jasn1.ber.types.BerOctetString;
@@ -46,7 +46,7 @@ public class PresentationLayerTest {
 		Context_list context_list = new Context_list(context_listSubSeqList);
 
 		PDV_list.SubChoice_presentation_data_values presDataValues = new PDV_list.SubChoice_presentation_data_values(
-				new BerAny(91), null, null);
+				new BerAnyNoDecode(91), null, null);
 		PDV_list pdvList = new PDV_list(null, new BerInteger(1), presDataValues);
 		List<PDV_list> pdvListList = new ArrayList<PDV_list>(1);
 		pdvListList.add(pdvList);

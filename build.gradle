@@ -2,10 +2,15 @@
 configure(allprojects) {
   apply plugin: 'java'
 
-  version = '1.1.4'
-  group = 'org.openmuc.jasn1'
+  version = '1.2'
+  group = 'org.openmuc'
 
-  repositories { mavenCentral()  }
+  repositories {
+    mavenCentral()  
+    flatDir {
+      dirs 'dependencies'
+    }
+  }
 }
 
 configure(subprojects) {
@@ -13,24 +18,63 @@ configure(subprojects) {
   apply plugin: 'eclipse'
   apply plugin: 'osgi'
   apply plugin: 'maven'
+  apply plugin: 'signing'
 
   sourceCompatibility = 1.6
   targetCompatibility = 1.6
 
   dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.10'
+    testCompile group: 'junit', name: 'junit', version: '4.11'
   }
 
   uploadArchives {
     repositories {
       mavenDeployer {
-	repository(url: project.properties.repository) {
-	  authentication(userName: project.properties.artifactoryUser, password: project.properties.artifactoryPass)
+	beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+	repository(url: project.properties.sonatypeRepository) {
+	  authentication(userName: project.properties.sonatypeUser, password: project.properties.sonatypePass)
 	}
-	snapshotRepository(url: project.properties.snapshotRepository) {
-	  authentication(userName: project.properties.artifactoryUser, password: project.properties.artifactoryPass)
+	snapshotRepository(url: project.properties.sonatypeSnapshotRepository) {
+	  authentication(userName: project.properties.sonatypeUser, password: project.properties.sonatypePass)
+	}
+	
+	pom.project {
+	  scm {
+	    url 'none'
+	    connection 'none'
+	  }
+
+	  developers {
+	    developer {
+	      id 'sfeuerhahn'
+	      name 'Stefan Feuerhahn'
+	    }
+	  }
 	}
       }
+    }
+  }
+
+  task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+  }
+
+  task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+  }
+
+  artifacts {
+    archives jar
+    archives sourcesJar
+    archives javadocJar
+  }
+
+  signing {
+    if ( hasProperty('project.properties.signing.keyId') ) {
+      sign configurations.archives
     }
   }
 

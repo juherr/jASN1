@@ -99,6 +99,7 @@ public class ASNLexer extends antlr.CharScanner implements ASNTokenTypes, TokenS
 		literals.put(new ANTLRHashString("TYPE-IDENTIFIER", this), new Integer(80));
 		literals.put(new ANTLRHashString("PRIVATE", this), new Integer(69));
 		literals.put(new ANTLRHashString("ANY", this), new Integer(7));
+		literals.put(new ANTLRHashString("ANY_NODECODE", this), new Integer(160));
 		literals.put(new ANTLRHashString("DEFAULT", this), new Integer(23));
 		literals.put(new ANTLRHashString("OBJECT", this), new Integer(58));
 		literals.put(new ANTLRHashString("BMPString", this), new Integer(14));

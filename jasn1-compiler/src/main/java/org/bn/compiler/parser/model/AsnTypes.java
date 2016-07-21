@@ -11,6 +11,7 @@ import java.util.ArrayList;
 //
 public class AsnTypes {
 	public ArrayList anys;
+	public ArrayList anys_nodecode;
 	public ArrayList bitStrings;
 	public ArrayList booleans;
 	public ArrayList characterStrings;
@@ -38,6 +39,7 @@ public class AsnTypes {
 	// Default Constructor
 	AsnTypes() {
 		anys = new ArrayList();
+		anys_nodecode = new ArrayList();
 		bitStrings = new ArrayList();
 		booleans = new ArrayList();
 		characterStrings = new ArrayList();

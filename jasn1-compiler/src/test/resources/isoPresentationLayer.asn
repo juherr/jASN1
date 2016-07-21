@@ -48,7 +48,7 @@ PDV_list ::= SEQUENCE {
 	transfer_syntax_name Transfer_syntax_name OPTIONAL,
 	presentation_context_identifier Presentation_context_identifier,
 	presentation_data_values CHOICE {
-		single_ASN1_type [0] ANY,
+		single_ASN1_type [0] ANY_NODECODE,
 		-- Type corresponding to presentation context identifier
 		octet_aligned [1] IMPLICIT OCTET STRING,
 		arbitrary [2] IMPLICIT BIT STRING
