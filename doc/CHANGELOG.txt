@@ -1,3 +1,11 @@
+1.0.6 Feb-1-2012
+-----------------
+- added a Windows batch file to execute jasn1-compiler in Windows
+
+1.0.5 Jan-30-2012
+-----------------
+- fixed another bug in decoding of negative numbers
+
 1.0.4 Jan-27-2012
 -----------------
 - fixed bug in decoding of negative integers in BerInteger

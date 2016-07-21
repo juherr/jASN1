@@ -180,6 +180,15 @@ public class BerIntegerTest {
 		Assert.assertEquals(-64, asn1Integer.val);
 	}
 
+	@Test
+	public void explicitDecoding4() throws IOException {
+		byte[] byteCode = new byte[] { 0x02, 0x02, (byte) 0xff, 0x01 };
+		ByteArrayInputStream berInputStream = new ByteArrayInputStream(byteCode);
+		BerInteger asn1Integer = new BerInteger();
+		asn1Integer.decode(berInputStream, true);
+		Assert.assertEquals(-255, asn1Integer.val);
+	}
+
 	public static String getByteArrayString(byte[] byteArray) {
 		StringBuilder builder = new StringBuilder();
 		int l = 1;
