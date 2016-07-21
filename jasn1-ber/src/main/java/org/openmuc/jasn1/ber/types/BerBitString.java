@@ -105,8 +105,10 @@ public class BerBitString {
 		bitString = new byte[length.val - 1];
 		numBits = (bitString.length * 8) - iStream.read();
 
-		if (iStream.read(bitString, 0, bitString.length) < bitString.length) {
-			throw new IOException("Error Decoding BerBitString");
+		if (bitString.length > 0) {
+			if (iStream.read(bitString, 0, bitString.length) < bitString.length) {
+				throw new IOException("Error Decoding BerBitString");
+			}
 		}
 
 		codeLength += bitString.length + 1;
