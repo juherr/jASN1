@@ -23,7 +23,6 @@ package org.openmuc.jasn1.ber.types.string;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 
 import org.openmuc.jasn1.ber.BerByteArrayOutputStream;
 import org.openmuc.jasn1.ber.BerIdentifier;
@@ -47,9 +46,9 @@ public class BerVisibleString {
 		this.octetString = octetString;
 	}
 
-	public BerVisibleString(String string) throws UnsupportedEncodingException {
+	public BerVisibleString(String string) {
 		id = identifier;
-		this.octetString = string.getBytes("US-ASCII");
+		this.octetString = string.getBytes();
 	}
 
 	public int encode(BerByteArrayOutputStream berOStream, boolean explicit) throws IOException {
