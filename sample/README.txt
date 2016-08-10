@@ -22,7 +22,7 @@ jasn1-compiler uses the ASN.1 to XML converter from BinaryNotes. The
 XML is then converted to the Java classes. If you want to see the XML
 that is generated you can execute jasn1-compiler using the -x flag.
 
-These generated classes can then be used together with the jasn1-ber
+These generated classes can then be used together with the jasn1
 library to encode and decode the structures using BER. This is
 demonstrated in the EncodeDecodeSample.java file.
 
@@ -30,9 +30,9 @@ To compile and run the EncodeDecodeSample do something like the
 following:
 
 Linux:
-javac -cp ../projects/jasn1-ber/build/libsdeps/jasn1-ber-<version>.jar generated/*.java *.java
-java -cp "../projects/jasn1-ber/build/libsdeps/jasn1-ber-<version>.jar:./" EncodeDecodeSample
+javac -cp ../projects/jasn1/build/libsdeps/jasn1-<version>.jar generated/*.java *.java
+java -cp "../projects/jasn1/build/libsdeps/jasn1-<version>.jar:./" EncodeDecodeSample
 
 Windows:
-javac -cp ../projects/jasn1-ber/build/libsdeps/jasn1-ber-<version>.jar generated/*.java *.java
-java -cp "../projects/jasn1-ber/build/libsdeps/jasn1-ber-<version>.jar;./" EncodeDecodeSample
+javac -cp ../projects/jasn1/build/libsdeps/jasn1-<version>.jar generated/*.java *.java
+java -cp "../projects/jasn1/build/libsdeps/jasn1-<version>.jar;./" EncodeDecodeSample

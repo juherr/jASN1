@@ -10,22 +10,22 @@ plugins {
 
 configure(allprojects) {
   apply plugin: 'java'
-  version = '1.3'
+  version = '1.4'
   group = 'org.openmuc.jasn1'
 }
 
 project.ext {
   distributionProjects = subprojects.findAll {
-    it.getPath() == ':jasn1-ber' ||
+    it.getPath() == ':jasn1' ||
     it.getPath() == ':jasn1-compiler'
   }
 
   docProjects = subprojects.findAll {
-    it.getPath() == ':jasn1-ber'
+    it.getPath() == ':jasn1'
   }
 
   repositoryProjects = subprojects.findAll {
-    it.getPath() == ':jasn1-ber' ||
+    it.getPath() == ':jasn1' ||
     it.getPath() == ':jasn1-compiler'
   }
 }
@@ -49,7 +49,7 @@ configure(subprojects) {
 
   jar {
     manifest {
-      version = project.version.replace('-', '.');
+      version = project.version.replace('-','.');
     }
   }
 
@@ -90,7 +90,7 @@ configure(repositoryProjects) {
         pom.withXml {
           def root = asNode();
           root.appendNode('url', 'http://www.openmuc.org/')
-          root.appendNode('description', 'jasn1 is a compiler that generates Java classes out of ASN.1 code that can be used to encode/decode BER data.')
+          root.appendNode('description', 'jasn1 is a library used vor encoding and decoding ASN.1 BER messages.')
           def github = root.appendNode('issueManagement')
           github.appendNode('system', 'github')
           github.appendNode('url', 'https://github.com/juherr/jASN1/issues')
@@ -99,8 +99,8 @@ configure(repositoryProjects) {
           scm.appendNode('connection', 'scm:git:https://github.com/juherr/jASN1.git')
           scm.appendNode('developerConnection', 'scm:git:https://github.com/juherr/jASN1.git')
           def license = root.appendNode('licenses').appendNode('license');
-          license.appendNode('name', 'GNU General Public License')
-          license.appendNode('url', 'http://www.gnu.org/licenses/gpl-3.html')
+          license.appendNode('name', 'GNU Lesser General Public License')
+          license.appendNode('url', 'http://www.gnu.org/licenses/lgpl-2.1.html')
           license.appendNode('distribution', 'repo')
           def developer = root.appendNode('developers').appendNode('developer')
           developer.appendNode('id', 'sfeuerhahn')
