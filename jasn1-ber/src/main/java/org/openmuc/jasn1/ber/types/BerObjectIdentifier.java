@@ -129,8 +129,9 @@ public class BerObjectIdentifier {
 		BerLength length = new BerLength();
 		codeLength += length.decode(iStream);
 
-		if (length.val < 1) {
-			throw new IOException("Decoded length of Object Identifier is not correct");
+		if (length.val == 0) {
+			objectIdentifierComponents = new int[0];
+			return codeLength;
 		}
 
 		byte[] byteCode = new byte[length.val];
