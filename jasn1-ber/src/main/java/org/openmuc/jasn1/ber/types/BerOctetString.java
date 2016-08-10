@@ -72,11 +72,12 @@ public class BerOctetString {
 
 		octetString = new byte[length.val];
 
-		if (iStream.read(octetString, 0, length.val) < length.val) {
-			throw new IOException("Error Decoding BerOctetString");
+		if (length.val != 0) {
+			if (iStream.read(octetString, 0, length.val) < length.val) {
+				throw new IOException("Error Decoding BerOctetString");
+			}
+			codeLength += length.val;
 		}
-
-		codeLength += length.val;
 
 		return codeLength;
 
