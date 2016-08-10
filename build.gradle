@@ -4,7 +4,9 @@ configure(allprojects) {
 
   apply plugin: 'java'
 
-  repositories { mavenCentral()  }
+  repositories {
+    jcenter()
+  }
 
 }
 
@@ -62,11 +64,9 @@ task (tar, type: Tar) {
       include 'jasn1-ber/lib/**/*'
       include 'jasn1-ber/doc/**/*'
       include 'jasn1-compiler/src/**/*'
-      include 'jasn1-compiler/grammatic/**/*'
       include 'jasn1-compiler/lib/**/*'
       include 'jasn1-compiler/doc/**/*'
       include 'jasn1-compiler/build.gradle'
-      include 'jasn1-compiler/dependencies/**/*'
       include 'doc/**/*'
       include 'licenses/**/*'
       include 'sample/**/*.java'
