@@ -10,17 +10,8 @@ plugins {
 
 configure(allprojects) {
   apply plugin: 'java'
-
-  version = '1.2'
+  version = '1.2.1'
   group = 'org.openmuc.jasn1'
-
-  repositories {
-    jcenter()
-    // TODO remove the line, dependencies are supposed to be linked in jcenter
-    maven {
-      url 'http://dl.bintray.com/content/juherr/asn1'
-    }
-  }
 }
 
 configure(subprojects) {
@@ -31,6 +22,14 @@ configure(subprojects) {
 
   sourceCompatibility = 1.6
   targetCompatibility = 1.6
+
+  repositories {
+    jcenter()
+    // TODO remove the line, dependencies are supposed to be linked in jcenter
+    maven {
+      url 'http://dl.bintray.com/content/juherr/asn1'
+    }
+  }
 
   dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
@@ -89,7 +88,6 @@ configure(subprojects) {
   }
 
   artifacts {
-    archives jar
     archives sourcesJar
     archives javadocJar
   }
