@@ -17,7 +17,7 @@ public final class PDV_list {
 	public final static class SubChoice_presentation_data_values {
 
 		public byte[] code = null;
-		public BerAny single_ASN1_type = null;
+		public BerAnyNoDecode single_ASN1_type = null;
 
 		public BerOctetString octet_aligned = null;
 
@@ -30,7 +30,7 @@ public final class PDV_list {
 			this.code = code;
 		}
 
-		public SubChoice_presentation_data_values(BerAny single_ASN1_type, BerOctetString octet_aligned, BerBitString arbitrary) {
+		public SubChoice_presentation_data_values(BerAnyNoDecode single_ASN1_type, BerOctetString octet_aligned, BerBitString arbitrary) {
 			this.single_ASN1_type = single_ASN1_type;
 			this.octet_aligned = octet_aligned;
 			this.arbitrary = arbitrary;
@@ -82,9 +82,8 @@ public final class PDV_list {
 				codeLength += berIdentifier.decode(iStream);
 			}
 			if (berIdentifier.equals(BerIdentifier.CONTEXT_CLASS, BerIdentifier.CONSTRUCTED, 0)) {
-				BerLength tempLength = new BerLength();
-				codeLength += tempLength.decode(iStream);
-				codeLength += tempLength.val;
+				single_ASN1_type = new BerAnyNoDecode();
+				codeLength += single_ASN1_type.decode(iStream, false);
 				return codeLength;
 			}
 

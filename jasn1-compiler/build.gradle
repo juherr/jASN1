@@ -1,12 +1,12 @@
 
 dependencies {
-  compile group: 'antlr', name: 'antlr', version: '2.7.6'
   compile group: 'com.google.code.bnotes', name: 'bnotes-compiler', version: '1.6.0'
   compile(group: 'com.google.code.lineargs', name: 'lineargs', version: '1.1.0') {
     exclude group: 'junit', module: 'junit'
   }
-  compile group: 'org.slf4j', name: 'slf4j-api', version: '1.6.1'
-  compile group: 'ch.qos.logback', name: 'logback-classic', version: '0.9.29'
+  compile group: 'antlr', name: 'antlr', version: '2.7.7'
+  compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.5'
+  compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.0.13'
   testCompile project(':jasn1-ber')
 }
 
