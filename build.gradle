@@ -11,7 +11,7 @@ plugins {
 configure(allprojects) {
   apply plugin: 'java'
 
-  version = '1.1.4'
+  version = '1.2'
   group = 'org.openmuc.jasn1'
 
   repositories {
@@ -20,14 +20,6 @@ configure(allprojects) {
     maven {
       url 'http://dl.bintray.com/content/juherr/asn1'
     }
-  }
-
-  task sourceJar(type: Jar) {
-    from sourceSets.main.allJava
-  }
-
-  task javadocJar(type: Jar, dependsOn: javadoc) {
-    from javadoc.destinationDir
   }
 }
 
@@ -41,17 +33,13 @@ configure(subprojects) {
   targetCompatibility = 1.6
 
   dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.10'
+    testCompile group: 'junit', name: 'junit', version: '4.11'
   }
 
   publishing {
     publications {
       mavenJava(MavenPublication) {
         from components.java
-
-        artifact sourceJar {
-          classifier "sources"
-        }
 
         artifact javadocJar {
           classifier "javadoc"
@@ -60,6 +48,7 @@ configure(subprojects) {
         pom.withXml {
           def root = asNode();
           root.appendNode('url', 'http://www.openmuc.org/')
+          root.appendNode('description', 'jasn1 is a compiler that generates Java classes out of ASN.1 code that can be used to encode/decode BER data.')
           def github = root.appendNode('issueManagement')
           github.appendNode('system', 'github')
           github.appendNode('url', 'https://github.com/juherr/jASN1/issues')
@@ -68,9 +57,12 @@ configure(subprojects) {
           scm.appendNode('connection', 'scm:git:https://github.com/juherr/jASN1.git')
           scm.appendNode('developerConnection', 'scm:git:https://github.com/juherr/jASN1.git')
           def license = root.appendNode('licenses').appendNode('license');
-          license.appendNode('name', 'GNU Lesser General Public License')
-          license.appendNode('url', 'http://www.gnu.org/licenses/lgpl-3.0.html')
+          license.appendNode('name', 'GNU General Public License')
+          license.appendNode('url', 'http://www.gnu.org/licenses/gpl-3.html')
           license.appendNode('distribution', 'repo')
+          def developer = root.appendNode('developers').appendNode('developer')
+          developer.appendNode('id', 'sfeuerhahn')
+          developer.appendNode('name', 'Stefan Feuerhahn')
         }
       }
     }
@@ -84,6 +76,22 @@ configure(subprojects) {
         }
       }
     }
+  }
+
+  task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+  }
+
+  task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+  }
+
+  artifacts {
+    archives jar
+    archives sourcesJar
+    archives javadocJar
   }
 }
 
