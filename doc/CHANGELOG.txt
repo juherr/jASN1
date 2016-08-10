@@ -1,3 +1,8 @@
+1.0.7 Feb-6-2012
+-----------------
+- minor changes to gradle build file
+- bug fix in decoding empty OctetString
+
 1.0.6 Feb-1-2012
 -----------------
 - added a Windows batch file to execute jasn1-compiler in Windows
