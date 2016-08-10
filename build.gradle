@@ -1,20 +1,41 @@
+buildscript {
+  repositories {
+    jcenter()
+  }
+}
+
+plugins {
+  id "com.jfrog.bintray" version "1.7.1"
+}
 
 configure(allprojects) {
+  group = 'org.openmuc.jasn1'
   version = '1.0.1'
 
   apply plugin: 'java'
 
   repositories {
     jcenter()
+    // TODO remove the line, dependencies are supposed to be linked in jcenter
+    maven {
+      url 'http://dl.bintray.com/content/juherr/asn1'
+    }
   }
 
+  task sourceJar(type: Jar) {
+    from sourceSets.main.allJava
+  }
+
+  task javadocJar(type: Jar, dependsOn: javadoc) {
+    from javadoc.destinationDir
+  }
 }
 
 configure(subprojects) {
 
-  apply plugin: 'eclipse'
   apply plugin: 'osgi'
   apply plugin: 'maven'
+  apply plugin: 'maven-publish'
 
   sourceCompatibility = 1.5
   targetCompatibility = 1.5
@@ -23,66 +44,49 @@ configure(subprojects) {
     testCompile group: 'junit', name: 'junit', version: '4.+'
   }
 
-  task delLibs(type: Delete) { delete 'lib/' }
+  publishing {
+    publications {
+      mavenJava(MavenPublication) {
+        from components.java
 
-  task copyLibs(dependsOn: configurations.default.buildArtifacts, type: Copy) {
-    into "lib"
-    from configurations.default
-    from configurations.default.allArtifactFiles
-  }
+        artifact sourceJar {
+          classifier "sources"
+        }
 
-  task delJavadoc(type: Delete) { delete 'doc/javadoc/' }
+        artifact javadocJar {
+          classifier "javadoc"
+        }
 
-  task copyJavadoc(type: Copy) {
-    dependsOn(javadoc)
-
-    into "doc"
-    from "build/docs/"
-  }
-
-  clean {
-    dependsOn(delLibs)
-    dependsOn(delJavadoc)
-  }
-
-  eclipseClasspath.variables = [GRADLE_HOME:file(gradle.gradleUserHomeDir)]
-  eclipse.dependsOn(cleanEclipse)
-}
-
-
-task (tar, type: Tar) {
-  dependsOn('jasn1-compiler:copyLibs')
-  dependsOn('jasn1-ber:copyLibs')
-  dependsOn('jasn1-compiler:copyJavadoc')
-  dependsOn('jasn1-ber:copyJavadoc')
-
-  compression = Compression.GZIP
-
-  into(project.archivesBaseName) {
-    from('./') {
-      include 'jasn1-ber/src/**/*'
-      include 'jasn1-ber/lib/**/*'
-      include 'jasn1-ber/doc/**/*'
-      include 'jasn1-compiler/src/**/*'
-      include 'jasn1-compiler/lib/**/*'
-      include 'jasn1-compiler/doc/**/*'
-      include 'jasn1-compiler/build.gradle'
-      include 'doc/**/*'
-      include 'licenses/**/*'
-      include 'sample/**/*.java'
-      include 'sample/**/*.txt'
-      include 'sample/**/*.asn'
-      include 'build.gradle'
-      include 'settings.gradle'
+        pom.withXml {
+          def root = asNode();
+          root.appendNode('url', 'http://www.openmuc.org/')
+          def github = root.appendNode('issueManagement')
+          github.appendNode('system', 'github')
+          github.appendNode('url', 'https://github.com/juherr/jASN1/issues')
+          def scm = root.appendNode('scm')
+          scm.appendNode('url', 'https://github.com/juherr/jASN1/')
+          scm.appendNode('connection', 'scm:git:https://github.com/juherr/jASN1.git')
+          scm.appendNode('developerConnection', 'scm:git:https://github.com/juherr/jASN1.git')
+          def license = root.appendNode('licenses').appendNode('license');
+          license.appendNode('name', 'GNU Lesser General Public License')
+          license.appendNode('url', 'http://www.gnu.org/licenses/lgpl-3.0.html')
+          license.appendNode('distribution', 'repo')
+        }
+      }
     }
-    from('./') {
-      fileMode = 0755
-      include 'jasn1-compiler/run-scripts/**/*'
+    repositories {
+      maven {
+        name 'bintray-juherr-asn1-jASN1'
+        url 'https://api.bintray.com/maven/juherr/asn1/jASN1/'
+        credentials {
+          username = System.getenv('BINTRAY_USER')
+          password = System.getenv('BINTRAY_API_KEY')
+        }
+      }
     }
   }
-
 }
 
 task wrapper(type: Wrapper) {
-  gradleVersion = '0.9.2'
+  gradleVersion = '2.4'
 }
