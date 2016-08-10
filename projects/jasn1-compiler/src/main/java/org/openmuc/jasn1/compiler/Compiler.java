@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with jasn1-compiler.  If not, see <http://www.gnu.org/licenses/>.
  *
- * This file incorporates work covered by the following copyright and  
+ * This file incorporates work covered by the following copyright and
  * permission notice:
 
  Copyright 2006-2011 Abdulla Abdurakhmanov (abdulla@latestbit.com)

@@ -1,3 +1,8 @@
+v1.4 28-Jul-2014
+----------------
+- renamed jasn1-ber project to jasn1
+- fixed bug in constructor of BerBitString
+
 v1.3 14-May-2014
 ----------------
 - fixed decoding of CHOICEs within SETs
