@@ -12,7 +12,7 @@ import org.openmuc.jasn1.ber.*;
 import org.openmuc.jasn1.ber.types.*;
 import org.openmuc.jasn1.ber.types.string.*;
 
-public class My_Choice2 {
+public final class My_Choice2 {
 
 	public byte[] code = null;
 	public BerInteger myint = null;

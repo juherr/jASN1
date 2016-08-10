@@ -1,23 +1,23 @@
 /*
- * Copyright Fraunhofer ISE, 2011
+ * Copyright 2011-13 Fraunhofer ISE
  * Author(s): Stefan Feuerhahn
- *    
+ *
  * This file is part of jASN1.
  * For more information visit http://www.openmuc.org
- * 
+ *
  * jASN1 is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * the Free Software Foundation, either version 2.1 of the License, or
  * (at your option) any later version.
- * 
+ *
  * jASN1 is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with jASN1.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 package org.openmuc.jasn1.ber;
 
@@ -25,17 +25,16 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 
-public class BerByteArrayOutputStream extends OutputStream {
+public final class BerByteArrayOutputStream extends OutputStream {
 
 	public byte[] buffer;
 	public int index;
-	boolean automaticResize;
+	private final boolean automaticResize;
 
 	/**
-	 * Creates a <code>BerByteArrayOutputStream</code> with a byte array of size
-	 * <code>bufferSize</code>. The buffer will not be resized automatically.
-	 * Use {@link #BerByteArrayOutputStream(int, boolean)} instead if you want
-	 * the buffer to be dynamically resized.
+	 * Creates a <code>BerByteArrayOutputStream</code> with a byte array of size <code>bufferSize</code>. The buffer
+	 * will not be resized automatically. Use {@link #BerByteArrayOutputStream(int, boolean)} instead if you want the
+	 * buffer to be dynamically resized.
 	 * 
 	 * @param bufferSize
 	 *            the size of the underlying buffer
@@ -114,8 +113,7 @@ public class BerByteArrayOutputStream extends OutputStream {
 	}
 
 	/**
-	 * Returns a new array containing the subarray of the stream array that
-	 * contains the coded content.
+	 * Returns a new array containing the subarray of the stream array that contains the coded content.
 	 * 
 	 */
 	public byte[] getArray() {
@@ -131,5 +129,9 @@ public class BerByteArrayOutputStream extends OutputStream {
 
 	public ByteBuffer getByteBuffer() {
 		return ByteBuffer.wrap(buffer, index + 1, buffer.length - (index + 1));
+	}
+
+	public void reset() {
+		index = buffer.length - 1;
 	}
 }

@@ -12,9 +12,9 @@ import org.openmuc.jasn1.ber.*;
 import org.openmuc.jasn1.ber.types.*;
 import org.openmuc.jasn1.ber.types.string.*;
 
-public class CP_type {
+public final class CP_type {
 
-	public static class SubSeq_normal_mode_parameters {
+	public final static class SubSeq_normal_mode_parameters {
 
 		public final static BerIdentifier identifier = new BerIdentifier(BerIdentifier.UNIVERSAL_CLASS, BerIdentifier.CONSTRUCTED, 16);
 		protected BerIdentifier id;

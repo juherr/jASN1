@@ -6,15 +6,26 @@ package org.openmuc.jasn1.compiler.someexamples.generated;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
-import java.util.LinkedList;
-import org.openmuc.jasn1.ber.*;
-import org.openmuc.jasn1.ber.types.*;
-import org.openmuc.jasn1.ber.types.string.*;
+
+import org.openmuc.jasn1.ber.BerByteArrayOutputStream;
+import org.openmuc.jasn1.ber.BerIdentifier;
+import org.openmuc.jasn1.ber.BerLength;
+import org.openmuc.jasn1.ber.types.string.BerBMPString;
+import org.openmuc.jasn1.ber.types.string.BerGeneralString;
+import org.openmuc.jasn1.ber.types.string.BerGraphicString;
+import org.openmuc.jasn1.ber.types.string.BerIA5String;
+import org.openmuc.jasn1.ber.types.string.BerNumericString;
+import org.openmuc.jasn1.ber.types.string.BerPrintableString;
+import org.openmuc.jasn1.ber.types.string.BerTeletexString;
+import org.openmuc.jasn1.ber.types.string.BerUTF8String;
+import org.openmuc.jasn1.ber.types.string.BerUniversalString;
+import org.openmuc.jasn1.ber.types.string.BerVideotexString;
+import org.openmuc.jasn1.ber.types.string.BerVisibleString;
 
 public class MyStringSequence {
 
-	public final static BerIdentifier identifier = new BerIdentifier(BerIdentifier.UNIVERSAL_CLASS, BerIdentifier.CONSTRUCTED, 16);
+	public final static BerIdentifier identifier = new BerIdentifier(BerIdentifier.UNIVERSAL_CLASS,
+			BerIdentifier.CONSTRUCTED, 16);
 	protected BerIdentifier id;
 
 	public byte[] code = null;
@@ -49,7 +60,10 @@ public class MyStringSequence {
 		this.code = code;
 	}
 
-	public MyStringSequence(BerBMPString bmpString, BerGeneralString generalString, BerGraphicString graphicString, BerIA5String iA5String, BerNumericString numericString, BerPrintableString printableString, BerTeletexString teletexString, BerUniversalString universalString, BerUTF8String utf8String, BerVideotexString videotexString, BerVisibleString visibleString) {
+	public MyStringSequence(BerBMPString bmpString, BerGeneralString generalString, BerGraphicString graphicString,
+			BerIA5String iA5String, BerNumericString numericString, BerPrintableString printableString,
+			BerTeletexString teletexString, BerUniversalString universalString, BerUTF8String utf8String,
+			BerVideotexString videotexString, BerVisibleString visibleString) {
 		id = identifier;
 		this.bmpString = bmpString;
 		this.generalString = generalString;
@@ -77,27 +91,27 @@ public class MyStringSequence {
 		else {
 			codeLength = 0;
 			codeLength += visibleString.encode(berOStream, true);
-			
+
 			codeLength += videotexString.encode(berOStream, true);
-			
+
 			codeLength += utf8String.encode(berOStream, true);
-			
+
 			codeLength += universalString.encode(berOStream, true);
-			
+
 			codeLength += teletexString.encode(berOStream, true);
-			
+
 			codeLength += printableString.encode(berOStream, true);
-			
+
 			codeLength += numericString.encode(berOStream, true);
-			
+
 			codeLength += iA5String.encode(berOStream, true);
-			
+
 			codeLength += graphicString.encode(berOStream, true);
-			
+
 			codeLength += generalString.encode(berOStream, true);
-			
+
 			codeLength += bmpString.encode(berOStream, true);
-			
+
 			codeLength += BerLength.encodeLength(berOStream, codeLength);
 		}
 
@@ -291,4 +305,3 @@ public class MyStringSequence {
 		code = berOStream.getArray();
 	}
 }
-
