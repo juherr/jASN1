@@ -1,23 +1,23 @@
 /*
- * Copyright Fraunhofer ISE, 2011
+ * Copyright 2011-13 Fraunhofer ISE
  * Author(s): Stefan Feuerhahn
- *    
+ *
  * This file is part of jASN1.
  * For more information visit http://www.openmuc.org
- * 
+ *
  * jASN1 is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * the Free Software Foundation, either version 2.1 of the License, or
  * (at your option) any later version.
- * 
+ *
  * jASN1 is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with jASN1.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 package org.openmuc.jasn1.compiler;
 
@@ -45,11 +45,11 @@ import org.xml.sax.SAXException;
 public class XmlToJavaTranslator {
 
 	private static Logger logger = LoggerFactory.getLogger(XmlToJavaTranslator.class);
-	private Document doc;
-	private String outputDir;
-	private XPath xPath;
-	private Element asnTypesElement;
-	private String packageName;
+	private final Document doc;
+	private final String outputDir;
+	private final XPath xPath;
+	private final Element asnTypesElement;
+	private final String packageName;
 	private int indentNum = 0;
 	BufferedWriter out;
 	private boolean defaultExplicit = true;
@@ -135,7 +135,8 @@ public class XmlToJavaTranslator {
 						tagClass = "CONTEXT_CLASS";
 					}
 
-					write("public class " + className + " extends " + getElementType(oldAsn1TypeElement, true) + " {\n");
+					write("public final class " + className + " extends " + getElementType(oldAsn1TypeElement, true)
+							+ " {\n");
 
 					write("public final static BerIdentifier identifier = new BerIdentifier(BerIdentifier." + tagClass
 							+ ", BerIdentifier.PRIMITIVE, " + tagNum + ");\n");
@@ -276,7 +277,7 @@ public class XmlToJavaTranslator {
 			isStaticStr = " static";
 		}
 
-		write("public" + isStaticStr + " class " + className + " {\n");
+		write("public final" + isStaticStr + " class " + className + " {\n");
 
 		write("public byte[] code = null;");
 
@@ -538,7 +539,7 @@ public class XmlToJavaTranslator {
 			isStaticStr = " static";
 		}
 
-		write("public" + isStaticStr + " class " + className + " {\n");
+		write("public final" + isStaticStr + " class " + className + " {\n");
 
 		NodeList sequenceElements = (NodeList) xPath.evaluate("elementTypeList/elements", asn1TypeElement,
 				XPathConstants.NODESET);
@@ -603,7 +604,7 @@ public class XmlToJavaTranslator {
 			isStaticStr = " static";
 		}
 
-		write("public" + isStaticStr + " class " + className + " {\n");
+		write("public final" + isStaticStr + " class " + className + " {\n");
 
 		Element subElementRef = (Element) xPath.evaluate("typeReference", asn1TypeElement, XPathConstants.NODE);
 

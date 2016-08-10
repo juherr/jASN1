@@ -12,7 +12,7 @@ import org.openmuc.jasn1.ber.*;
 import org.openmuc.jasn1.ber.types.*;
 import org.openmuc.jasn1.ber.types.string.*;
 
-public class Name {
+public final class Name {
 
 	public final static BerIdentifier identifier = new BerIdentifier(BerIdentifier.APPLICATION_CLASS, BerIdentifier.CONSTRUCTED, 1);
 	protected BerIdentifier id;

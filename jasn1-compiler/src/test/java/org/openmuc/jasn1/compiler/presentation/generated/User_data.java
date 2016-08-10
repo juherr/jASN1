@@ -12,7 +12,7 @@ import org.openmuc.jasn1.ber.*;
 import org.openmuc.jasn1.ber.types.*;
 import org.openmuc.jasn1.ber.types.string.*;
 
-public class User_data {
+public final class User_data {
 
 	public byte[] code = null;
 	public BerOctetString simply_encoded_data = null;

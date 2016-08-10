@@ -1,3 +1,8 @@
+1.1.4 Jul-3-2013
+----------------
+- generated classes are declared final for better performance
+- BerByteArrayOutputstream can be reset using reset() for reuse
+
 1.1.3 Aug-23-2012
 ----------------
 - allow decoding of empty object identifiers

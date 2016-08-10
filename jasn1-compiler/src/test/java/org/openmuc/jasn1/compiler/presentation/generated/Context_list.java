@@ -12,11 +12,11 @@ import org.openmuc.jasn1.ber.*;
 import org.openmuc.jasn1.ber.types.*;
 import org.openmuc.jasn1.ber.types.string.*;
 
-public class Context_list {
+public final class Context_list {
 
-	public static class SubSeq {
+	public final static class SubSeq {
 
-		public static class SubSeqOf_transfer_syntax_name_list {
+		public final static class SubSeqOf_transfer_syntax_name_list {
 
 			public final static BerIdentifier identifier = new BerIdentifier(BerIdentifier.UNIVERSAL_CLASS, BerIdentifier.CONSTRUCTED, 16);
 			protected BerIdentifier id;
