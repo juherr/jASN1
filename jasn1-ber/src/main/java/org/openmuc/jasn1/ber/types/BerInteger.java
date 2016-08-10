@@ -107,11 +107,19 @@ public class BerInteger {
 
 		codeLength += length.val;
 
-		val = 0;
-		for (int i = 0; i < length.val; i++) {
-			val |= (byteCode[i] & 0xff) << (8 * (length.val - i - 1));
-		}
+		if ((byteCode[0] & 0x80) == 0x80) {
+			val = -1;
+			for (int i = 0; i < length.val; i++) {
+				val &= (long) ((byteCode[i] | 0) << (8 * (length.val - i - 1)));
+			}
 
+		}
+		else {
+			val = 0;
+			for (int i = 0; i < length.val; i++) {
+				val |= (byteCode[i] & 0xff) << (8 * (length.val - i - 1));
+			}
+		}
 		return codeLength;
 	}
 

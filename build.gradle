@@ -10,7 +10,7 @@ plugins {
 
 configure(allprojects) {
   group = 'org.openmuc.jasn1'
-  version = '1.0.3'
+  version = '1.0.4'
 
   apply plugin: 'java'
 
