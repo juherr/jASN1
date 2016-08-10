@@ -21,15 +21,22 @@
  */
 package org.openmuc.jasn1.ber.types.string;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 
+import org.openmuc.jasn1.ber.BerByteArrayOutputStream;
 import org.openmuc.jasn1.ber.BerIdentifier;
-import org.openmuc.jasn1.ber.types.BerOctetString;
+import org.openmuc.jasn1.ber.BerLength;
 
-public class BerVisibleString extends BerOctetString {
+public class BerVisibleString {
 
 	public final static BerIdentifier identifier = new BerIdentifier(BerIdentifier.UNIVERSAL_CLASS,
 			BerIdentifier.PRIMITIVE, BerIdentifier.VISIBLE_STRING_TAG);
+
+	protected BerIdentifier id;
+
+	public byte[] octetString;
 
 	public BerVisibleString() {
 		id = identifier;
@@ -45,12 +52,46 @@ public class BerVisibleString extends BerOctetString {
 		this.octetString = string.getBytes("US-ASCII");
 	}
 
-	public String toString() {
-		try {
-			return new String(octetString, "US-ASCII");
-		} catch (UnsupportedEncodingException e) {
-			return "";
+	public int encode(BerByteArrayOutputStream berOStream, boolean explicit) throws IOException {
+
+		berOStream.write(octetString);
+		int codeLength = octetString.length;
+
+		codeLength += BerLength.encodeLength(berOStream, codeLength);
+
+		if (explicit) {
+			codeLength += id.encode(berOStream);
 		}
+
+		return codeLength;
+	}
+
+	public int decode(InputStream iStream, boolean explicit) throws IOException {
+
+		int codeLength = 0;
+
+		if (explicit) {
+			codeLength += id.decodeAndCheck(iStream);
+		}
+
+		BerLength length = new BerLength();
+		codeLength += length.decode(iStream);
+
+		octetString = new byte[length.val];
+
+		if (length.val != 0) {
+			if (iStream.read(octetString, 0, length.val) < length.val) {
+				throw new IOException("Error Decoding BerVisibleString");
+			}
+			codeLength += length.val;
+		}
+
+		return codeLength;
+
+	}
+
+	public String toString() {
+		return new String(octetString);
 	}
 
 }

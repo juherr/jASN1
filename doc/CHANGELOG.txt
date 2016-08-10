@@ -1,3 +1,8 @@
+1.1.2 Mai-14-2012
+----------------
+- improved efficiency in BerVisibleString
+- modified BerBitString so it can be empty when decoded
+
 1.1.1 Feb-20-2012
 ----------------
 - fix in BerIdentifier.decodeAndCheck(), thanks to Mr.Bostijancic from TU-Wien
