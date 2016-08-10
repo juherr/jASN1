@@ -10,7 +10,11 @@ ChildInformation.java, Date.java, EmployeeNumber.java, Name.java, and
 PersonnelRecord.java in the folder named "generated". This generation
 can be repeated using the following command:
 
+Linux:
 ../jasn1-compiler/run-scripts/jasn1-compiler.sh -f x690BerExample.asn -o "generated/" -ns "generated"
+
+Windows:
+..\jasn1-compiler\run-scripts\jasn1-compiler.bat -f x690BerExample.asn -o "generated/" -ns "generated"
 
 jasn1-compiler uses the ASN.1 to XML converter from BinaryNotes. The
 XML is then converted to the Java classes. If you want to see the XML
@@ -23,5 +27,10 @@ demonstrated in the EncodeDecodeSample.java file.
 To compile and run the EncodeDecodeSample do something like the
 following:
 
+Linux:
 javac -cp ../jasn1-ber/build/lib/jasn1-ber-<version>.jar generated/*.java *.java
 java -cp "../jasn1-ber/build/lib/jasn1-ber-<version>.jar:./" EncodeDecodeSample
+
+Windows:
+javac -cp ../jasn1-ber/build/lib/jasn1-ber-<version>.jar generated/*.java *.java
+java -cp "../jasn1-ber/build/lib/jasn1-ber-<version>.jar;./" EncodeDecodeSample

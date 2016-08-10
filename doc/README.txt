@@ -34,8 +34,7 @@ Some of the restricted character string types are not part of the
 jasn1-ber lib. But you can easily use them by adding the appropriate
 ASN1 syntax:
 
-The software has been tested under Linux but should also work on
-windows with little or no modifications.
+The software has been tested under Linux and Windows.
 
 For the latest release of this software visit http://www.openmuc.org .
 

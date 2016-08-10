@@ -110,7 +110,8 @@ public class BerInteger {
 		if ((byteCode[0] & 0x80) == 0x80) {
 			val = -1;
 			for (int i = 0; i < length.val; i++) {
-				val &= (long) ((byteCode[i] | 0) << (8 * (length.val - i - 1)));
+				int numShiftBits = 8 * (length.val - i - 1);
+				val &= (long) (((byteCode[i]) << numShiftBits) | ~(0xff << numShiftBits));
 			}
 
 		}
