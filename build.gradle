@@ -40,9 +40,8 @@ configure(subprojects) {
       mavenJava(MavenPublication) {
         from components.java
 
-        artifact javadocJar {
-          classifier "javadoc"
-        }
+        artifact sourcesJar
+        artifact javadocJar
 
         pom.withXml {
           def root = asNode();
@@ -85,11 +84,6 @@ configure(subprojects) {
   task javadocJar(type: Jar, dependsOn: javadoc) {
     classifier = 'javadoc'
     from javadoc.destinationDir
-  }
-
-  artifacts {
-    archives sourcesJar
-    archives javadocJar
   }
 }
 
