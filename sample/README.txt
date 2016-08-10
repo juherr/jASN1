@@ -23,5 +23,5 @@ demonstrated in the EncodeDecodeSample.java file.
 To compile and run the EncodeDecodeSample do something like the
 following:
 
-javac -cp ../jasn1-ber/lib/jasn1-ber-<version>.jar generated/*.java *.java
-java -cp "../jasn1-ber/lib/jasn1-ber-<version>.jar:./" EncodeDecodeSample
+javac -cp ../jasn1-ber/build/lib/jasn1-ber-<version>.jar generated/*.java *.java
+java -cp "../jasn1-ber/build/lib/jasn1-ber-<version>.jar:./" EncodeDecodeSample

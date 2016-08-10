@@ -18,7 +18,7 @@ cd "`dirname \"$PRG\"`/.."
 JASN1_COMP_HOME="`pwd -P`"
 cd "$SAVED"
 
-LIB=$JASN1_COMP_HOME/lib
+LIB=$JASN1_COMP_HOME/build/lib
 
 CLASSPATH=$(JARS=("$LIB"/*.jar); IFS=:; echo "${JARS[*]}")
 

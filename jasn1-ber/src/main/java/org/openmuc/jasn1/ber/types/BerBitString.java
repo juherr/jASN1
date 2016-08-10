@@ -34,6 +34,8 @@ public class BerBitString {
 			BerIdentifier.PRIMITIVE, BerIdentifier.BIT_STRING_TAG);
 	protected BerIdentifier id;
 
+	public byte[] code = null;
+
 	public byte[] bitString;
 	public int numBits;
 
@@ -52,16 +54,33 @@ public class BerBitString {
 
 	}
 
+	public BerBitString(byte[] code) {
+		id = identifier;
+		this.code = code;
+	}
+
 	public int encode(BerByteArrayOutputStream berOStream, boolean explicit) throws IOException {
 
-		for (int i = (bitString.length - 1); i >= 0; i--) {
-			berOStream.write(bitString[i]);
+		int codeLength;
+
+		if (code != null) {
+			codeLength = code.length;
+			for (int i = code.length - 1; i >= 0; i--) {
+				berOStream.write(code[i]);
+			}
 		}
-		berOStream.write(bitString.length * 8 - numBits);
+		else {
 
-		int codeLength = bitString.length + 1;
+			for (int i = (bitString.length - 1); i >= 0; i--) {
+				berOStream.write(bitString[i]);
+			}
+			berOStream.write(bitString.length * 8 - numBits);
 
-		codeLength += BerLength.encodeLength(berOStream, codeLength);
+			codeLength = bitString.length + 1;
+
+			codeLength += BerLength.encodeLength(berOStream, codeLength);
+
+		}
 
 		if (explicit) {
 			codeLength += id.encode(berOStream);
