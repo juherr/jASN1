@@ -18,7 +18,9 @@ public class SequenceOfAll {
 	protected BerIdentifier id;
 
 	public byte[] code = null;
-	public BerInteger integer = null;
+	public BerInteger myInteger = null;
+
+	public BerInteger myInteger2 = null;
 
 	public BerBoolean myBoolean = null;
 
@@ -60,6 +62,10 @@ public class SequenceOfAll {
 
 	public BerAny any = null;
 
+	public My_Sequence my_sequence = null;
+
+	public My_Choice my_choice = null;
+
 	public SequenceOfAll() {
 		id = identifier;
 	}
@@ -69,9 +75,10 @@ public class SequenceOfAll {
 		this.code = code;
 	}
 
-	public SequenceOfAll(BerInteger integer, BerBoolean myBoolean, BerBitString bitString, BerEnum enumerated, BerGeneralizedTime generalizedTime, BerNull myNull, BerObjectIdentifier objectIdentifier, BerOctetString octetString, BerReal real, BerBMPString bmpString, BerGeneralString generalString, BerGraphicString graphicString, BerIA5String iA5String, BerNumericString numericString, BerPrintableString printableString, BerTeletexString teletexString, BerUniversalString universalString, BerUTF8String utf8String, BerVideotexString videotexString, BerVisibleString visibleString, BerAny any) {
+	public SequenceOfAll(BerInteger myInteger, BerInteger myInteger2, BerBoolean myBoolean, BerBitString bitString, BerEnum enumerated, BerGeneralizedTime generalizedTime, BerNull myNull, BerObjectIdentifier objectIdentifier, BerOctetString octetString, BerReal real, BerBMPString bmpString, BerGeneralString generalString, BerGraphicString graphicString, BerIA5String iA5String, BerNumericString numericString, BerPrintableString printableString, BerTeletexString teletexString, BerUniversalString universalString, BerUTF8String utf8String, BerVideotexString videotexString, BerVisibleString visibleString, BerAny any, My_Sequence my_sequence, My_Choice my_choice) {
 		id = identifier;
-		this.integer = integer;
+		this.myInteger = myInteger;
+		this.myInteger2 = myInteger2;
 		this.myBoolean = myBoolean;
 		this.bitString = bitString;
 		this.enumerated = enumerated;
@@ -92,6 +99,8 @@ public class SequenceOfAll {
 		this.videotexString = videotexString;
 		this.visibleString = visibleString;
 		this.any = any;
+		this.my_sequence = my_sequence;
+		this.my_choice = my_choice;
 	}
 
 	public int encode(BerByteArrayOutputStream berOStream, boolean explicit) throws IOException {
@@ -108,6 +117,10 @@ public class SequenceOfAll {
 			codeLength = 0;
 			int sublength;
 
+			codeLength += my_choice.encode(berOStream, true);
+			
+			codeLength += my_sequence.encode(berOStream, true);
+			
 			sublength = any.encode(berOStream, true);
 			codeLength += sublength;
 			codeLength += BerLength.encodeLength(berOStream, sublength);
@@ -151,7 +164,11 @@ public class SequenceOfAll {
 			
 			codeLength += myBoolean.encode(berOStream, true);
 			
-			codeLength += integer.encode(berOStream, true);
+			codeLength += myInteger2.encode(berOStream, false);
+			codeLength += (new BerIdentifier(BerIdentifier.CONTEXT_CLASS, BerIdentifier.PRIMITIVE, 31)).encode(berOStream);
+			
+			codeLength += myInteger.encode(berOStream, false);
+			codeLength += (new BerIdentifier(BerIdentifier.CONTEXT_CLASS, BerIdentifier.PRIMITIVE, 30)).encode(berOStream);
 			
 			codeLength += BerLength.encodeLength(berOStream, codeLength);
 		}
@@ -167,6 +184,7 @@ public class SequenceOfAll {
 	public int decode(InputStream iStream, boolean explicit) throws IOException {
 		int codeLength = 0;
 		int subCodeLength = 0;
+		int choiceDecodeLength = 0;
 		BerIdentifier berIdentifier = new BerIdentifier();
 		boolean decodedIdentifier = false;
 
@@ -177,14 +195,400 @@ public class SequenceOfAll {
 		BerLength length = new BerLength();
 		codeLength += length.decode(iStream);
 
+		if (length.val == -1) {
+			subCodeLength += berIdentifier.decode(iStream);
+
+			if (berIdentifier.tagNumber == 0 && berIdentifier.identifierClass == 0 && berIdentifier.primitive == 0) {
+				if (iStream.read() != 0) {
+					throw new IOException("Decoded sequence has wrong end of contents octets");
+				}
+				codeLength += subCodeLength + 1;
+				return codeLength;
+			}
+			if (berIdentifier.equals(BerIdentifier.CONTEXT_CLASS, BerIdentifier.PRIMITIVE, 30)) {
+				myInteger = new BerInteger();
+				subCodeLength += myInteger.decode(iStream, false);
+				subCodeLength += berIdentifier.decode(iStream);
+			}
+			else {
+				throw new IOException("Identifier does not macht required sequence element identifer.");
+			}
+			if (berIdentifier.tagNumber == 0 && berIdentifier.identifierClass == 0 && berIdentifier.primitive == 0) {
+				if (iStream.read() != 0) {
+					throw new IOException("Decoded sequence has wrong end of contents octets");
+				}
+				codeLength += subCodeLength + 1;
+				return codeLength;
+			}
+			if (berIdentifier.equals(BerIdentifier.CONTEXT_CLASS, BerIdentifier.PRIMITIVE, 31)) {
+				myInteger2 = new BerInteger();
+				subCodeLength += myInteger2.decode(iStream, false);
+				subCodeLength += berIdentifier.decode(iStream);
+			}
+			else {
+				throw new IOException("Identifier does not macht required sequence element identifer.");
+			}
+			if (berIdentifier.tagNumber == 0 && berIdentifier.identifierClass == 0 && berIdentifier.primitive == 0) {
+				if (iStream.read() != 0) {
+					throw new IOException("Decoded sequence has wrong end of contents octets");
+				}
+				codeLength += subCodeLength + 1;
+				return codeLength;
+			}
+			if (berIdentifier.equals(BerBoolean.identifier)) {
+				myBoolean = new BerBoolean();
+				subCodeLength += myBoolean.decode(iStream, false);
+				subCodeLength += berIdentifier.decode(iStream);
+			}
+			else {
+				throw new IOException("Identifier does not macht required sequence element identifer.");
+			}
+			if (berIdentifier.tagNumber == 0 && berIdentifier.identifierClass == 0 && berIdentifier.primitive == 0) {
+				if (iStream.read() != 0) {
+					throw new IOException("Decoded sequence has wrong end of contents octets");
+				}
+				codeLength += subCodeLength + 1;
+				return codeLength;
+			}
+			if (berIdentifier.equals(BerBitString.identifier)) {
+				bitString = new BerBitString();
+				subCodeLength += bitString.decode(iStream, false);
+				subCodeLength += berIdentifier.decode(iStream);
+			}
+			else {
+				throw new IOException("Identifier does not macht required sequence element identifer.");
+			}
+			if (berIdentifier.tagNumber == 0 && berIdentifier.identifierClass == 0 && berIdentifier.primitive == 0) {
+				if (iStream.read() != 0) {
+					throw new IOException("Decoded sequence has wrong end of contents octets");
+				}
+				codeLength += subCodeLength + 1;
+				return codeLength;
+			}
+			if (berIdentifier.equals(BerEnum.identifier)) {
+				enumerated = new BerEnum();
+				subCodeLength += enumerated.decode(iStream, false);
+				subCodeLength += berIdentifier.decode(iStream);
+			}
+			else {
+				throw new IOException("Identifier does not macht required sequence element identifer.");
+			}
+			if (berIdentifier.tagNumber == 0 && berIdentifier.identifierClass == 0 && berIdentifier.primitive == 0) {
+				if (iStream.read() != 0) {
+					throw new IOException("Decoded sequence has wrong end of contents octets");
+				}
+				codeLength += subCodeLength + 1;
+				return codeLength;
+			}
+			if (berIdentifier.equals(BerGeneralizedTime.identifier)) {
+				generalizedTime = new BerGeneralizedTime();
+				subCodeLength += generalizedTime.decode(iStream, false);
+				subCodeLength += berIdentifier.decode(iStream);
+			}
+			else {
+				throw new IOException("Identifier does not macht required sequence element identifer.");
+			}
+			if (berIdentifier.tagNumber == 0 && berIdentifier.identifierClass == 0 && berIdentifier.primitive == 0) {
+				if (iStream.read() != 0) {
+					throw new IOException("Decoded sequence has wrong end of contents octets");
+				}
+				codeLength += subCodeLength + 1;
+				return codeLength;
+			}
+			if (berIdentifier.equals(BerNull.identifier)) {
+				myNull = new BerNull();
+				subCodeLength += myNull.decode(iStream, false);
+				subCodeLength += berIdentifier.decode(iStream);
+			}
+			else {
+				throw new IOException("Identifier does not macht required sequence element identifer.");
+			}
+			if (berIdentifier.tagNumber == 0 && berIdentifier.identifierClass == 0 && berIdentifier.primitive == 0) {
+				if (iStream.read() != 0) {
+					throw new IOException("Decoded sequence has wrong end of contents octets");
+				}
+				codeLength += subCodeLength + 1;
+				return codeLength;
+			}
+			if (berIdentifier.equals(BerObjectIdentifier.identifier)) {
+				objectIdentifier = new BerObjectIdentifier();
+				subCodeLength += objectIdentifier.decode(iStream, false);
+				subCodeLength += berIdentifier.decode(iStream);
+			}
+			else {
+				throw new IOException("Identifier does not macht required sequence element identifer.");
+			}
+			if (berIdentifier.tagNumber == 0 && berIdentifier.identifierClass == 0 && berIdentifier.primitive == 0) {
+				if (iStream.read() != 0) {
+					throw new IOException("Decoded sequence has wrong end of contents octets");
+				}
+				codeLength += subCodeLength + 1;
+				return codeLength;
+			}
+			if (berIdentifier.equals(BerOctetString.identifier)) {
+				octetString = new BerOctetString();
+				subCodeLength += octetString.decode(iStream, false);
+				subCodeLength += berIdentifier.decode(iStream);
+			}
+			else {
+				throw new IOException("Identifier does not macht required sequence element identifer.");
+			}
+			if (berIdentifier.tagNumber == 0 && berIdentifier.identifierClass == 0 && berIdentifier.primitive == 0) {
+				if (iStream.read() != 0) {
+					throw new IOException("Decoded sequence has wrong end of contents octets");
+				}
+				codeLength += subCodeLength + 1;
+				return codeLength;
+			}
+			if (berIdentifier.equals(BerReal.identifier)) {
+				real = new BerReal();
+				subCodeLength += real.decode(iStream, false);
+				subCodeLength += berIdentifier.decode(iStream);
+			}
+			else {
+				throw new IOException("Identifier does not macht required sequence element identifer.");
+			}
+			if (berIdentifier.tagNumber == 0 && berIdentifier.identifierClass == 0 && berIdentifier.primitive == 0) {
+				if (iStream.read() != 0) {
+					throw new IOException("Decoded sequence has wrong end of contents octets");
+				}
+				codeLength += subCodeLength + 1;
+				return codeLength;
+			}
+			if (berIdentifier.equals(BerBMPString.identifier)) {
+				bmpString = new BerBMPString();
+				subCodeLength += bmpString.decode(iStream, false);
+				subCodeLength += berIdentifier.decode(iStream);
+			}
+			else {
+				throw new IOException("Identifier does not macht required sequence element identifer.");
+			}
+			if (berIdentifier.tagNumber == 0 && berIdentifier.identifierClass == 0 && berIdentifier.primitive == 0) {
+				if (iStream.read() != 0) {
+					throw new IOException("Decoded sequence has wrong end of contents octets");
+				}
+				codeLength += subCodeLength + 1;
+				return codeLength;
+			}
+			if (berIdentifier.equals(BerGeneralString.identifier)) {
+				generalString = new BerGeneralString();
+				subCodeLength += generalString.decode(iStream, false);
+				subCodeLength += berIdentifier.decode(iStream);
+			}
+			else {
+				throw new IOException("Identifier does not macht required sequence element identifer.");
+			}
+			if (berIdentifier.tagNumber == 0 && berIdentifier.identifierClass == 0 && berIdentifier.primitive == 0) {
+				if (iStream.read() != 0) {
+					throw new IOException("Decoded sequence has wrong end of contents octets");
+				}
+				codeLength += subCodeLength + 1;
+				return codeLength;
+			}
+			if (berIdentifier.equals(BerGraphicString.identifier)) {
+				graphicString = new BerGraphicString();
+				subCodeLength += graphicString.decode(iStream, false);
+				subCodeLength += berIdentifier.decode(iStream);
+			}
+			else {
+				throw new IOException("Identifier does not macht required sequence element identifer.");
+			}
+			if (berIdentifier.tagNumber == 0 && berIdentifier.identifierClass == 0 && berIdentifier.primitive == 0) {
+				if (iStream.read() != 0) {
+					throw new IOException("Decoded sequence has wrong end of contents octets");
+				}
+				codeLength += subCodeLength + 1;
+				return codeLength;
+			}
+			if (berIdentifier.equals(BerIA5String.identifier)) {
+				iA5String = new BerIA5String();
+				subCodeLength += iA5String.decode(iStream, false);
+				subCodeLength += berIdentifier.decode(iStream);
+			}
+			else {
+				throw new IOException("Identifier does not macht required sequence element identifer.");
+			}
+			if (berIdentifier.tagNumber == 0 && berIdentifier.identifierClass == 0 && berIdentifier.primitive == 0) {
+				if (iStream.read() != 0) {
+					throw new IOException("Decoded sequence has wrong end of contents octets");
+				}
+				codeLength += subCodeLength + 1;
+				return codeLength;
+			}
+			if (berIdentifier.equals(BerNumericString.identifier)) {
+				numericString = new BerNumericString();
+				subCodeLength += numericString.decode(iStream, false);
+				subCodeLength += berIdentifier.decode(iStream);
+			}
+			else {
+				throw new IOException("Identifier does not macht required sequence element identifer.");
+			}
+			if (berIdentifier.tagNumber == 0 && berIdentifier.identifierClass == 0 && berIdentifier.primitive == 0) {
+				if (iStream.read() != 0) {
+					throw new IOException("Decoded sequence has wrong end of contents octets");
+				}
+				codeLength += subCodeLength + 1;
+				return codeLength;
+			}
+			if (berIdentifier.equals(BerPrintableString.identifier)) {
+				printableString = new BerPrintableString();
+				subCodeLength += printableString.decode(iStream, false);
+				subCodeLength += berIdentifier.decode(iStream);
+			}
+			else {
+				throw new IOException("Identifier does not macht required sequence element identifer.");
+			}
+			if (berIdentifier.tagNumber == 0 && berIdentifier.identifierClass == 0 && berIdentifier.primitive == 0) {
+				if (iStream.read() != 0) {
+					throw new IOException("Decoded sequence has wrong end of contents octets");
+				}
+				codeLength += subCodeLength + 1;
+				return codeLength;
+			}
+			if (berIdentifier.equals(BerTeletexString.identifier)) {
+				teletexString = new BerTeletexString();
+				subCodeLength += teletexString.decode(iStream, false);
+				subCodeLength += berIdentifier.decode(iStream);
+			}
+			else {
+				throw new IOException("Identifier does not macht required sequence element identifer.");
+			}
+			if (berIdentifier.tagNumber == 0 && berIdentifier.identifierClass == 0 && berIdentifier.primitive == 0) {
+				if (iStream.read() != 0) {
+					throw new IOException("Decoded sequence has wrong end of contents octets");
+				}
+				codeLength += subCodeLength + 1;
+				return codeLength;
+			}
+			if (berIdentifier.equals(BerUniversalString.identifier)) {
+				universalString = new BerUniversalString();
+				subCodeLength += universalString.decode(iStream, false);
+				subCodeLength += berIdentifier.decode(iStream);
+			}
+			else {
+				throw new IOException("Identifier does not macht required sequence element identifer.");
+			}
+			if (berIdentifier.tagNumber == 0 && berIdentifier.identifierClass == 0 && berIdentifier.primitive == 0) {
+				if (iStream.read() != 0) {
+					throw new IOException("Decoded sequence has wrong end of contents octets");
+				}
+				codeLength += subCodeLength + 1;
+				return codeLength;
+			}
+			if (berIdentifier.equals(BerUTF8String.identifier)) {
+				utf8String = new BerUTF8String();
+				subCodeLength += utf8String.decode(iStream, false);
+				subCodeLength += berIdentifier.decode(iStream);
+			}
+			else {
+				throw new IOException("Identifier does not macht required sequence element identifer.");
+			}
+			if (berIdentifier.tagNumber == 0 && berIdentifier.identifierClass == 0 && berIdentifier.primitive == 0) {
+				if (iStream.read() != 0) {
+					throw new IOException("Decoded sequence has wrong end of contents octets");
+				}
+				codeLength += subCodeLength + 1;
+				return codeLength;
+			}
+			if (berIdentifier.equals(BerVideotexString.identifier)) {
+				videotexString = new BerVideotexString();
+				subCodeLength += videotexString.decode(iStream, false);
+				subCodeLength += berIdentifier.decode(iStream);
+			}
+			else {
+				throw new IOException("Identifier does not macht required sequence element identifer.");
+			}
+			if (berIdentifier.tagNumber == 0 && berIdentifier.identifierClass == 0 && berIdentifier.primitive == 0) {
+				if (iStream.read() != 0) {
+					throw new IOException("Decoded sequence has wrong end of contents octets");
+				}
+				codeLength += subCodeLength + 1;
+				return codeLength;
+			}
+			if (berIdentifier.equals(BerVisibleString.identifier)) {
+				visibleString = new BerVisibleString();
+				subCodeLength += visibleString.decode(iStream, false);
+				subCodeLength += berIdentifier.decode(iStream);
+			}
+			else {
+				throw new IOException("Identifier does not macht required sequence element identifer.");
+			}
+			if (berIdentifier.tagNumber == 0 && berIdentifier.identifierClass == 0 && berIdentifier.primitive == 0) {
+				if (iStream.read() != 0) {
+					throw new IOException("Decoded sequence has wrong end of contents octets");
+				}
+				codeLength += subCodeLength + 1;
+				return codeLength;
+			}
+			if (berIdentifier.equals(BerIdentifier.CONTEXT_CLASS, BerIdentifier.CONSTRUCTED, 9)) {
+				BerLength tempLength = new BerLength();
+				codeLength += tempLength.decode(iStream);
+			}
+			else {
+				throw new IOException("Identifier does not macht required sequence element identifer.");
+			}
+			if (berIdentifier.tagNumber == 0 && berIdentifier.identifierClass == 0 && berIdentifier.primitive == 0) {
+				if (iStream.read() != 0) {
+					throw new IOException("Decoded sequence has wrong end of contents octets");
+				}
+				codeLength += subCodeLength + 1;
+				return codeLength;
+			}
+			if (berIdentifier.equals(My_Sequence.identifier)) {
+				my_sequence = new My_Sequence();
+				subCodeLength += my_sequence.decode(iStream, false);
+				subCodeLength += berIdentifier.decode(iStream);
+			}
+			else {
+				throw new IOException("Identifier does not macht required sequence element identifer.");
+			}
+			if (berIdentifier.tagNumber == 0 && berIdentifier.identifierClass == 0 && berIdentifier.primitive == 0) {
+				if (iStream.read() != 0) {
+					throw new IOException("Decoded sequence has wrong end of contents octets");
+				}
+				codeLength += subCodeLength + 1;
+				return codeLength;
+			}
+			my_choice = new My_Choice();
+			choiceDecodeLength = my_choice.decode(iStream, berIdentifier);
+			if (choiceDecodeLength != 0) {
+				subCodeLength += choiceDecodeLength;
+				subCodeLength += berIdentifier.decode(iStream);
+			}
+			else {
+				my_choice = null;
+			}
+
+			if (berIdentifier.tagNumber != 0 || berIdentifier.identifierClass != 0 || berIdentifier.primitive != 0
+			|| iStream.read() != 0) {
+				throw new IOException("Decoded sequence has wrong end of contents octets");
+			}
+			codeLength += subCodeLength + 1;
+			return codeLength;
+		}
+
 		if (subCodeLength < length.val) {
 			if (decodedIdentifier == false) {
 				subCodeLength += berIdentifier.decode(iStream);
 				decodedIdentifier = true;
 			}
-			if (berIdentifier.equals(BerInteger.identifier)) {
-				integer = new BerInteger();
-				subCodeLength += integer.decode(iStream, false);
+			if (berIdentifier.equals(BerIdentifier.CONTEXT_CLASS, BerIdentifier.PRIMITIVE, 30)) {
+				myInteger = new BerInteger();
+				subCodeLength += myInteger.decode(iStream, false);
+				decodedIdentifier = false;
+			}
+			else {
+				throw new IOException("Identifier does not macht required sequence element identifer.");
+			}
+		}
+		if (subCodeLength < length.val) {
+			if (decodedIdentifier == false) {
+				subCodeLength += berIdentifier.decode(iStream);
+				decodedIdentifier = true;
+			}
+			if (berIdentifier.equals(BerIdentifier.CONTEXT_CLASS, BerIdentifier.PRIMITIVE, 31)) {
+				myInteger2 = new BerInteger();
+				subCodeLength += myInteger2.decode(iStream, false);
 				decodedIdentifier = false;
 			}
 			else {
@@ -468,6 +872,32 @@ public class SequenceOfAll {
 			}
 			else {
 				throw new IOException("Identifier does not macht required sequence element identifer.");
+			}
+		}
+		if (subCodeLength < length.val) {
+			if (decodedIdentifier == false) {
+				subCodeLength += berIdentifier.decode(iStream);
+				decodedIdentifier = true;
+			}
+			if (berIdentifier.equals(My_Sequence.identifier)) {
+				my_sequence = new My_Sequence();
+				subCodeLength += my_sequence.decode(iStream, false);
+				decodedIdentifier = false;
+			}
+			else {
+				throw new IOException("Identifier does not macht required sequence element identifer.");
+			}
+		}
+		if (subCodeLength < length.val) {
+			if (decodedIdentifier == false) {
+				subCodeLength += berIdentifier.decode(iStream);
+				decodedIdentifier = true;
+			}
+			my_choice = new My_Choice();
+			choiceDecodeLength = my_choice.decode(iStream, berIdentifier);
+			if (choiceDecodeLength != 0) {
+				decodedIdentifier = false;
+				subCodeLength += choiceDecodeLength;
 			}
 		}
 		if (subCodeLength != length.val) {
