@@ -37,6 +37,9 @@ public class CompilerArgs {
 	@Option(name = "--model-only", shortName = "-x", description = "Generate only the ASN.1 model (as XML)", isOptional = true)
 	private Boolean generateModelOnly = false;
 
+	@Option(name = "--with-indefinite-length", shortName = "-il", description = "Create Java classes that can also decode the indefinite length fields", isOptional = true)
+	private Boolean supportIndefiniteLength = false;
+
 	public String getOutputDir() {
 		return outputDir;
 	}
@@ -68,4 +71,13 @@ public class CompilerArgs {
 	public void setGenerateModelOnly(Boolean generateModelOnly) {
 		this.generateModelOnly = generateModelOnly;
 	}
+
+	public Boolean getSupportIndefiniteLength() {
+		return supportIndefiniteLength;
+	}
+
+	public void setSupportIndefiniteLength(Boolean supportIndefiniteLength) {
+		this.supportIndefiniteLength = supportIndefiniteLength;
+	}
+
 }

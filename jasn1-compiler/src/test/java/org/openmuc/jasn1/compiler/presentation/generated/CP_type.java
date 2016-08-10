@@ -122,6 +122,7 @@ public class CP_type {
 		public int decode(InputStream iStream, boolean explicit) throws IOException {
 			int codeLength = 0;
 			int subCodeLength = 0;
+			int choiceDecodeLength = 0;
 			BerIdentifier berIdentifier = new BerIdentifier();
 			boolean decodedIdentifier = false;
 
@@ -215,8 +216,11 @@ public class CP_type {
 					decodedIdentifier = true;
 				}
 				user_data = new User_data();
-				subCodeLength += user_data.decode(iStream, berIdentifier);
-				decodedIdentifier = false;
+				choiceDecodeLength = user_data.decode(iStream, berIdentifier);
+				if (choiceDecodeLength != 0) {
+					decodedIdentifier = false;
+					subCodeLength += choiceDecodeLength;
+				}
 			}
 			if (subCodeLength != length.val) {
 				throw new IOException("Decoded sequence has wrong length tag");

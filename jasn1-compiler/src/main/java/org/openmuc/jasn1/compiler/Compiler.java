@@ -88,6 +88,9 @@ public class Compiler {
 
 		logger.info("outputDir: " + arguments.getOutputDir());
 		logger.info("Compiling file: " + arguments.getInputFileName());
+		if (arguments.getSupportIndefiniteLength() == true) {
+			logger.info("Java classes will support decoding indefinite length.");
+		}
 
 		ByteArrayOutputStream outputXml = getXMLStream(arguments.getOutputDir(), arguments.getNamespace(),
 				arguments.getInputFileName());
@@ -98,7 +101,8 @@ public class Compiler {
 			return;
 		}
 
-		XmlToJavaTranslator xmlToJavaTranslator = new XmlToJavaTranslator(stream, arguments.getOutputDir());
+		XmlToJavaTranslator xmlToJavaTranslator = new XmlToJavaTranslator(stream, arguments.getOutputDir(),
+				arguments.getSupportIndefiniteLength());
 		xmlToJavaTranslator.translate();
 
 	}
