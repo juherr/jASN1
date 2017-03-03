@@ -21,8 +21,8 @@
 package org.openmuc.jasn1.compiler.model;
 
 public class AsnInteger extends AsnUniversalType {
-	public final String BUILTINTYPE = "INTEGER";
-	public AsnConstraint constraint;
-	public AsnNamedNumberList namedNumberList;
+    public final String BUILTINTYPE = "INTEGER";
+    public AsnConstraint constraint;
+    public AsnNamedNumberList namedNumberList;
 
 }

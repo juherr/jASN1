@@ -23,6 +23,6 @@ package org.openmuc.jasn1.compiler.model;
 import java.math.BigInteger;
 
 public class AsnSignedNumber {
-	public BigInteger num;
-	public boolean positive = true;
+    public BigInteger num;
+    public boolean positive = true;
 }

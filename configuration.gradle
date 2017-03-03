@@ -1,9 +1,9 @@
 
 project.ext {
 
-  cfgVersion = '1.5.0'
+  cfgVersion = "1.6.0"
   
-  cfgGroup = 'org.openmuc'
+  cfgGroup = "org.openmuc"
 
   cfgCopyDependencies = true
 
@@ -24,7 +24,7 @@ project.ext {
   distributionProjects = javaProjects
 
   docProjects = distributionProjects.findAll {
-    it.getPath() == ':jasn1'
+    it.getPath() == ":jasn1"
   }
 
   repositoryProjects = javaProjects
@@ -34,37 +34,40 @@ project.ext {
 tasks.withType(Tar) {
 
   into(project.name) {
-    from('./') {
-      include 'build.gradle'
-      include 'configuration.gradle'
-      include 'license/**'
-      include 'doc/*.txt'
-      include 'doc/userguide/' + project.name + '-doc*.html'
-      include 'doc/userguide/' + project.name + '-doc_img/**'
+    from("./") {
+      include "build.gradle"
+      include "configuration.gradle"
+      include "license/**"
+      include "doc/*.txt"
+      include "doc/userguide/" + project.name + "-doc*.html"
+      include "doc/userguide/" + project.name + "-doc-img/**"
+      include 'run-scripts/**'
+      include "gradle/wrapper/**"
+      include "gradlew"
+      include "gradlew.bat"
 
-      include 'sample/**/*.java'
-      include 'sample/**/*.txt'
-      include 'sample/**/*.asn'
+      include "sample/**/*.java"
+      include "sample/**/*.txt"
+      include "sample/**/*.asn"
 
-      include 'projects/jasn1/build.gradle'
-      include 'projects/jasn1/src/**'
-      include 'projects/jasn1/build/libs-all/**'
-      include 'projects/jasn1/build/docs/javadoc/**'
+      include "projects/jasn1/build.gradle"
+      include "projects/jasn1/src/**"
+      include "projects/jasn1/build/libs-all/**"
+      include "projects/jasn1/build/docs/javadoc/**"
 
-      include 'projects/jasn1-compiler/build.gradle'
-      include 'projects/jasn1-compiler/src/**'
-      include 'projects/jasn1-compiler/antlr/**'
-      include 'projects/jasn1-compiler/dependencies/**'
-      include 'projects/jasn1-compiler/build/libs-all/**'
-      include 'projects/jasn1-compiler/run-scripts/**'
+      include "projects/jasn1-compiler/build.gradle"
+      include "projects/jasn1-compiler/src/**"
+      include "projects/jasn1-compiler/antlr/**"
+      include "projects/jasn1-compiler/dependencies/**"
+      include "projects/jasn1-compiler/build/libs-all/**"
     }
 
     if (name.equals("tar") ){
-      exclude '**/dependencies/**/src'
+      exclude "**/dependencies/**/src"
     }
 
-    from('./build/') {
-      include 'settings.gradle'
+    from("./build/") {
+      include "settings.gradle"
     }
   }
 }

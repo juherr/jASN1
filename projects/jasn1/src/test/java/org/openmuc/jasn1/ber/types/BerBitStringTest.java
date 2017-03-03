@@ -25,10 +25,10 @@ import org.junit.Test;
 
 public class BerBitStringTest {
 
-	@Test
-	public void toStringTest() {
-		BerBitString bitString = new BerBitString(new byte[] { 1, 2, 7 }, 23);
-		Assert.assertEquals("00000001000000100000011", bitString.toString());
-	}
+    @Test
+    public void toStringTest() {
+        BerBitString bitString = new BerBitString(new byte[] { 1, 2, 7 }, 23);
+        Assert.assertEquals("00000001000000100000011", bitString.toString());
+    }
 
 }

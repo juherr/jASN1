@@ -21,7 +21,7 @@
 package org.openmuc.jasn1.compiler.model;
 
 public class AsnChoiceValue {
-	public String name;
-	public AsnValue value;
+    public String name;
+    public AsnValue value;
 
 }

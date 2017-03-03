@@ -24,6 +24,6 @@ import java.util.HashMap;
 
 public class AsnModel {
 
-	public final HashMap<String, AsnModule> modulesByName = new HashMap<>();
+    public final HashMap<String, AsnModule> modulesByName = new HashMap<>();
 
 }

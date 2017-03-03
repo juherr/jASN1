@@ -29,68 +29,68 @@ import org.openmuc.jasn1.ber.BerLength;
 
 public class BerVisibleString {
 
-	public final static BerIdentifier identifier = new BerIdentifier(BerIdentifier.UNIVERSAL_CLASS,
-			BerIdentifier.PRIMITIVE, BerIdentifier.VISIBLE_STRING_TAG);
+    public final static BerIdentifier identifier = new BerIdentifier(BerIdentifier.UNIVERSAL_CLASS,
+            BerIdentifier.PRIMITIVE, BerIdentifier.VISIBLE_STRING_TAG);
 
-	protected BerIdentifier id;
+    protected BerIdentifier id;
 
-	public byte[] value;
+    public byte[] value;
 
-	public BerVisibleString() {
-		id = identifier;
-	}
+    public BerVisibleString() {
+        id = identifier;
+    }
 
-	public BerVisibleString(byte[] value) {
-		id = identifier;
-		this.value = value;
-	}
+    public BerVisibleString(byte[] value) {
+        id = identifier;
+        this.value = value;
+    }
 
-	public BerVisibleString(String valueAsString) {
-		id = identifier;
-		value = valueAsString.getBytes();
-	}
+    public BerVisibleString(String valueAsString) {
+        id = identifier;
+        value = valueAsString.getBytes();
+    }
 
-	public int encode(BerByteArrayOutputStream os, boolean explicit) throws IOException {
+    public int encode(BerByteArrayOutputStream os, boolean explicit) throws IOException {
 
-		os.write(value);
-		int codeLength = value.length;
+        os.write(value);
+        int codeLength = value.length;
 
-		codeLength += BerLength.encodeLength(os, codeLength);
+        codeLength += BerLength.encodeLength(os, codeLength);
 
-		if (explicit) {
-			codeLength += id.encode(os);
-		}
+        if (explicit) {
+            codeLength += id.encode(os);
+        }
 
-		return codeLength;
-	}
+        return codeLength;
+    }
 
-	public int decode(InputStream is, boolean explicit) throws IOException {
+    public int decode(InputStream is, boolean explicit) throws IOException {
 
-		int codeLength = 0;
+        int codeLength = 0;
 
-		if (explicit) {
-			codeLength += id.decodeAndCheck(is);
-		}
+        if (explicit) {
+            codeLength += id.decodeAndCheck(is);
+        }
 
-		BerLength length = new BerLength();
-		codeLength += length.decode(is);
+        BerLength length = new BerLength();
+        codeLength += length.decode(is);
 
-		value = new byte[length.val];
+        value = new byte[length.val];
 
-		if (length.val != 0) {
-			if (is.read(value, 0, length.val) < length.val) {
-				throw new IOException("Error Decoding BerVisibleString");
-			}
-			codeLength += length.val;
-		}
+        if (length.val != 0) {
+            if (is.read(value, 0, length.val) < length.val) {
+                throw new IOException("Error Decoding BerVisibleString");
+            }
+            codeLength += length.val;
+        }
 
-		return codeLength;
+        return codeLength;
 
-	}
+    }
 
-	@Override
-	public String toString() {
-		return new String(value);
-	}
+    @Override
+    public String toString() {
+        return new String(value);
+    }
 
 }

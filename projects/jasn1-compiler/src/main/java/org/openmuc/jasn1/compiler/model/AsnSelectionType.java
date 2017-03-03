@@ -21,7 +21,7 @@
 package org.openmuc.jasn1.compiler.model;
 
 public class AsnSelectionType extends AsnType {
-	public String selectionID;
-	public Object type;
+    public String selectionID;
+    public Object type;
 
 }

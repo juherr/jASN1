@@ -21,6 +21,6 @@
 package org.openmuc.jasn1.compiler.model;
 
 public class AsnObjectIdentifier extends AsnUniversalType {
-	public final String BUILTINTYPE = "OBJECT IDENTIFIER";
+    public final String BUILTINTYPE = "OBJECT IDENTIFIER";
 
 }

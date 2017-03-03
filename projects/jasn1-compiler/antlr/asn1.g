@@ -160,6 +160,12 @@ SL_COMMENT
 		{$setType(Token.SKIP);  }
 	;
 
+// multi-line comments
+ML_COMMENT
+	: "/*" (('*' ~'/') | (('\r')? '\n') { newline(); } | ~'*')* "*/"
+		{$setType(Token.SKIP);  }
+	;
+
 NUMBER	:	('0'..'9')+ ;
 
 UPPER	
@@ -363,163 +369,16 @@ assignment[AsnModule module]
 
 // Type Assignment Definition
 	:	(up:UPPER ASSIGN_OP	(obj=type) 
-{ 
-		if ((AsnAny.class).isInstance(obj)){	
-			((AsnAny)obj).name = up.getText();
-			module.asnTypes.anys.add((AsnAny)obj);
-			module.asnTypes.typesByName.put(((AsnType)obj).name,(AsnType)obj);
-		}
-		else if ((AsnAnyNoDecode.class).isInstance(obj)){	
-			((AsnAnyNoDecode)obj).name = up.getText();
-			module.asnTypes.any_nodecodes.add((AsnAnyNoDecode)obj);
-			module.asnTypes.typesByName.put(((AsnType)obj).name,(AsnType)obj);
-		}
-		else if((AsnBitString.class).isInstance(obj)){
-			((AsnBitString)obj).name = up.getText();
-			module.asnTypes.bitStrings.add((AsnBitString)obj);
-			module.asnTypes.typesByName.put(((AsnType)obj).name,(AsnType)obj);
-		}
-		else if((AsnBoolean.class).isInstance(obj)){	
-			((AsnBoolean)obj).name = up.getText();
-			module.asnTypes.booleans.add((AsnBoolean)obj);
-			module.asnTypes.typesByName.put(((AsnType)obj).name,(AsnType)obj);
-		}
-		else if((AsnCharacterString.class).isInstance(obj)){	
-			((AsnCharacterString)obj).name = up.getText();	
-			module.asnTypes.characterStrings.add((AsnCharacterString)obj);
-			module.asnTypes.typesByName.put(((AsnType)obj).name,(AsnType)obj);
-		}
-		else if((AsnChoice.class).isInstance(obj)){	
-			((AsnChoice)obj).name = up.getText();
-			module.asnTypes.choices.add((AsnChoice)obj);
-			module.asnTypes.typesByName.put(((AsnType)obj).name,(AsnType)obj);
-		}
-		else if((AsnEnum.class).isInstance(obj)){
-			((AsnEnum)obj).name=up.getText();
-			module.asnTypes.enums.add((AsnEnum)obj);
-			module.asnTypes.typesByName.put(((AsnType)obj).name,(AsnType)obj);
-		}
-		else if((AsnInteger.class).isInstance(obj)){	
-			((AsnInteger)obj).name=up.getText();
-			module.asnTypes.integers.add((AsnInteger)obj);
-			module.asnTypes.typesByName.put(((AsnType)obj).name,(AsnType)obj);
-		}
-		else if((AsnNull.class).isInstance(obj)){	
-			((AsnNull)obj).name=up.getText();
-			module.asnTypes.nulls.add((AsnNull)obj);
-			module.asnTypes.typesByName.put(((AsnType)obj).name,(AsnType)obj);
-		}
-		else if((AsnObjectIdentifier.class).isInstance(obj)){	
-			((AsnObjectIdentifier)obj).name=up.getText();
-			module.asnTypes.objectIdentifiers.add((AsnObjectIdentifier)obj);
-			module.asnTypes.typesByName.put(((AsnType)obj).name,(AsnType)obj);
-		}
-		else if((AsnOctetString.class).isInstance(obj)){	
-			((AsnOctetString)obj).name=up.getText();
-			module.asnTypes.octetStrings.add((AsnOctetString)obj);
-			module.asnTypes.typesByName.put(((AsnType)obj).name,(AsnType)obj);
-		}
-		else if((AsnReal.class).isInstance(obj)){	
-			((AsnReal)obj).name=up.getText();
-			module.asnTypes.reals.add((AsnReal)obj);
-			module.asnTypes.typesByName.put(((AsnType)obj).name,(AsnType)obj);
-		}
-		else if((AsnSequenceSet.class).isInstance(obj)){	
-			((AsnSequenceSet)obj).name=up.getText();
-			module.asnTypes.sequenceSets.add((AsnSequenceSet)obj);
-			module.asnTypes.typesByName.put(((AsnType)obj).name,(AsnType)obj);
-		}
-		else if((AsnSequenceOf.class).isInstance(obj)){	
-			((AsnSequenceOf)obj).name=up.getText();
-			module.asnTypes.sequenceSetsOf.add((AsnSequenceOf)obj);
-			module.asnTypes.typesByName.put(((AsnType)obj).name,(AsnType)obj);
-		}
-		else if((AsnExternal.class).isInstance(obj)){	
-			((AsnExternal)obj).name=up.getText();
-			module.asnTypes.externals.add((AsnExternal)obj);
-			module.asnTypes.typesByName.put(((AsnType)obj).name,(AsnType)obj);
-		}
-		else if((AsnSelectionType.class).isInstance(obj)){	
-			((AsnSelectionType)obj).name=up.getText();
-			module.asnTypes.selections.add((AsnSelectionType)obj);
-			module.asnTypes.typesByName.put(((AsnType)obj).name,(AsnType)obj);
-		}
-		else if((AsnRelativeOid.class).isInstance(obj)){	
-			((AsnRelativeOid)obj).name=up.getText();
-			module.asnTypes.relativeOids.add((AsnRelativeOid)obj);
-			module.asnTypes.typesByName.put(((AsnType)obj).name,(AsnType)obj);
-		}
-		else if((AsnEmbedded.class).isInstance(obj)){	
-			((AsnEmbedded)obj).name=up.getText();
-			module.asnTypes.embeddeds.add((AsnEmbedded)obj);
-			module.asnTypes.typesByName.put(((AsnType)obj).name,(AsnType)obj);
-		}
-		else if((AsnTaggedType.class).isInstance(obj)){	
-			((AsnTaggedType)obj).name=up.getText();
-			module.asnTypes.taggeds.add((AsnTaggedType)obj);
-			module.asnTypes.typesByName.put(((AsnType)obj).name,(AsnType)obj);
-		}
-		else if((AsnDefinedType.class).isInstance(obj)){
-			((AsnDefinedType)obj).name=up.getText();
-			module.asnTypes.defineds.add((AsnDefinedType)obj);
-			module.asnTypes.typesByName.put(((AsnType)obj).name,(AsnType)obj);
-		}
-		else if((OperationMacro.class).isInstance(obj)){	
-			((OperationMacro)obj).name=up.getText();
-			module.asnTypes.macroOperations.add((OperationMacro)obj);
-			module.asnTypes.typesByName.put(((AsnType)obj).name,(AsnType)obj);
-		}
-		else if((ErrorMacro.class).isInstance(obj)){	
-			((ErrorMacro)obj).name=up.getText();
-			module.asnTypes.macroErrors.add((ErrorMacro)obj);
-			module.asnTypes.typesByName.put(((AsnType)obj).name,(AsnType)obj);
-		}
-		else{	
-			System.out.println("Unknown Type" + (obj.getClass().getName()) );
-		} 
+{
+			((AsnType)obj).name = up.getText();
+            module.typesByName.put(((AsnType)obj).name,(AsnType)obj);
 		})
 
 // Value Assignment definition	
 	|	(lid:LOWER (objv = type ) ASSIGN_OP (val = value) 
-		{	
-		if((AsnBoolean.class).isInstance(objv)){	
-			val.name=lid.getText();
-			val.typeName = ((AsnBoolean)objv).BUILTINTYPE;
+		{
+   			val.name=lid.getText();
 			module.asnValues.add(val);
-		}
-		else if((AsnCharacterString.class).isInstance(objv)){	
-			val.name=lid.getText();
-			val.typeName = ((AsnCharacterString)objv).BUILTINTYPE; // Correct it
-			module.asnValues.add(val);
-		}
-		else if((AsnInteger.class).isInstance(objv)){
-			val.name=lid.getText();
-			val.typeName = ((AsnInteger)objv).BUILTINTYPE;
-			module.asnValues.add(val);
-		}
-		else if((AsnOctetString.class).isInstance(objv)){	
-			val.name=lid.getText();
-			val.typeName = ((AsnOctetString)objv).BUILTINTYPE;
-			module.asnValues.add(val);
-		}
-		else if((AsnReal.class).isInstance(objv)){	
-			val.name=lid.getText();
-			val.typeName = ((AsnReal)objv).BUILTINTYPE;
-			module.asnValues.add(val);
-		}
-		else if((AsnDefinedType.class).isInstance(objv)){	
-			val.name=lid.getText();
-			val.typeName = ((AsnDefinedType)objv).typeName;
-			module.asnValues.add(val);
-		}
-		else if((ObjectType.class).isInstance(objv)){	
-			val.name = lid.getText();
-			val.typeName = ((ObjectType)objv).BUILTINTYPE;
-			module.asnValues.add(val);
-		}
-		else {
-			//System.out.println("Unsupported value definition: " + (objv.getClass().getName()));
-		}		
 		})
 // Definition of Macro type. Consume the definitions . No Actions
 
@@ -613,7 +472,7 @@ character_set returns [String s]
 	|	(s10:T61_STR_KW			{s = s10.getText();})
 	|	(s11:UNIVERSAL_STR_KW	{s = s11.getText();})
 	|	(s12:UTF8_STR_KW		{s = s12.getText();})
-	|	(s13:UTC_TIME_KW		{s = s13.getText();})
+	|	(s13:UTC_TIME_KW		{s = "UtcTime";})
 	|	(s14:VIDEOTEX_STR_KW	{s = s14.getText();})
 	|	(s15:VISIBLE_STR_KW		{s = s15.getText();})
 	;		
@@ -624,9 +483,9 @@ boolean_type returns [Object obj]
 	;
 				
 choice_type	returns [Object obj]
-{AsnChoice ch = new AsnChoice(); AsnElementTypeList eltplst ; 
+{AsnChoice ch = new AsnChoice(); List<AsnComponentType> eltplst; 
 obj = null;}
-	: (	CHOICE_KW L_BRACE (eltplst = elementType_list {ch.elementTypeList = eltplst ;}) R_BRACE ) 
+	: (	CHOICE_KW L_BRACE (eltplst = elementType_list {ch.componentTypes = eltplst ;}) R_BRACE ) 
 		{obj = ch; eltplst = null; ch = null;}
 	;
 
@@ -686,10 +545,10 @@ relativeOid_type returns [Object obj]
 		
 sequence_type returns [Object obj]
 {AsnSequenceSet seq = new AsnSequenceSet();
-AsnElementTypeList eltplist ; AsnConstraint cnstrnt ; obj = null;}
+List<AsnComponentType> eltplist ; AsnConstraint cnstrnt ; obj = null;}
 	:  ( SEQUENCE_KW {seq.isSequence = true;} 
 	    L_BRACE 
-	   (eltplist = elementType_list {seq.elementTypeList = eltplist;})? 
+	   (eltplist = elementType_list {seq.componentTypes = eltplist;})? 
 	    R_BRACE )
 		{obj = seq ; eltplist = null; seq =null; }
 	;
@@ -707,7 +566,7 @@ AsnConstraint cnstrnt; obj = null; Object referencedAsnType ; String s ;}
 				seqof.typeName = ((AsnDefinedType)referencedAsnType).typeName ; 
 			}
 			else{	
-				seqof.typeReference = referencedAsnType ; 
+				seqof.typeReference = (AsnType) referencedAsnType ; 
 			}
 		}) )
 		{obj = seqof;  cnstrnt = null; seqof=null;}		
@@ -715,8 +574,8 @@ AsnConstraint cnstrnt; obj = null; Object referencedAsnType ; String s ;}
 	
 set_type returns [Object obj]
 {AsnSequenceSet set = new AsnSequenceSet();
-AsnElementTypeList eltplist ;obj = null;}
-	:  ( SET_KW L_BRACE (eltplist =  elementType_list {set.elementTypeList = eltplist ;})? R_BRACE )
+List<AsnComponentType> eltplist ;obj = null;}
+	:  ( SET_KW L_BRACE (eltplist =  elementType_list {set.componentTypes = eltplist ;})? R_BRACE )
 		{obj = set ; eltplist = null; set = null;}
 	;
 		
@@ -732,14 +591,14 @@ Object obj1 ; String s;}
 				setof.typeName = ((AsnDefinedType)obj1).typeName ; 
 			}
 			else{
-				setof.typeReference = obj1;
+				setof.typeReference = (AsnType) obj1;
 			} 
 		}) )
 		{obj = setof; cns = null; obj1=null; setof=null;} 		
 	;
 
 tagged_type returns [Object obj]
-{AsnTaggedType tgtyp = new AsnTaggedType();
+{AsnNamedType tgtyp = new AsnNamedType();
 AsnTag tg; Object obj1 = null; String s; obj = null;}
 	:	((tg = tag {tgtyp.tag = tg ;}) 
 		(s = tag_default { tgtyp.tagType = s ;})? 
@@ -884,16 +743,16 @@ typeorvalue returns [Object obj]
 	  {obj = obj1; obj1=null;}
 	;
 
-elementType_list returns [AsnElementTypeList elelist]
-{elelist = new AsnElementTypeList(); AsnElementType eletyp; }
-	:	(eletyp = elementType {elelist.elements.add(eletyp); }
-	    (COMMA (eletyp = elementType {elelist.elements.add(eletyp);}))*)
+elementType_list returns [List<AsnComponentType> elelist]
+{elelist = new ArrayList<>(); AsnComponentType eletyp; int i=1; }
+	:	(ELLIPSIS | eletyp = elementType {if (eletyp.name.isEmpty()) {eletyp.name = "element" + i;};elelist.add(eletyp);i++; }
+	    (COMMA (ELLIPSIS | (eletyp = elementType {if (eletyp.name.isEmpty()) {eletyp.name = "element" + i;};elelist.add(eletyp);i++; })))*)
 	;
 
-elementType	returns [AsnElementType eletyp]
-{eletyp = new AsnElementType();AsnValue val; 
+elementType	returns [AsnComponentType eletyp]
+{eletyp = new AsnComponentType();AsnValue val; 
 Object obj; AsnTag tg; String s;}
-	: (	(lid:LOWER {eletyp.name = lid.getText();} 
+	: (	((lid:LOWER {eletyp.name = lid.getText();})? 
 		(tg = tag { eletyp.tag = tg ;})? 
 		(s = tag_default {eletyp.tagType = s ;})? 
 		(obj = type) ( (OPTIONAL_KW {eletyp.isOptional=true;}) 
@@ -912,9 +771,10 @@ Object obj; AsnTag tg; String s;}
 		
 namedNumber_list returns [AsnNamedNumberList nnlist]
 {nnlist = new AsnNamedNumberList();AsnNamedNumber nnum ; }	
-	: (	L_BRACE (nnum= namedNumber {nnlist.namedNumbers.add(nnum); })
-	   (COMMA (nnum = namedNumber  {nnlist.namedNumbers.add(nnum); }) )*  R_BRACE )
+	: (	L_BRACE (ELLIPSIS | nnum= namedNumber {nnlist.namedNumbers.add(nnum); })
+	   (COMMA ( ELLIPSIS | (nnum = namedNumber  {nnlist.namedNumbers.add(nnum); }) ))*  R_BRACE )
 	;
+
 
 namedNumber	returns [AsnNamedNumber nnum]
 {nnum = new AsnNamedNumber() ;AsnSignedNumber i; 

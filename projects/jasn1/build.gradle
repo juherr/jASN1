@@ -11,16 +11,16 @@ uploadArchives {
     mavenDeployer {
 
       pom.project {
-	name 'jASN1'
-	description 'jASN1 is a library used for encoding and decoding ASN.1 BER messages.'
-
-	licenses {
-	  license {
-	    name 'GNU Lesser General Public License'
-	    url 'http://www.gnu.org/licenses/lgpl-2.1.html'
-	    distribution 'repo'
-	  }
-	}
+        name 'jASN1'
+        description 'jASN1 is a library used for encoding and decoding ASN.1 BER messages.'
+        
+        licenses {
+          license {
+            name 'GNU Lesser General Public License'
+            url 'http://www.gnu.org/licenses/lgpl-2.1.html'
+            distribution 'repo'
+          }
+        }
       }
     }
   }

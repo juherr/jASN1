@@ -1,6 +1,11 @@
 SOME_EXAMPLE DEFINITIONS IMPLICIT TAGS ::=
 BEGIN
 
+TaggedSeqOf ::= SEQUENCE OF [3] EXPLICIT INTEGER
+
+
+
+
 SequenceOfAll ::= SEQUENCE {
 
 	myInteger [30] INTEGER OPTIONAL,
@@ -45,8 +50,15 @@ My-Choice ::= CHOICE {
 }
 
 My-Choice2 ::= CHOICE {
-	myint INTEGER,
-	myboolean BOOLEAN
+	CHOICE {
+		test INTEGER
+	},
+	INTEGER,
+	myboolean BOOLEAN,
+	CHOICE {
+		test INTEGER,
+		test2 BOOLEAN
+	}
 }
 
 --not supported yet

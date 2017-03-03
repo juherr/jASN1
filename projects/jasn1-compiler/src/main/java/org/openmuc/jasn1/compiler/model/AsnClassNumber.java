@@ -21,7 +21,7 @@
 package org.openmuc.jasn1.compiler.model;
 
 public class AsnClassNumber {
-	public String name;
-	public Integer num = null;
+    public String name;
+    public Integer num = null;
 
 }

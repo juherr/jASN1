@@ -21,9 +21,9 @@
 package org.openmuc.jasn1.compiler.model;
 
 public class AsnEnum extends AsnUniversalType {
-	final String BUILTINTYPE = "ENUMERATED";
-	public AsnNamedNumberList namedNumberList;
-	public String snaccName = ""; // specifically added for snacc code generation
-	public Boolean isEnum = true;
+    final String BUILTINTYPE = "ENUMERATED";
+    public AsnNamedNumberList namedNumberList;
+    public String snaccName = ""; // specifically added for snacc code generation
+    public Boolean isEnum = true;
 
 }

@@ -25,14 +25,14 @@ import org.openmuc.jasn1.compiler.Compiler;
 
 public class SomeExamplesCompilingTest {
 
-	@Test
-	public void compiling() throws Exception {
+    @Test
+    public void compiling() throws Exception {
 
-		String[] args = new String[] { "-o", "src/test/java-gen/org/openmuc/jasn1/compiler/someexamples/generated",
-				"-p", "org.openmuc.jasn1.compiler.someexamples.generated", "-il",
-				"src/test/resources/someExamples.asn" };
-		Compiler.main(args);
+        String[] args = new String[] { "-o", "src/test/java-gen/org/openmuc/jasn1/compiler/someexamples/generated",
+                "-p", "org.openmuc.jasn1.compiler.someexamples.generated", "-il",
+                "src/test/resources/someExamples.asn" };
+        Compiler.main(args);
 
-	}
+    }
 
 }

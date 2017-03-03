@@ -21,7 +21,7 @@
 package org.openmuc.jasn1.compiler.model;
 
 public class AsnOctetString extends AsnUniversalType {
-	public final String BUILTINTYPE = "OCTET STRING";
-	public AsnConstraint constraint;
+    public final String BUILTINTYPE = "OCTET STRING";
+    public AsnConstraint constraint;
 
 }

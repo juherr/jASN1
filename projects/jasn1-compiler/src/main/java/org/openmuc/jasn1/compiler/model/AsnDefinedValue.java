@@ -21,8 +21,8 @@
 package org.openmuc.jasn1.compiler.model;
 
 public class AsnDefinedValue {
-	public boolean isDotPresent;
-	public String moduleIdentifier;
-	public String name;
+    public boolean isDotPresent;
+    public String moduleIdentifier;
+    public String name;
 
 }

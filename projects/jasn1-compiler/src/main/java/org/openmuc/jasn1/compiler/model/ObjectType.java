@@ -23,10 +23,10 @@ package org.openmuc.jasn1.compiler.model;
 import java.util.ArrayList;
 
 public class ObjectType {
-	public final String BUILTINTYPE = "OBJECT-TYPE";
-	public String accessPart;
-	public ArrayList elements = new ArrayList();
-	public String statusPart;
-	public Object type;
-	public AsnValue value;
+    public final String BUILTINTYPE = "OBJECT-TYPE";
+    public String accessPart;
+    public ArrayList elements = new ArrayList();
+    public String statusPart;
+    public Object type;
+    public AsnValue value;
 }

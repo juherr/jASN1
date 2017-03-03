@@ -22,20 +22,11 @@ package org.openmuc.jasn1.compiler.model;
 
 public class AsnSequenceOf extends AsnConstructedType {
 
-	public AsnConstraint constraint;
-	public boolean isDefinedType;
-	public boolean isSequenceOf; // Differntiates between SEQUENCE OF and SET OF types
-	public boolean isSizeConstraint;
-	public String typeName; // Name of the defined type
-	public Object typeReference; // Refers to typeReference after OF KW
-
-	public AsnSequenceOf() {
-		constraint = null;
-		typeReference = null;
-		isSequenceOf = false;
-		isDefinedType = false;
-		isSizeConstraint = false;
-		typeName = "";
-	}
+    public AsnConstraint constraint = null;
+    public boolean isDefinedType = false;
+    public boolean isSequenceOf = false; // Differntiates between SEQUENCE OF and SET OF types
+    public boolean isSizeConstraint = false;
+    public String typeName = "";
+    public AsnType typeReference = null;
 
 }

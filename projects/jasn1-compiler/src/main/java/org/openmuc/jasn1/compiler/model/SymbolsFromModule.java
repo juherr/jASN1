@@ -24,11 +24,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SymbolsFromModule {
-	public AsnOidComponentList cmplist;
-	public AsnDefinedValue defval;
-	public boolean isDefinedValue;
-	public boolean isOidValue;
-	public String modref;
-	public List<String> symbolList = new ArrayList<>();
+    public AsnOidComponentList cmplist;
+    public AsnDefinedValue defval;
+    public boolean isDefinedValue;
+    public boolean isOidValue;
+    public String modref;
+    public List<String> symbolList = new ArrayList<>();
 
 }

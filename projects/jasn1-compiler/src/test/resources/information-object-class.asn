@@ -1,0 +1,29 @@
+Test-DataTypes
+
+DEFINITIONS IMPLICIT TAGS ::=
+BEGIN
+
+
+MyExtension ::= SEQUENCE {
+identifier TEST-EXTENSION.&id({AlcatelManagedExtensionSet}),
+significance[1] BOOLEAN DEFAULT FALSE,
+information [2] DMI-EXTENSION.&Value({AlcatelManagedExtensionSet}{@.identifier})
+}
+
+TEST-EXTENSION ::= TEST-TYPE-IDENTIFIER 
+
+TEST-TYPE-IDENTIFIER ::= CLASS {
+	&id OBJECT IDENTIFIER UNIQUE, 
+	&Value
+} WITH SYNTAX {TYPE &Value ID &id }
+		
+TestExtensionSet DMI-EXTENSION ::= {
+test0RecordExtension |
+test1RecordExtension }
+ 
+test0RecordExtension DMI-EXTENSION::={TYPE Test0ExtensionType ID test0-Extension-OID }
+test1RecordExtension DMI-EXTENSION::={TYPE Test1ExtensionType ID test1-Extension-OID }
+
+
+
+END

@@ -25,21 +25,21 @@ import org.openmuc.jasn1.ber.types.BerOctetString;
 
 public class BerIA5String extends BerOctetString {
 
-	public final static BerIdentifier identifier = new BerIdentifier(BerIdentifier.UNIVERSAL_CLASS,
-			BerIdentifier.PRIMITIVE, BerIdentifier.IA5_STRING_TAG);
+    public final static BerIdentifier identifier = new BerIdentifier(BerIdentifier.UNIVERSAL_CLASS,
+            BerIdentifier.PRIMITIVE, BerIdentifier.IA5_STRING_TAG);
 
-	public BerIA5String() {
-		id = identifier;
-	}
+    public BerIA5String() {
+        id = identifier;
+    }
 
-	public BerIA5String(byte[] value) {
-		id = identifier;
-		this.value = value;
-	}
+    public BerIA5String(byte[] value) {
+        id = identifier;
+        this.value = value;
+    }
 
-	@Override
-	public String toString() {
-		return new String(value);
-	}
+    @Override
+    public String toString() {
+        return new String(value);
+    }
 
 }

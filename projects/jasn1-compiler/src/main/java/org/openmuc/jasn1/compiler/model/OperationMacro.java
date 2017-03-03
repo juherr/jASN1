@@ -24,49 +24,49 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 
 public class OperationMacro extends AsnType {
-	public String argumentName;
-	public Object argumentType;
-	public String argumentTypeIdentifier;
-	public ArrayList errorList;
-	public boolean isArgumentName;
-	public boolean isErrors;
-	public boolean isLinkedOperation;
-	public boolean isResult;
-	public boolean isResultName;
-	public ArrayList linkedOpList;
-	public String resultName;
-	public Object resultType;
-	public String resultTypeIdentifier;
+    public String argumentName;
+    public Object argumentType;
+    public String argumentTypeIdentifier;
+    public ArrayList errorList;
+    public boolean isArgumentName;
+    public boolean isErrors;
+    public boolean isLinkedOperation;
+    public boolean isResult;
+    public boolean isResultName;
+    public ArrayList linkedOpList;
+    public String resultName;
+    public Object resultType;
+    public String resultTypeIdentifier;
 
-	public OperationMacro() {
-		errorList = new ArrayList();
-		linkedOpList = new ArrayList();
-	}
+    public OperationMacro() {
+        errorList = new ArrayList();
+        linkedOpList = new ArrayList();
+    }
 
-	public String get_firstLinkedOpName() {
-		Object obj = linkedOpList.get(0);
+    public String get_firstLinkedOpName() {
+        Object obj = linkedOpList.get(0);
 
-		if ((AsnValue.class).isInstance(obj)) {
-			return "isValue";
-		}
-		else if ((AsnDefinedType.class).isInstance(obj)) {
-			return ((AsnDefinedType) obj).typeName;
-		}
-		else {
-			String nameoftype = null;
+        if ((AsnValue.class).isInstance(obj)) {
+            return "isValue";
+        }
+        else if ((AsnDefinedType.class).isInstance(obj)) {
+            return ((AsnDefinedType) obj).typeName;
+        }
+        else {
+            String nameoftype = null;
 
-			try {
-				Field nameField;
-				Class c = obj.getClass();
+            try {
+                Field nameField;
+                Class c = obj.getClass();
 
-				nameField = c.getField("name");
-				nameoftype = (String) nameField.get(obj);
-			} catch (Exception e) {
-				e.printStackTrace(System.err);
-			}
+                nameField = c.getField("name");
+                nameoftype = (String) nameField.get(obj);
+            } catch (Exception e) {
+                e.printStackTrace(System.err);
+            }
 
-			return nameoftype;
-		}
-	}
+            return nameoftype;
+        }
+    }
 
 }

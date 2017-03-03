@@ -29,98 +29,98 @@ import org.openmuc.jasn1.ber.BerLength;
 
 public class BerInteger {
 
-	public final static BerIdentifier identifier = new BerIdentifier(BerIdentifier.UNIVERSAL_CLASS,
-			BerIdentifier.PRIMITIVE, BerIdentifier.INTEGER_TAG);
-	public BerIdentifier id;
+    public final static BerIdentifier identifier = new BerIdentifier(BerIdentifier.UNIVERSAL_CLASS,
+            BerIdentifier.PRIMITIVE, BerIdentifier.INTEGER_TAG);
+    public BerIdentifier id;
 
-	public byte[] code = null;
+    public byte[] code = null;
 
-	public long value;
+    public long value;
 
-	public BerInteger() {
-		id = identifier;
-	}
+    public BerInteger() {
+        id = identifier;
+    }
 
-	public BerInteger(byte[] code) {
-		id = identifier;
-		this.code = code;
-	}
+    public BerInteger(byte[] code) {
+        id = identifier;
+        this.code = code;
+    }
 
-	public BerInteger(long val) {
-		id = identifier;
-		this.value = val;
-	}
+    public BerInteger(long val) {
+        id = identifier;
+        this.value = val;
+    }
 
-	public int encode(BerByteArrayOutputStream os, boolean explicit) throws IOException {
+    public int encode(BerByteArrayOutputStream os, boolean explicit) throws IOException {
 
-		int codeLength;
+        int codeLength;
 
-		if (code != null) {
-			codeLength = code.length;
-			for (int i = code.length - 1; i >= 0; i--) {
-				os.write(code[i]);
-			}
-		}
-		else {
+        if (code != null) {
+            codeLength = code.length;
+            for (int i = code.length - 1; i >= 0; i--) {
+                os.write(code[i]);
+            }
+        }
+        else {
 
-			codeLength = 1;
+            codeLength = 1;
 
-			while (value > (Math.pow(2, (8 * codeLength) - 1) - 1)
-					|| value < Math.pow(-2, (8 * codeLength) - 1) && codeLength < 8) {
-				codeLength++;
-			}
+            while (value > (Math.pow(2, (8 * codeLength) - 1) - 1)
+                    || value < Math.pow(-2, (8 * codeLength) - 1) && codeLength < 8) {
+                codeLength++;
+            }
 
-			for (int i = 0; i < codeLength; i++) {
-				os.write((int) (value >> 8 * (i)));
-			}
+            for (int i = 0; i < codeLength; i++) {
+                os.write((int) (value >> 8 * (i)));
+            }
 
-			codeLength += BerLength.encodeLength(os, codeLength);
-		}
+            codeLength += BerLength.encodeLength(os, codeLength);
+        }
 
-		if (explicit) {
-			codeLength += id.encode(os);
-		}
+        if (explicit) {
+            codeLength += id.encode(os);
+        }
 
-		return codeLength;
-	}
+        return codeLength;
+    }
 
-	public int decode(InputStream is, boolean explicit) throws IOException {
+    public int decode(InputStream is, boolean explicit) throws IOException {
 
-		int codeLength = 0;
+        int codeLength = 0;
 
-		if (explicit) {
-			codeLength += id.decodeAndCheck(is);
-		}
+        if (explicit) {
+            codeLength += id.decodeAndCheck(is);
+        }
 
-		BerLength length = new BerLength();
-		codeLength += length.decode(is);
+        BerLength length = new BerLength();
+        codeLength += length.decode(is);
 
-		if (length.val < 1 || length.val > 8) {
-			throw new IOException("Decoded length of BerInteger is not correct");
-		}
+        if (length.val < 1 || length.val > 8) {
+            throw new IOException("Decoded length of BerInteger is not correct");
+        }
 
-		byte[] byteCode = new byte[length.val];
-		Util.readFully(is, byteCode);
+        byte[] byteCode = new byte[length.val];
+        Util.readFully(is, byteCode);
 
-		codeLength += length.val;
+        codeLength += length.val;
 
-		value = (byteCode[0] & 0x80) == 0x80 ? -1 : 0;
-		for (int i = 0; i < length.val; i++) {
-			value <<= 8;
-			value |= byteCode[i] & 0xff;
-		}
+        value = (byteCode[0] & 0x80) == 0x80 ? -1 : 0;
+        for (int i = 0; i < length.val; i++) {
+            value <<= 8;
+            value |= byteCode[i] & 0xff;
+        }
 
-		return codeLength;
-	}
+        return codeLength;
+    }
 
-	public void encodeAndSave(int encodingSizeGuess) throws IOException {
-		BerByteArrayOutputStream os = new BerByteArrayOutputStream(encodingSizeGuess);
-		encode(os, false);
-		code = os.getArray();
-	}
+    public void encodeAndSave(int encodingSizeGuess) throws IOException {
+        BerByteArrayOutputStream os = new BerByteArrayOutputStream(encodingSizeGuess);
+        encode(os, false);
+        code = os.getArray();
+    }
 
-	@Override
-	public String toString() {
-		return "" + value;
-	}
+    @Override
+    public String toString() {
+        return "" + value;
+    }
 }

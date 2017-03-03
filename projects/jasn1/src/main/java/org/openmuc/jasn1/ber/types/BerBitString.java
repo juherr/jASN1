@@ -30,108 +30,108 @@ import org.openmuc.jasn1.ber.BerLength;
 
 public class BerBitString {
 
-	public final static BerIdentifier identifier = new BerIdentifier(BerIdentifier.UNIVERSAL_CLASS,
-			BerIdentifier.PRIMITIVE, BerIdentifier.BIT_STRING_TAG);
-	protected BerIdentifier id;
+    public final static BerIdentifier identifier = new BerIdentifier(BerIdentifier.UNIVERSAL_CLASS,
+            BerIdentifier.PRIMITIVE, BerIdentifier.BIT_STRING_TAG);
+    protected BerIdentifier id;
 
-	public byte[] code = null;
+    public byte[] code = null;
 
-	public byte[] value;
-	public int numBits;
+    public byte[] value;
+    public int numBits;
 
-	public BerBitString() {
-		id = identifier;
-	}
+    public BerBitString() {
+        id = identifier;
+    }
 
-	public BerBitString(byte[] value, int numBits) {
-		id = identifier;
-		if ((numBits < (((value.length - 1) * 8) + 1)) || (numBits > (value.length * 8))) {
-			throw new IllegalArgumentException("numBits out of bound.");
-		}
+    public BerBitString(byte[] value, int numBits) {
+        id = identifier;
+        if ((numBits < (((value.length - 1) * 8) + 1)) || (numBits > (value.length * 8))) {
+            throw new IllegalArgumentException("numBits out of bound.");
+        }
 
-		this.value = value;
-		this.numBits = numBits;
+        this.value = value;
+        this.numBits = numBits;
 
-	}
+    }
 
-	public BerBitString(byte[] code) {
-		id = identifier;
-		this.code = code;
-	}
+    public BerBitString(byte[] code) {
+        id = identifier;
+        this.code = code;
+    }
 
-	public int encode(BerByteArrayOutputStream os, boolean explicit) throws IOException {
+    public int encode(BerByteArrayOutputStream os, boolean explicit) throws IOException {
 
-		int codeLength;
+        int codeLength;
 
-		if (code != null) {
-			codeLength = code.length;
-			for (int i = code.length - 1; i >= 0; i--) {
-				os.write(code[i]);
-			}
-		}
-		else {
+        if (code != null) {
+            codeLength = code.length;
+            for (int i = code.length - 1; i >= 0; i--) {
+                os.write(code[i]);
+            }
+        }
+        else {
 
-			for (int i = (value.length - 1); i >= 0; i--) {
-				os.write(value[i]);
-			}
-			os.write(value.length * 8 - numBits);
+            for (int i = (value.length - 1); i >= 0; i--) {
+                os.write(value[i]);
+            }
+            os.write(value.length * 8 - numBits);
 
-			codeLength = value.length + 1;
+            codeLength = value.length + 1;
 
-			codeLength += BerLength.encodeLength(os, codeLength);
+            codeLength += BerLength.encodeLength(os, codeLength);
 
-		}
+        }
 
-		if (explicit) {
-			codeLength += id.encode(os);
-		}
+        if (explicit) {
+            codeLength += id.encode(os);
+        }
 
-		return codeLength;
-	}
+        return codeLength;
+    }
 
-	public int decode(InputStream is, boolean explicit) throws IOException {
-		// could be encoded in primitiv and constructed mode
-		// only primitiv mode is implemented
+    public int decode(InputStream is, boolean explicit) throws IOException {
+        // could be encoded in primitiv and constructed mode
+        // only primitiv mode is implemented
 
-		int codeLength = 0;
+        int codeLength = 0;
 
-		if (explicit) {
-			codeLength += id.decodeAndCheck(is);
-		}
+        if (explicit) {
+            codeLength += id.decodeAndCheck(is);
+        }
 
-		BerLength length = new BerLength();
-		codeLength += length.decode(is);
+        BerLength length = new BerLength();
+        codeLength += length.decode(is);
 
-		value = new byte[length.val - 1];
+        value = new byte[length.val - 1];
 
-		int nextByte = is.read();
-		if (nextByte == -1) {
-			throw new EOFException("Unexpected end of input stream.");
-		}
+        int nextByte = is.read();
+        if (nextByte == -1) {
+            throw new EOFException("Unexpected end of input stream.");
+        }
 
-		numBits = (value.length * 8) - nextByte;
+        numBits = (value.length * 8) - nextByte;
 
-		if (value.length > 0) {
-			Util.readFully(is, value);
-		}
+        if (value.length > 0) {
+            Util.readFully(is, value);
+        }
 
-		codeLength += value.length + 1;
+        codeLength += value.length + 1;
 
-		return codeLength;
+        return codeLength;
 
-	}
+    }
 
-	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < numBits; i++) {
-			if (((value[i / 8] & 0xff) & (0x80 >> (i % 8))) == (0x80 >> (i % 8))) {
-				sb.append('1');
-			}
-			else {
-				sb.append('0');
-			}
-		}
-		return sb.toString();
-	}
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < numBits; i++) {
+            if (((value[i / 8] & 0xff) & (0x80 >> (i % 8))) == (0x80 >> (i % 8))) {
+                sb.append('1');
+            }
+            else {
+                sb.append('0');
+            }
+        }
+        return sb.toString();
+    }
 }

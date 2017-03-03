@@ -23,8 +23,8 @@ package org.openmuc.jasn1.compiler.model;
 import java.util.ArrayList;
 
 public class Intersection {
-	public ArrayList cnsElemList = new ArrayList();
-	public ArrayList exceptCnsElem = new ArrayList();
-	public boolean isExcept;
-	public boolean isInterSection;
+    public ArrayList cnsElemList = new ArrayList();
+    public ArrayList exceptCnsElem = new ArrayList();
+    public boolean isExcept;
+    public boolean isInterSection;
 }

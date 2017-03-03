@@ -27,30 +27,30 @@ import org.openmuc.jasn1.ber.types.BerOctetString;
 
 public class BerUTF8String extends BerOctetString {
 
-	public final static BerIdentifier identifier = new BerIdentifier(BerIdentifier.UNIVERSAL_CLASS,
-			BerIdentifier.PRIMITIVE, BerIdentifier.UTF8_STRING_TAG);
+    public final static BerIdentifier identifier = new BerIdentifier(BerIdentifier.UNIVERSAL_CLASS,
+            BerIdentifier.PRIMITIVE, BerIdentifier.UTF8_STRING_TAG);
 
-	public BerUTF8String() {
-		id = identifier;
-	}
+    public BerUTF8String() {
+        id = identifier;
+    }
 
-	public BerUTF8String(byte[] value) {
-		id = identifier;
-		this.value = value;
-	}
+    public BerUTF8String(byte[] value) {
+        id = identifier;
+        this.value = value;
+    }
 
-	public BerUTF8String(String valueAsString) throws UnsupportedEncodingException {
-		id = identifier;
-		value = valueAsString.getBytes("UTF-8");
-	}
+    public BerUTF8String(String valueAsString) throws UnsupportedEncodingException {
+        id = identifier;
+        value = valueAsString.getBytes("UTF-8");
+    }
 
-	@Override
-	public String toString() {
-		try {
-			return new String(value, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			return "Unsupported Encoding";
-		}
-	}
+    @Override
+    public String toString() {
+        try {
+            return new String(value, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            return "Unsupported Encoding";
+        }
+    }
 
 }

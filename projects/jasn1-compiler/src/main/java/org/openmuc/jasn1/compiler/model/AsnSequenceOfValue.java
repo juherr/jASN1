@@ -23,6 +23,6 @@ package org.openmuc.jasn1.compiler.model;
 import java.util.ArrayList;
 
 public class AsnSequenceOfValue {
-	boolean isValPresent;
-	public ArrayList value = new ArrayList();
+    boolean isValPresent;
+    public ArrayList value = new ArrayList();
 }

@@ -21,6 +21,6 @@
 package org.openmuc.jasn1.compiler.model;
 
 public class AsnReal extends AsnUniversalType {
-	public final String BUILTINTYPE = "REAL";
+    public final String BUILTINTYPE = "REAL";
 
 }

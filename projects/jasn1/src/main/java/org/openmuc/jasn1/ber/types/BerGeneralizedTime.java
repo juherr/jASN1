@@ -24,16 +24,16 @@ import org.openmuc.jasn1.ber.BerIdentifier;
 
 public class BerGeneralizedTime extends BerOctetString {
 
-	public final static BerIdentifier identifier = new BerIdentifier(BerIdentifier.UNIVERSAL_CLASS,
-			BerIdentifier.PRIMITIVE, BerIdentifier.GENERALIZED_TIME_TAG);
+    public final static BerIdentifier identifier = new BerIdentifier(BerIdentifier.UNIVERSAL_CLASS,
+            BerIdentifier.PRIMITIVE, BerIdentifier.GENERALIZED_TIME_TAG);
 
-	public BerGeneralizedTime() {
-		id = identifier;
-	}
+    public BerGeneralizedTime() {
+        id = identifier;
+    }
 
-	public BerGeneralizedTime(byte[] octetString) {
-		id = identifier;
-		this.value = octetString;
-	}
+    public BerGeneralizedTime(byte[] octetString) {
+        id = identifier;
+        this.value = octetString;
+    }
 
 }

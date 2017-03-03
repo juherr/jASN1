@@ -22,13 +22,13 @@ package org.openmuc.jasn1.compiler.model;
 
 public class AsnAny extends AsnUniversalType {
 
-	final String BUILTINTYPE = "ANY";
-	public String definedByType;
-	public boolean isDefinedBy;
+    final String BUILTINTYPE = "ANY";
+    public String definedByType;
+    public boolean isDefinedBy;
 
-	public AsnAny() {
-		isDefinedBy = false;
-		definedByType = "";
-	}
+    public AsnAny() {
+        isDefinedBy = false;
+        definedByType = "";
+    }
 
 }
