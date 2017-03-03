@@ -23,59 +23,38 @@ package org.openmuc.jasn1.ber.types;
 import java.io.IOException;
 import java.io.InputStream;
 
+import javax.xml.bind.DatatypeConverter;
+
 import org.openmuc.jasn1.ber.BerByteArrayOutputStream;
-import org.openmuc.jasn1.ber.BerLength;
 
 public class BerAny {
 
-	public byte[] value;
+    public byte[] value;
 
-	public BerAny() {
-	}
+    public BerAny() {
+    }
 
-	public BerAny(byte[] value) {
-		this.value = value;
-	}
+    public BerAny(byte[] value) {
+        this.value = value;
+    }
 
-	public int encode(BerByteArrayOutputStream os, boolean explicit) throws IOException {
+    public int encode(BerByteArrayOutputStream os) throws IOException {
+        os.write(value);
+        return value.length;
+    }
 
-		os.write(value);
-		int codeLength = value.length;
+    public int decode(InputStream is, int length) throws IOException {
+        value = new byte[length];
 
-		codeLength += BerLength.encodeLength(os, codeLength);
+        if (length != 0) {
+            Util.readFully(is, value);
+        }
+        return length;
+    }
 
-		return codeLength;
-	}
-
-	public int decode(InputStream is, boolean explicit) throws IOException {
-
-		int codeLength = 0;
-
-		BerLength length = new BerLength();
-		codeLength += length.decode(is);
-
-		value = new byte[length.val];
-
-		if (length.val != 0) {
-			Util.readFully(is, value);
-			codeLength += length.val;
-		}
-
-		return codeLength;
-
-	}
-
-	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		for (byte element : value) {
-			String hexString = Integer.toHexString(element & 0xff);
-			if (hexString.length() == 1) {
-				builder.append("0");
-			}
-			builder.append(hexString);
-		}
-		return builder.toString();
-	}
+    @Override
+    public String toString() {
+        return DatatypeConverter.printHexBinary(value);
+    }
 
 }

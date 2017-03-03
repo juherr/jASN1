@@ -20,10 +20,13 @@
  */
 package org.openmuc.jasn1.compiler.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class AsnSequenceSet extends AsnConstructedType {
 
-	public AsnElementTypeList elementTypeList;
-	public AsnConstraint constraint;
-	public boolean isSequence = false;
+    public List<AsnComponentType> componentTypes = new ArrayList<>();
+    public AsnConstraint constraint;
+    public boolean isSequence = false;
 
 }

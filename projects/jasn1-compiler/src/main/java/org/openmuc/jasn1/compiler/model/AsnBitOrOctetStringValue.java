@@ -23,13 +23,13 @@ package org.openmuc.jasn1.compiler.model;
 import java.util.ArrayList;
 
 public class AsnBitOrOctetStringValue {
-	public String bhStr;
-	public ArrayList idlist;
-	public boolean isBString;
-	public boolean isHString;
+    public String bhStr;
+    public ArrayList idlist;
+    public boolean isBString;
+    public boolean isHString;
 
-	public AsnBitOrOctetStringValue() {
-		idlist = new ArrayList();
-	}
+    public AsnBitOrOctetStringValue() {
+        idlist = new ArrayList();
+    }
 
 }

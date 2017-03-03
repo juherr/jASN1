@@ -11,10 +11,10 @@ PersonnelRecord.java in the folder named "generated". This generation
 can be repeated using the following command:
 
 Linux:
-../projects/jasn1-compiler/run-scripts/jasn1-compiler.sh -o "generated/" -p "generated" x690BerExample.asn
+../run-scripts/jasn1-compiler -o "generated/" -p "generated" x690BerExample.asn
 
 Windows:
-..\projects\jasn1-compiler\run-scripts\jasn1-compiler.bat -o "generated/" -p "generated" x690BerExample.asn
+..\run-scripts\jasn1-compiler.bat -o "generated/" -p "generated" x690BerExample.asn
 
 If you need to decode the indefinite length then you can use the -il flag.
 

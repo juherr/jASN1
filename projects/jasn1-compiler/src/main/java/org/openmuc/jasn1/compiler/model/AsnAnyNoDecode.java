@@ -21,13 +21,13 @@
 package org.openmuc.jasn1.compiler.model;
 
 public class AsnAnyNoDecode extends AsnUniversalType {
-	final String BUILTINTYPE = "ANY_NODECODE";
-	public String definedByType;
-	public boolean isDefinedBy;
+    final String BUILTINTYPE = "ANY_NODECODE";
+    public String definedByType;
+    public boolean isDefinedBy;
 
-	public AsnAnyNoDecode() {
-		isDefinedBy = false;
-		definedByType = "";
-	}
+    public AsnAnyNoDecode() {
+        isDefinedBy = false;
+        definedByType = "";
+    }
 
 }

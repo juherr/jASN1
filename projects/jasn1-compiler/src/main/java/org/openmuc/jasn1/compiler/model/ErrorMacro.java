@@ -21,10 +21,10 @@
 package org.openmuc.jasn1.compiler.model;
 
 public class ErrorMacro extends AsnType {
-	public boolean isDefinedType;
-	public boolean isParameter;
-	public String parameterName;
-	public String typeName;
-	public Object typeReference;
+    public boolean isDefinedType;
+    public boolean isParameter;
+    public String parameterName;
+    public String typeName;
+    public Object typeReference;
 
 }

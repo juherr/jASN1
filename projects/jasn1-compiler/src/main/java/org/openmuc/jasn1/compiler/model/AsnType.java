@@ -22,6 +22,6 @@ package org.openmuc.jasn1.compiler.model;
 
 public abstract class AsnType {
 
-	public String name = "";
+    public String name = "";
 
 }

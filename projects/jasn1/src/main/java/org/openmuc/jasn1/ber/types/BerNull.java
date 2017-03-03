@@ -29,50 +29,50 @@ import org.openmuc.jasn1.ber.BerLength;
 
 public class BerNull {
 
-	public final static BerIdentifier identifier = new BerIdentifier(BerIdentifier.UNIVERSAL_CLASS,
-			BerIdentifier.PRIMITIVE, BerIdentifier.NULL_TAG);
-	public BerIdentifier id;
+    public final static BerIdentifier identifier = new BerIdentifier(BerIdentifier.UNIVERSAL_CLASS,
+            BerIdentifier.PRIMITIVE, BerIdentifier.NULL_TAG);
+    public BerIdentifier id;
 
-	public BerNull() {
-		id = identifier;
-	}
+    public BerNull() {
+        id = identifier;
+    }
 
-	public BerNull(byte[] code) {
-		id = identifier;
-	}
+    public BerNull(byte[] code) {
+        id = identifier;
+    }
 
-	public int encode(BerByteArrayOutputStream os, boolean explicit) throws IOException {
+    public int encode(BerByteArrayOutputStream os, boolean explicit) throws IOException {
 
-		int codeLength = BerLength.encodeLength(os, 0);
+        int codeLength = BerLength.encodeLength(os, 0);
 
-		if (explicit) {
-			codeLength += id.encode(os);
-		}
+        if (explicit) {
+            codeLength += id.encode(os);
+        }
 
-		return codeLength;
-	}
+        return codeLength;
+    }
 
-	public int decode(InputStream is, boolean explicit) throws IOException {
+    public int decode(InputStream is, boolean explicit) throws IOException {
 
-		int codeLength = 0;
+        int codeLength = 0;
 
-		if (explicit) {
-			codeLength += id.decodeAndCheck(is);
-		}
+        if (explicit) {
+            codeLength += id.decodeAndCheck(is);
+        }
 
-		BerLength length = new BerLength();
-		codeLength += length.decode(is);
+        BerLength length = new BerLength();
+        codeLength += length.decode(is);
 
-		if (length.val != 0) {
-			throw new IOException("Decoded length of BerNull is not correct");
-		}
+        if (length.val != 0) {
+            throw new IOException("Decoded length of BerNull is not correct");
+        }
 
-		return codeLength;
-	}
+        return codeLength;
+    }
 
-	@Override
-	public String toString() {
-		return "ASN1_NULL";
-	}
+    @Override
+    public String toString() {
+        return "ASN1_NULL";
+    }
 
 }

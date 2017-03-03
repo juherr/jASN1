@@ -28,36 +28,36 @@ import java.util.Iterator;
 //~--- classes ----------------------------------------------------------------
 
 public class ElementSetSpec {
-	public ConstraintElements allExceptCnselem;
-	public ArrayList intersectionList;
-	public boolean isAllExcept;
+    public ConstraintElements allExceptCnselem;
+    public ArrayList intersectionList;
+    public boolean isAllExcept;
 
-	// ~--- constructors -------------------------------------------------------
+    // ~--- constructors -------------------------------------------------------
 
-	// Default Constructor
-	public ElementSetSpec() {
-		intersectionList = new ArrayList();
-	}
+    // Default Constructor
+    public ElementSetSpec() {
+        intersectionList = new ArrayList();
+    }
 
-	// ~--- methods ------------------------------------------------------------
+    // ~--- methods ------------------------------------------------------------
 
-	// toString Method
-	@Override
-	public String toString() {
-		String ts = "";
-		Iterator e = intersectionList.iterator();
+    // toString Method
+    @Override
+    public String toString() {
+        String ts = "";
+        Iterator e = intersectionList.iterator();
 
-		if (e != null) {
-			while (e.hasNext()) {
-				ts += e.next();
-				ts += "|";
-			}
-		}
+        if (e != null) {
+            while (e.hasNext()) {
+                ts += e.next();
+                ts += "|";
+            }
+        }
 
-		if (isAllExcept) {
-			ts += "ALL EXCEPT  " + allExceptCnselem;
-		}
+        if (isAllExcept) {
+            ts += "ALL EXCEPT  " + allExceptCnselem;
+        }
 
-		return ts;
-	}
+        return ts;
+    }
 }

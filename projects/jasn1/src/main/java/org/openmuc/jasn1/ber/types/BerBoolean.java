@@ -30,98 +30,98 @@ import org.openmuc.jasn1.ber.BerLength;
 
 public class BerBoolean {
 
-	public final static BerIdentifier identifier = new BerIdentifier(BerIdentifier.UNIVERSAL_CLASS,
-			BerIdentifier.PRIMITIVE, BerIdentifier.BOOLEAN_TAG);
-	public BerIdentifier id;
+    public final static BerIdentifier identifier = new BerIdentifier(BerIdentifier.UNIVERSAL_CLASS,
+            BerIdentifier.PRIMITIVE, BerIdentifier.BOOLEAN_TAG);
+    public BerIdentifier id;
 
-	public byte[] code = null;
+    public byte[] code = null;
 
-	public boolean value;
+    public boolean value;
 
-	public BerBoolean() {
-		id = identifier;
-	}
+    public BerBoolean() {
+        id = identifier;
+    }
 
-	public BerBoolean(byte[] code) {
-		id = identifier;
-		this.code = code;
-	}
+    public BerBoolean(byte[] code) {
+        id = identifier;
+        this.code = code;
+    }
 
-	public BerBoolean(boolean value) {
-		id = identifier;
-		this.value = value;
-	}
+    public BerBoolean(boolean value) {
+        id = identifier;
+        this.value = value;
+    }
 
-	public int encode(BerByteArrayOutputStream os, boolean explicit) throws IOException {
+    public int encode(BerByteArrayOutputStream os, boolean explicit) throws IOException {
 
-		int codeLength;
+        int codeLength;
 
-		if (code != null) {
-			codeLength = code.length;
-			for (int i = code.length - 1; i >= 0; i--) {
-				os.write(code[i]);
-			}
-		}
-		else {
+        if (code != null) {
+            codeLength = code.length;
+            for (int i = code.length - 1; i >= 0; i--) {
+                os.write(code[i]);
+            }
+        }
+        else {
 
-			codeLength = 1;
+            codeLength = 1;
 
-			if (value) {
-				os.write(0xff);
-			}
-			else {
-				os.write(0);
-			}
+            if (value) {
+                os.write(0xff);
+            }
+            else {
+                os.write(0);
+            }
 
-			codeLength += BerLength.encodeLength(os, codeLength);
-		}
+            codeLength += BerLength.encodeLength(os, codeLength);
+        }
 
-		if (explicit) {
-			codeLength += id.encode(os);
-		}
+        if (explicit) {
+            codeLength += id.encode(os);
+        }
 
-		return codeLength;
-	}
+        return codeLength;
+    }
 
-	public int decode(InputStream is, boolean explicit) throws IOException {
+    public int decode(InputStream is, boolean explicit) throws IOException {
 
-		int codeLength = 0;
+        int codeLength = 0;
 
-		if (explicit) {
-			codeLength += id.decodeAndCheck(is);
-		}
+        if (explicit) {
+            codeLength += id.decodeAndCheck(is);
+        }
 
-		BerLength length = new BerLength();
-		codeLength += length.decode(is);
+        BerLength length = new BerLength();
+        codeLength += length.decode(is);
 
-		if (length.val != 1) {
-			throw new IOException("Decoded length of BerBoolean is not correct");
-		}
+        if (length.val != 1) {
+            throw new IOException("Decoded length of BerBoolean is not correct");
+        }
 
-		int nextByte = is.read();
-		if (nextByte == -1) {
-			throw new EOFException("Unexpected end of input stream.");
-		}
+        int nextByte = is.read();
+        if (nextByte == -1) {
+            throw new EOFException("Unexpected end of input stream.");
+        }
 
-		codeLength++;
-		if (nextByte == 0) {
-			value = false;
-		}
-		else {
-			value = true;
-		}
+        codeLength++;
+        if (nextByte == 0) {
+            value = false;
+        }
+        else {
+            value = true;
+        }
 
-		return codeLength;
-	}
+        return codeLength;
+    }
 
-	public void encodeAndSave(int encodingSizeGuess) throws IOException {
-		BerByteArrayOutputStream os = new BerByteArrayOutputStream(encodingSizeGuess);
-		encode(os, false);
-		code = os.getArray();
-	}
+    public void encodeAndSave(int encodingSizeGuess) throws IOException {
+        BerByteArrayOutputStream os = new BerByteArrayOutputStream(encodingSizeGuess);
+        encode(os, false);
+        code = os.getArray();
+    }
 
-	@Override
-	public String toString() {
-		return "" + value;
-	}
+    @Override
+    public String toString() {
+        return "" + value;
+    }
 }

@@ -21,11 +21,11 @@
 package org.openmuc.jasn1.compiler.model;
 
 public class AsnOidComponent {
-	public AsnDefinedValue defval;
-	public boolean isDefinedValue;
-	public String name = "";
-	public boolean nameAndNumberForm;
-	public boolean nameForm;
-	public Integer num = null;
-	public boolean numberForm;
+    public AsnDefinedValue defval;
+    public boolean isDefinedValue;
+    public String name = "";
+    public boolean nameAndNumberForm;
+    public boolean nameForm;
+    public Integer num = null;
+    public boolean numberForm;
 }

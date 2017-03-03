@@ -23,13 +23,13 @@ package org.openmuc.jasn1.compiler.model;
 import java.util.ArrayList;
 
 public class AsnNamedNumberList {
-	public ArrayList namedNumbers;
+    public ArrayList namedNumbers;
 
-	public AsnNamedNumberList() {
-		namedNumbers = new ArrayList();
-	}
+    public AsnNamedNumberList() {
+        namedNumbers = new ArrayList();
+    }
 
-	public int count() {
-		return namedNumbers.size();
-	}
+    public int count() {
+        return namedNumbers.size();
+    }
 }

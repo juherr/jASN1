@@ -21,9 +21,9 @@
 package org.openmuc.jasn1.compiler.model;
 
 public class AsnNamedNumber {
-	public AsnDefinedValue definedValue;
-	public boolean isSignedNumber;
-	public String name = "";
-	public AsnSignedNumber signedNumber;
+    public AsnDefinedValue definedValue;
+    public boolean isSignedNumber;
+    public String name = "";
+    public AsnSignedNumber signedNumber;
 
 }

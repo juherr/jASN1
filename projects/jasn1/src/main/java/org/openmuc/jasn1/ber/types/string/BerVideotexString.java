@@ -25,21 +25,21 @@ import org.openmuc.jasn1.ber.types.BerOctetString;
 
 public class BerVideotexString extends BerOctetString {
 
-	public final static BerIdentifier identifier = new BerIdentifier(BerIdentifier.UNIVERSAL_CLASS,
-			BerIdentifier.PRIMITIVE, BerIdentifier.VIDEOTEX_STRING_TAG);
+    public final static BerIdentifier identifier = new BerIdentifier(BerIdentifier.UNIVERSAL_CLASS,
+            BerIdentifier.PRIMITIVE, BerIdentifier.VIDEOTEX_STRING_TAG);
 
-	public BerVideotexString() {
-		id = identifier;
-	}
+    public BerVideotexString() {
+        id = identifier;
+    }
 
-	public BerVideotexString(byte[] value) {
-		id = identifier;
-		this.value = value;
-	}
+    public BerVideotexString(byte[] value) {
+        id = identifier;
+        this.value = value;
+    }
 
-	@Override
-	public String toString() {
-		return new String(value);
-	}
+    @Override
+    public String toString() {
+        return new String(value);
+    }
 
 }

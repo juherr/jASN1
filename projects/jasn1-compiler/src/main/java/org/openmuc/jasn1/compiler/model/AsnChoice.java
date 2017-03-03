@@ -20,8 +20,11 @@
  */
 package org.openmuc.jasn1.compiler.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class AsnChoice extends AsnConstructedType {
 
-	public AsnElementTypeList elementTypeList;
+    public List<AsnComponentType> componentTypes = new ArrayList<>();
 
 }

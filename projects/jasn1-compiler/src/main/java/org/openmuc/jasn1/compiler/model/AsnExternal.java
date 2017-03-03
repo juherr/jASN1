@@ -21,6 +21,6 @@
 package org.openmuc.jasn1.compiler.model;
 
 public class AsnExternal extends AsnType {
-	final String BUILTINTYPE = "EXTERNAL";
+    final String BUILTINTYPE = "EXTERNAL";
 
 }

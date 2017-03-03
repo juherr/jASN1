@@ -21,6 +21,6 @@
 package org.openmuc.jasn1.compiler.model;
 
 public class AsnEmbedded extends AsnType {
-	final String BUILTINTYPE = "EMBEDDED PDV";
+    final String BUILTINTYPE = "EMBEDDED PDV";
 
 }

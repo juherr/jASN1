@@ -21,25 +21,25 @@
 package org.openmuc.jasn1.compiler.model;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class AsnModule {
-	public AsnTypes asnTypes;
-	public ArrayList asnValues;
-	public ArrayList exportSymbolList;
-	public boolean exported;
-	public boolean extensible;
-	public List<SymbolsFromModule> importSymbolFromModuleList = new ArrayList<>();
-	ArrayList importSymbolList;
-	public boolean imported;
-	public AsnModuleIdentifier moduleIdentifier;
-	public boolean tag;
-	public String tagDefault = "";
+    public ArrayList asnValues;
+    public ArrayList exportSymbolList;
+    public boolean exported;
+    public boolean extensible;
+    public List<SymbolsFromModule> importSymbolFromModuleList = new ArrayList<>();
+    ArrayList importSymbolList;
+    public boolean imported;
+    public AsnModuleIdentifier moduleIdentifier;
+    public boolean tag;
+    public String tagDefault = "";
+    public final HashMap<String, AsnType> typesByName = new HashMap<>();
 
-	public AsnModule() {
-		exportSymbolList = new ArrayList();
-		importSymbolList = new ArrayList();
-		asnTypes = new AsnTypes();
-		asnValues = new ArrayList();
-	}
+    public AsnModule() {
+        exportSymbolList = new ArrayList();
+        importSymbolList = new ArrayList();
+        asnValues = new ArrayList();
+    }
 }

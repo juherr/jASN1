@@ -23,19 +23,19 @@ package org.openmuc.jasn1.compiler.model;
 import java.util.ArrayList;
 
 public class AsnCharacterStringValue {
-	String cStr;
-	public ArrayList charDefsList;
-	public boolean isCharDefList;
-	boolean isQuadruple;
-	public boolean isTuple;
-	public ArrayList tupleQuad;
+    String cStr;
+    public ArrayList charDefsList;
+    public boolean isCharDefList;
+    boolean isQuadruple;
+    public boolean isTuple;
+    public ArrayList tupleQuad;
 
-	// ~--- constructors -------------------------------------------------------
+    // ~--- constructors -------------------------------------------------------
 
-	// Default Constructor
-	public AsnCharacterStringValue() {
-		charDefsList = new ArrayList();
-		tupleQuad = new ArrayList();
-	}
+    // Default Constructor
+    public AsnCharacterStringValue() {
+        charDefsList = new ArrayList();
+        tupleQuad = new ArrayList();
+    }
 
 }
