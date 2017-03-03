@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-15 Fraunhofer ISE
+ * Copyright 2011-17 Fraunhofer ISE
  *
  * This file is part of jASN1.
  * For more information visit http://www.openmuc.org
@@ -23,10 +23,8 @@ package org.openmuc.jasn1.compiler.model;
 public class AsnSequenceOf extends AsnConstructedType {
 
     public AsnConstraint constraint = null;
-    public boolean isDefinedType = false;
-    public boolean isSequenceOf = false; // Differntiates between SEQUENCE OF and SET OF types
+    public boolean isSequenceOf = false; // Differentiates between SEQUENCE OF and SET OF types
     public boolean isSizeConstraint = false;
-    public String typeName = "";
-    public AsnType typeReference = null;
+    public AsnElementType componentType = null;
 
 }

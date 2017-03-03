@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-15 Fraunhofer ISE
+ * Copyright 2011-17 Fraunhofer ISE
  *
  * This file is part of jASN1.
  * For more information visit http://www.openmuc.org
@@ -31,7 +31,7 @@ public class BerIdentifierTest {
     public void twoByteEncoding() throws IOException {
         BerByteArrayOutputStream berBAOStream = new BerByteArrayOutputStream(50);
 
-        BerIdentifier berIdentifier = new BerIdentifier(BerIdentifier.APPLICATION_CLASS, BerIdentifier.PRIMITIVE, 31);
+        BerTag berIdentifier = new BerTag(BerTag.APPLICATION_CLASS, BerTag.PRIMITIVE, 31);
 
         int length = berIdentifier.encode(berBAOStream);
         Assert.assertEquals(2, length);

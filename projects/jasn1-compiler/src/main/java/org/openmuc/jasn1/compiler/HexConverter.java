@@ -1,54 +1,20 @@
 package org.openmuc.jasn1.compiler;
 
+import javax.xml.bind.DatatypeConverter;
+
 public class HexConverter {
-
-    public static void appendShortHexString(int b, StringBuilder builder) {
-        String hexString = Integer.toHexString(b & 0xff);
-        if (hexString.length() == 1) {
-            builder.append("0");
-        }
-        builder.append(hexString);
-    }
-
-    public static void appendShortHexString(StringBuilder builder, byte[] byteArray, int offset, int length) {
-        for (int i = offset; i < (offset + length); i++) {
-            appendShortHexString(byteArray[i], builder);
-        }
-    }
-
-    public static void appendHexString(int b, StringBuilder builder) {
-        builder.append("0x");
-        appendShortHexString(b, builder);
-    }
-
-    public static void appendHexString(StringBuilder builder, byte[] byteArray, int offset, int length) {
-        int l = 1;
-        for (int i = offset; i < (offset + length); i++) {
-            if ((l != 1) && ((l - 1) % 8 == 0)) {
-                builder.append(' ');
-            }
-            if ((l != 1) && ((l - 1) % 16 == 0)) {
-                builder.append('\n');
-            }
-            l++;
-            appendHexString(byteArray[i], builder);
-            if (i != offset + length - 1) {
-                builder.append(' ');
-            }
-        }
-    }
 
     public static String toHexString(byte b) {
         StringBuilder builder = new StringBuilder();
-
-        return builder.append("0x").append(toShortHexString(b)).toString();
+        appendHexString(b, builder);
+        return builder.toString();
     }
 
-    public static String toHexString(byte[] byteArray) {
-        return toHexString(byteArray, 0, byteArray.length);
+    public static String toHexString(byte[] bytes) {
+        return toHexString(bytes, 0, bytes.length);
     }
 
-    public static String toHexString(byte[] byteArray, int offset, int length) {
+    public static String toHexString(byte[] bytes, int offset, int length) {
         StringBuilder builder = new StringBuilder();
 
         int l = 1;
@@ -60,7 +26,7 @@ public class HexConverter {
                 builder.append('\n');
             }
             l++;
-            builder.append(toHexString(byteArray[i]));
+            appendHexString(bytes[i], builder);
             if (i != offset + length - 1) {
                 builder.append(' ');
             }
@@ -69,32 +35,44 @@ public class HexConverter {
         return builder.toString();
     }
 
-    public static String toShortHexString(int b) {
-        StringBuilder builder = new StringBuilder();
-
-        String hexString = Integer.toHexString(b);
-        if (hexString.length() == 1) {
-            builder.append('0');
-        }
-
-        return builder.append(hexString).toString();
+    /**
+     * Returns the integer value as hex string filled with leading zeros. If you do not want leading zeros use
+     * Integer.toHexString(int i) instead.
+     * 
+     * @param i
+     *            the integer value to be converted
+     * @return the hex string
+     */
+    public static String toShortHexString(int i) {
+        byte[] bytes = new byte[] { (byte) (i >> 24), (byte) (i >> 16), (byte) (i >> 8), (byte) (i) };
+        return toShortHexString(bytes);
     }
 
+    /**
+     * Returns the byte as a hex string. If b is less than 16 the hex string returned contains a leading zero.
+     * 
+     * @param b
+     *            the byte to be converted
+     * @return the byte as a hex string.
+     */
     public static String toShortHexString(byte b) {
-        return toShortHexString(b & 0xff);
+        return toShortHexString(new byte[] { b });
     }
 
-    public static String toShortHexString(byte[] byteArray) {
-        return toShortHexString(byteArray, 0, byteArray.length);
+    public static String toShortHexString(byte[] bytes) {
+        return DatatypeConverter.printHexBinary(bytes);
     }
 
-    public static String toShortHexString(byte[] byteArray, int offset, int length) {
-        StringBuilder builder = new StringBuilder();
-        for (int i = offset; i < (offset + length); i++) {
-            builder.append(toShortHexString(byteArray[i]));
+    public final static char[] hexArray = "0123456789ABCDEF".toCharArray();
+
+    public static String toShortHexString(byte[] bytes, int offset, int length) {
+        char[] hexChars = new char[length * 2];
+        for (int j = offset; j < (offset + length); j++) {
+            int v = bytes[j] & 0xff;
+            hexChars[j * 2] = hexArray[v >>> 4];
+            hexChars[j * 2 + 1] = hexArray[v & 0x0f];
         }
-
-        return builder.toString();
+        return new String(hexChars);
     }
 
     public static byte[] fromShortHexString(String shortHexString) throws NumberFormatException {
@@ -115,6 +93,36 @@ public class HexConverter {
             data[i / 2] = (byte) ((firstCharacter << 4) + secondCharacter);
         }
         return data;
+    }
+
+    public static void appendShortHexString(byte b, StringBuilder builder) {
+        builder.append(toShortHexString(b));
+    }
+
+    public static void appendShortHexString(StringBuilder builder, byte[] bytes, int offset, int length) {
+        builder.append(toShortHexString(bytes, offset, length));
+    }
+
+    public static void appendHexString(byte b, StringBuilder builder) {
+        builder.append("0x");
+        appendShortHexString(b, builder);
+    }
+
+    public static void appendHexString(StringBuilder builder, byte[] byteArray, int offset, int length) {
+        int l = 1;
+        for (int i = offset; i < (offset + length); i++) {
+            if ((l != 1) && ((l - 1) % 8 == 0)) {
+                builder.append(' ');
+            }
+            if ((l != 1) && ((l - 1) % 16 == 0)) {
+                builder.append('\n');
+            }
+            l++;
+            appendHexString(byteArray[i], builder);
+            if (i != offset + length - 1) {
+                builder.append(' ');
+            }
+        }
     }
 
     private static void validate(String s) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-15 Fraunhofer ISE
+ * Copyright 2011-17 Fraunhofer ISE
  *
  * This file is part of jASN1.
  * For more information visit http://www.openmuc.org
@@ -25,6 +25,13 @@ import java.util.HashMap;
 import java.util.List;
 
 public class AsnModule {
+
+    public enum TagDefault {
+        EXPLICIT,
+        IMPLICIT,
+        AUTOMATIC;
+    }
+
     public ArrayList asnValues;
     public ArrayList exportSymbolList;
     public boolean exported;
@@ -34,7 +41,7 @@ public class AsnModule {
     public boolean imported;
     public AsnModuleIdentifier moduleIdentifier;
     public boolean tag;
-    public String tagDefault = "";
+    public TagDefault tagDefault = TagDefault.EXPLICIT;
     public final HashMap<String, AsnType> typesByName = new HashMap<>();
 
     public AsnModule() {

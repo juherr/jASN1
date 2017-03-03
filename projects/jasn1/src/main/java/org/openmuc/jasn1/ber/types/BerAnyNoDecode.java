@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-15 Fraunhofer ISE
+ * Copyright 2011-17 Fraunhofer ISE
  *
  * This file is part of jASN1.
  * For more information visit http://www.openmuc.org
@@ -32,6 +32,10 @@ public class BerAnyNoDecode {
     public BerAnyNoDecode() {
     }
 
+    public BerAnyNoDecode(byte[] value) {
+        length = value.length;
+    }
+
     public BerAnyNoDecode(int length) {
         this.length = length;
     }
@@ -42,7 +46,6 @@ public class BerAnyNoDecode {
 
     public int decode(InputStream is, int length) throws IOException {
         return length;
-
     }
 
     @Override

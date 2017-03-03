@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-15 Fraunhofer ISE
+ * Copyright 2011-17 Fraunhofer ISE
  *
  * This file is part of jASN1.
  * For more information visit http://www.openmuc.org
@@ -25,14 +25,12 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.openmuc.jasn1.ber.BerByteArrayOutputStream;
-import org.openmuc.jasn1.ber.BerIdentifier;
 import org.openmuc.jasn1.ber.BerLength;
+import org.openmuc.jasn1.ber.BerTag;
 
 public class BerBitString {
 
-    public final static BerIdentifier identifier = new BerIdentifier(BerIdentifier.UNIVERSAL_CLASS,
-            BerIdentifier.PRIMITIVE, BerIdentifier.BIT_STRING_TAG);
-    protected BerIdentifier id;
+    public final static BerTag tag = new BerTag(BerTag.UNIVERSAL_CLASS, BerTag.PRIMITIVE, BerTag.BIT_STRING_TAG);
 
     public byte[] code = null;
 
@@ -40,11 +38,9 @@ public class BerBitString {
     public int numBits;
 
     public BerBitString() {
-        id = identifier;
     }
 
     public BerBitString(byte[] value, int numBits) {
-        id = identifier;
         if ((numBits < (((value.length - 1) * 8) + 1)) || (numBits > (value.length * 8))) {
             throw new IllegalArgumentException("numBits out of bound.");
         }
@@ -55,48 +51,53 @@ public class BerBitString {
     }
 
     public BerBitString(byte[] code) {
-        id = identifier;
         this.code = code;
     }
 
-    public int encode(BerByteArrayOutputStream os, boolean explicit) throws IOException {
+    public int encode(BerByteArrayOutputStream os) throws IOException {
+        return encode(os, true);
+    }
 
-        int codeLength;
+    public int encode(BerByteArrayOutputStream os, boolean withTag) throws IOException {
 
         if (code != null) {
-            codeLength = code.length;
             for (int i = code.length - 1; i >= 0; i--) {
                 os.write(code[i]);
             }
-        }
-        else {
-
-            for (int i = (value.length - 1); i >= 0; i--) {
-                os.write(value[i]);
+            if (withTag) {
+                return tag.encode(os) + code.length;
             }
-            os.write(value.length * 8 - numBits);
-
-            codeLength = value.length + 1;
-
-            codeLength += BerLength.encodeLength(os, codeLength);
-
+            return code.length;
         }
 
-        if (explicit) {
-            codeLength += id.encode(os);
+        for (int i = (value.length - 1); i >= 0; i--) {
+            os.write(value[i]);
+        }
+        os.write(value.length * 8 - numBits);
+
+        int codeLength = value.length + 1;
+
+        codeLength += BerLength.encodeLength(os, codeLength);
+
+        if (withTag) {
+            codeLength += tag.encode(os);
         }
 
         return codeLength;
     }
 
-    public int decode(InputStream is, boolean explicit) throws IOException {
+    public int decode(InputStream is) throws IOException {
+        return decode(is, true);
+    }
+
+    public int decode(InputStream is, boolean withTag) throws IOException {
         // could be encoded in primitiv and constructed mode
         // only primitiv mode is implemented
 
         int codeLength = 0;
 
-        if (explicit) {
-            codeLength += id.decodeAndCheck(is);
+        if (withTag) {
+            codeLength += tag.decodeAndCheck(is);
         }
 
         BerLength length = new BerLength();

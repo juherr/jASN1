@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-15 Fraunhofer ISE
+ * Copyright 2011-17 Fraunhofer ISE
  *
  * This file is part of jASN1.
  * For more information visit http://www.openmuc.org
@@ -24,46 +24,50 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.openmuc.jasn1.ber.BerByteArrayOutputStream;
-import org.openmuc.jasn1.ber.BerIdentifier;
 import org.openmuc.jasn1.ber.BerLength;
+import org.openmuc.jasn1.ber.BerTag;
 
 public class BerOctetString {
 
-    public final static BerIdentifier identifier = new BerIdentifier(BerIdentifier.UNIVERSAL_CLASS,
-            BerIdentifier.PRIMITIVE, BerIdentifier.OCTET_STRING_TAG);
-    protected BerIdentifier id;
+    public final static BerTag tag = new BerTag(BerTag.UNIVERSAL_CLASS, BerTag.PRIMITIVE, BerTag.OCTET_STRING_TAG);
 
     public byte[] value;
 
     public BerOctetString() {
-        id = identifier;
     }
 
     public BerOctetString(byte[] value) {
-        id = identifier;
         this.value = value;
     }
 
-    public int encode(BerByteArrayOutputStream os, boolean explicit) throws IOException {
+    public int encode(BerByteArrayOutputStream os) throws IOException {
+        return encode(os, true);
+    }
+
+    public int encode(BerByteArrayOutputStream os, boolean withTag) throws IOException {
 
         os.write(value);
         int codeLength = value.length;
 
         codeLength += BerLength.encodeLength(os, codeLength);
 
-        if (explicit) {
-            codeLength += id.encode(os);
+        if (withTag) {
+            codeLength += tag.encode(os);
         }
 
         return codeLength;
     }
 
-    public int decode(InputStream is, boolean explicit) throws IOException {
+    public int decode(InputStream is) throws IOException {
+        return decode(is, true);
+    }
+
+    public int decode(InputStream is, boolean withTag) throws IOException {
 
         int codeLength = 0;
 
-        if (explicit) {
-            codeLength += id.decodeAndCheck(is);
+        if (withTag) {
+            codeLength += tag.decodeAndCheck(is);
         }
 
         BerLength length = new BerLength();

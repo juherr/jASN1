@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-15 Fraunhofer ISE
+ * Copyright 2011-17 Fraunhofer ISE
  *
  * This file is part of jASN1.
  * For more information visit http://www.openmuc.org
@@ -37,35 +37,67 @@ public class BerLength {
         if (val == -1) {
             throw new EOFException("Unexpected end of input stream.");
         }
-        int length = 1;
 
-        if ((val & 0x80) != 0) {
-            int lengthLength = val & 0x7f;
+        if ((val & 0x80) == 0) {
+            return 1;
+        }
 
-            // check for indefinite length
-            if (lengthLength == 0) {
-                val = -1;
-                return 1;
+        int lengthLength = val & 0x7f;
+
+        // check for indefinite length
+        if (lengthLength == 0) {
+            val = -1;
+            return 1;
+        }
+
+        if (lengthLength > 4) {
+            throw new IOException("Length is out of bound!");
+        }
+
+        val = 0;
+
+        for (int i = 0; i < lengthLength; i++) {
+            int nextByte = is.read();
+            if (nextByte == -1) {
+                throw new EOFException("Unexpected end of input stream.");
             }
+            val |= nextByte << (8 * (lengthLength - i - 1));
+        }
 
-            if (lengthLength > 4) {
-                throw new IOException("Length is out of bound!");
-            }
+        return lengthLength + 1;
+    }
 
-            val = 0;
+    public static int skip(InputStream is) throws IOException {
 
-            length += lengthLength;
+        int val = is.read();
+        if (val == -1) {
+            throw new EOFException("Unexpected end of input stream.");
+        }
 
-            for (int i = 0; i < lengthLength; i++) {
-                int nextByte = is.read();
-                if (nextByte == -1) {
-                    throw new EOFException("Unexpected end of input stream.");
-                }
-                val |= nextByte << (8 * (lengthLength - i - 1));
+        if ((val & 0x80) == 0) {
+            return 1;
+        }
+
+        int lengthLength = val & 0x7f;
+
+        // check for indefinite length
+        if (lengthLength == 0) {
+            val = -1;
+            return 1;
+        }
+
+        if (lengthLength > 4) {
+            throw new IOException("Length is out of bound!");
+        }
+
+        for (int i = 0; i < lengthLength; i++) {
+            int nextByte = is.read();
+            if (nextByte == -1) {
+                throw new EOFException("Unexpected end of input stream.");
             }
         }
 
-        return length;
+        return lengthLength + 1;
     }
 
     public static int encodeLength(BerByteArrayOutputStream os, int length) throws IOException {

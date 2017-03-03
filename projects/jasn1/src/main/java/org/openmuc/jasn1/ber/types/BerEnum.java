@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-15 Fraunhofer ISE
+ * Copyright 2011-17 Fraunhofer ISE
  *
  * This file is part of jASN1.
  * For more information visit http://www.openmuc.org
@@ -20,25 +20,27 @@
  */
 package org.openmuc.jasn1.ber.types;
 
-import org.openmuc.jasn1.ber.BerIdentifier;
+import java.math.BigInteger;
+
+import org.openmuc.jasn1.ber.BerTag;
 
 public class BerEnum extends BerInteger {
 
-    public final static BerIdentifier identifier = new BerIdentifier(BerIdentifier.UNIVERSAL_CLASS,
-            BerIdentifier.PRIMITIVE, BerIdentifier.ENUMERATED_TAG);
+    public final static BerTag tag = new BerTag(BerTag.UNIVERSAL_CLASS, BerTag.PRIMITIVE, BerTag.ENUMERATED_TAG);
 
     public BerEnum() {
-        id = identifier;
     }
 
     public BerEnum(byte[] code) {
-        id = identifier;
         this.code = code;
     }
 
-    public BerEnum(long val) {
-        id = identifier;
+    public BerEnum(BigInteger val) {
         this.value = val;
+    }
+
+    public BerEnum(long val) {
+        this.value = BigInteger.valueOf(val);
     }
 
 }

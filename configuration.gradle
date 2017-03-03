@@ -1,13 +1,13 @@
 
 project.ext {
 
-  cfgVersion = "1.6.0"
+  cfgVersion = "1.7.0"
   
   cfgGroup = "org.openmuc"
 
   cfgCopyDependencies = true
 
-  cfgCopyToRoot = false
+  cfgCopyToRoot = true
 
   cfgSignPom = true
 
@@ -38,28 +38,22 @@ tasks.withType(Tar) {
       include "build.gradle"
       include "configuration.gradle"
       include "license/**"
-      include "doc/*.txt"
-      include "doc/userguide/" + project.name + "-doc*.html"
-      include "doc/userguide/" + project.name + "-doc-img/**"
-      include 'run-scripts/**'
+      include "doc/CHANGELOG.txt"
+      include "run-scripts/**"
       include "gradle/wrapper/**"
       include "gradlew"
       include "gradlew.bat"
+      include "build/libs-all/**"
+      include "src/**"
 
-      include "sample/**/*.java"
-      include "sample/**/*.txt"
-      include "sample/**/*.asn"
-
-      include "projects/jasn1/build.gradle"
       include "projects/jasn1/src/**"
-      include "projects/jasn1/build/libs-all/**"
-      include "projects/jasn1/build/docs/javadoc/**"
+      include "projects/jasn1/build.gradle"
+      include "projects/jasn1/build/docs/**"
 
-      include "projects/jasn1-compiler/build.gradle"
       include "projects/jasn1-compiler/src/**"
+      include "projects/jasn1-compiler/build.gradle"
       include "projects/jasn1-compiler/antlr/**"
       include "projects/jasn1-compiler/dependencies/**"
-      include "projects/jasn1-compiler/build/libs-all/**"
     }
 
     if (name.equals("tar") ){
@@ -70,4 +64,21 @@ tasks.withType(Tar) {
       include "settings.gradle"
     }
   }
+  
+  into(project.name + "/doc/user-guide/") {
+    from("./build/asciidoc/html5/") {
+      include "**"
+    }
+    from("./build/asciidoc/pdf/") {
+      include "*.pdf"
+    }
+  }
+
+  into(project.name + "/doc/") {
+    from("./build/docs/") {
+      include "javadoc/**"
+    }
+  }
+
+
 }

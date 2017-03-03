@@ -1,25 +1,20 @@
 #!/bin/bash
 
-# got this from the gradle start up script:
-# Resolve links: $0 may be a link
-PRG="$0"
-# Need this for relative symlinks.
-while [ -h "$PRG" ] ; do
-    ls=`ls -ld "$PRG"`
-    link=`expr "$ls" : '.*-> \(.*\)$'`
-    if expr "$link" : '/.*' > /dev/null; then
-        PRG="$link"
+JARS_LOCATION="../build/libs-all"
+MAIN_CLASS="org.openmuc.jasn1.compiler.Compiler"
+SYSPROPS=""
+PARAMS=""
+
+SCRIPT_HOME=`dirname $0`
+
+CLASSPATH=$(JARS=("$SCRIPT_HOME"/"$JARS_LOCATION"/*.jar); IFS=:; echo "${JARS[*]}")
+
+for i in $@; do 
+    if [[ $i == -D* ]]; then
+	    SYSPROPS="$SYSPROPS $i";
     else
-        PRG=`dirname "$PRG"`"/$link"
+	    PARAMS="$PARAMS $i";
     fi
 done
-SAVED="`pwd`"
-cd "`dirname \"$PRG\"`/.."
-JASN1_COMP_HOME="`pwd -P`"
-cd "$SAVED"
 
-LIB=$JASN1_COMP_HOME/projects/jasn1-compiler/build/libs-all
-
-CLASSPATH=$(JARS=("$LIB"/*.jar); IFS=:; echo "${JARS[*]}")
-
-exec java -classpath "$CLASSPATH" org.openmuc.jasn1.compiler.Compiler "$@"
+java $SYSPROPS -cp $CLASSPATH $MAIN_CLASS $PARAMS
