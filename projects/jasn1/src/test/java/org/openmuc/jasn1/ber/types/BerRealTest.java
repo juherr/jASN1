@@ -95,4 +95,40 @@ public class BerRealTest {
         Assert.assertEquals(orig.value, decoded.value, 0.001);
     }
 
+    @Test
+    public void coding0dot2() throws IOException {
+        final BerReal orig = new BerReal(0.2);
+        final BerByteArrayOutputStream baos = new BerByteArrayOutputStream(100, true);
+        orig.encode(baos, true);
+
+        final BerReal decoded = new BerReal();
+        decoded.decode(new ByteArrayInputStream(baos.getArray()), true);
+
+        Assert.assertEquals(orig.value, decoded.value, 0.001);
+    }
+
+    @Test
+    public void coding1dot0() throws IOException {
+        final BerReal orig = new BerReal(1.0);
+        final BerByteArrayOutputStream baos = new BerByteArrayOutputStream(100, true);
+        orig.encode(baos, true);
+
+        final BerReal decoded = new BerReal();
+        decoded.decode(new ByteArrayInputStream(baos.getArray()), true);
+
+        Assert.assertEquals(orig.value, decoded.value, 0.001);
+    }
+
+    @Test
+    public void coding2dot0() throws IOException {
+        final BerReal orig = new BerReal(2.0);
+        final BerByteArrayOutputStream baos = new BerByteArrayOutputStream(100, true);
+        orig.encode(baos, true);
+
+        final BerReal decoded = new BerReal();
+        decoded.decode(new ByteArrayInputStream(baos.getArray()), true);
+
+        Assert.assertEquals(orig.value, decoded.value, 0.001);
+    }
+
 }

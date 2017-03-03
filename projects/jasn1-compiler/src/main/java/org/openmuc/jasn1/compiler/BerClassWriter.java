@@ -189,7 +189,7 @@ public class BerClassWriter {
      * or implicit). Return null if the passed tagged type does not have a tag.
      * 
      * @param asnTaggedType
-     * @return
+     * @return the tag from the AsnTaggedType structure
      */
     private Tag getTag(AsnTaggedType asnTaggedType) {
 
