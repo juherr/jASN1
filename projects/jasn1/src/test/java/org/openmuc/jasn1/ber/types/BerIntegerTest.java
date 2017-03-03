@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-15 Fraunhofer ISE
+ * Copyright 2011-17 Fraunhofer ISE
  *
  * This file is part of jASN1.
  * For more information visit http://www.openmuc.org
@@ -22,11 +22,12 @@ package org.openmuc.jasn1.ber.types;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.openmuc.jasn1.ber.BerByteArrayOutputStream;
-import org.openmuc.jasn1.ber.BerIdentifier;
+import org.openmuc.jasn1.ber.BerTag;
 import org.openmuc.jasn1.ber.BerLength;
 
 public class BerIntegerTest {
@@ -34,17 +35,17 @@ public class BerIntegerTest {
     public class IntegerUnivPrim extends BerInteger {
 
         // in the final version identifier needs to be static
-        protected final BerIdentifier identifier = new BerIdentifier(BerIdentifier.APPLICATION_CLASS,
-                BerIdentifier.PRIMITIVE, 2);
+        protected final BerTag identifier = new BerTag(BerTag.APPLICATION_CLASS,
+                BerTag.PRIMITIVE, 2);
 
-        IntegerUnivPrim(long val) {
+        IntegerUnivPrim(BigInteger val) {
             super(val);
         }
 
         @Override
-        public int encode(BerByteArrayOutputStream berBAOStream, boolean explicit) throws IOException {
+        public int encode(BerByteArrayOutputStream berBAOStream, boolean withTag) throws IOException {
             int codeLength = super.encode(berBAOStream, false);
-            if (explicit) {
+            if (withTag) {
                 codeLength += BerLength.encodeLength(berBAOStream, codeLength);
                 codeLength += identifier.encode(berBAOStream);
             }
@@ -57,25 +58,25 @@ public class BerIntegerTest {
     @Test
     public void encodeDecodeLargeLongs() throws IOException {
         BerByteArrayOutputStream berBAOStream = new BerByteArrayOutputStream(50);
-        BerInteger myInt = new BerInteger(20093243433l);
+        BerInteger myInt = new BerInteger(BigInteger.valueOf(20093243433l));
         myInt.encode(berBAOStream, true);
 
         ByteArrayInputStream berInputStream = new ByteArrayInputStream(berBAOStream.getArray());
         BerInteger myInt2 = new BerInteger();
         myInt2.decode(berInputStream, true);
-        Assert.assertEquals(20093243433l, myInt2.value);
+        Assert.assertEquals(20093243433l, myInt2.value.longValue());
     }
 
     @Test
     public void encodeDecodeLargeNegativeLongs() throws IOException {
         BerByteArrayOutputStream berBAOStream = new BerByteArrayOutputStream(50);
-        BerInteger myInt = new BerInteger(-20093243433l);
+        BerInteger myInt = new BerInteger(BigInteger.valueOf(-20093243433l));
         myInt.encode(berBAOStream, true);
 
         ByteArrayInputStream berInputStream = new ByteArrayInputStream(berBAOStream.getArray());
         BerInteger myInt2 = new BerInteger();
         myInt2.decode(berInputStream, true);
-        Assert.assertEquals(-20093243433l, myInt2.value);
+        Assert.assertEquals(-20093243433l, myInt2.value.longValue());
     }
 
     @Test
@@ -83,7 +84,7 @@ public class BerIntegerTest {
         BerByteArrayOutputStream berBAOStream = new BerByteArrayOutputStream(50);
 
         // 51 is the example in X.690
-        IntegerUnivPrim testInteger = new IntegerUnivPrim(51);
+        IntegerUnivPrim testInteger = new IntegerUnivPrim(BigInteger.valueOf(51));
         int length = testInteger.encode(berBAOStream, false);
         Assert.assertEquals(2, length);
 
@@ -96,7 +97,7 @@ public class BerIntegerTest {
     public void implicitEncoding2() throws IOException {
         BerByteArrayOutputStream berBAOStream = new BerByteArrayOutputStream(50);
 
-        IntegerUnivPrim testInteger = new IntegerUnivPrim(256);
+        IntegerUnivPrim testInteger = new IntegerUnivPrim(BigInteger.valueOf(256));
         int length = testInteger.encode(berBAOStream, false);
         Assert.assertEquals(3, length);
 
@@ -109,7 +110,7 @@ public class BerIntegerTest {
     public void implicitEncoding3() throws IOException {
         BerByteArrayOutputStream berBAOStream = new BerByteArrayOutputStream(50);
 
-        IntegerUnivPrim testInteger = new IntegerUnivPrim(0);
+        IntegerUnivPrim testInteger = new IntegerUnivPrim(BigInteger.valueOf(0));
         int length = testInteger.encode(berBAOStream, false);
         Assert.assertEquals(2, length);
 
@@ -122,7 +123,7 @@ public class BerIntegerTest {
     public void implicitEncoding4() throws IOException {
         BerByteArrayOutputStream berBAOStream = new BerByteArrayOutputStream(50);
 
-        IntegerUnivPrim testInteger = new IntegerUnivPrim(127);
+        IntegerUnivPrim testInteger = new IntegerUnivPrim(BigInteger.valueOf(127));
         int length = testInteger.encode(berBAOStream, false);
         Assert.assertEquals(2, length);
 
@@ -135,7 +136,7 @@ public class BerIntegerTest {
     public void implicitEncoding5() throws IOException {
         BerByteArrayOutputStream berBAOStream = new BerByteArrayOutputStream(50);
 
-        IntegerUnivPrim testInteger = new IntegerUnivPrim(128);
+        IntegerUnivPrim testInteger = new IntegerUnivPrim(BigInteger.valueOf(128));
         int length = testInteger.encode(berBAOStream, false);
         Assert.assertEquals(3, length);
 
@@ -148,7 +149,7 @@ public class BerIntegerTest {
     public void implicitEncoding6() throws IOException {
         BerByteArrayOutputStream berBAOStream = new BerByteArrayOutputStream(50);
 
-        IntegerUnivPrim testInteger = new IntegerUnivPrim(-128);
+        IntegerUnivPrim testInteger = new IntegerUnivPrim(BigInteger.valueOf(-128));
         int length = testInteger.encode(berBAOStream, false);
         Assert.assertEquals(2, length);
 
@@ -161,7 +162,7 @@ public class BerIntegerTest {
     public void implicitEncoding7() throws IOException {
         BerByteArrayOutputStream berBAOStream = new BerByteArrayOutputStream(50);
 
-        IntegerUnivPrim testInteger = new IntegerUnivPrim(-129);
+        IntegerUnivPrim testInteger = new IntegerUnivPrim(BigInteger.valueOf(-129));
         int length = testInteger.encode(berBAOStream, false);
         Assert.assertEquals(3, length);
 
@@ -175,7 +176,7 @@ public class BerIntegerTest {
         BerByteArrayOutputStream berStream = new BerByteArrayOutputStream(50);
 
         // 51 is the example in X.690
-        BerInteger testInteger = new BerInteger(51);
+        BerInteger testInteger = new BerInteger(BigInteger.valueOf(51));
         int length = testInteger.encode(berStream, true);
         Assert.assertEquals(3, length);
 
@@ -189,18 +190,16 @@ public class BerIntegerTest {
         ByteArrayInputStream berInputStream = new ByteArrayInputStream(byteCode);
         BerInteger asn1Integer = new BerInteger();
         asn1Integer.decode(berInputStream, true);
-        Assert.assertEquals(51, asn1Integer.value);
+        Assert.assertEquals(51, asn1Integer.value.intValue());
     }
 
     @Test
     public void explicitEncoding2() throws IOException {
         BerByteArrayOutputStream berStream = new BerByteArrayOutputStream(50);
 
-        BerInteger testInteger = new BerInteger(5555);
+        BerInteger testInteger = new BerInteger(BigInteger.valueOf(5555));
         int length = testInteger.encode(berStream, true);
         Assert.assertEquals(4, length);
-
-        // System.out.println(getByteArrayString(berStream.getArray()));
 
         byte[] expectedBytes = new byte[] { 0x02, 0x02, 0x15, (byte) 0xb3 };
         Assert.assertArrayEquals(expectedBytes, berStream.getArray());
@@ -212,7 +211,7 @@ public class BerIntegerTest {
         ByteArrayInputStream berInputStream = new ByteArrayInputStream(byteCode);
         BerInteger asn1Integer = new BerInteger();
         asn1Integer.decode(berInputStream, true);
-        Assert.assertEquals(5555, asn1Integer.value);
+        Assert.assertEquals(5555, asn1Integer.value.intValue());
     }
 
     @Test
@@ -221,7 +220,7 @@ public class BerIntegerTest {
         ByteArrayInputStream berInputStream = new ByteArrayInputStream(byteCode);
         BerInteger asn1Integer = new BerInteger();
         asn1Integer.decode(berInputStream, true);
-        Assert.assertEquals(-64, asn1Integer.value);
+        Assert.assertEquals(-64, asn1Integer.value.intValue());
     }
 
     @Test
@@ -230,28 +229,7 @@ public class BerIntegerTest {
         ByteArrayInputStream berInputStream = new ByteArrayInputStream(byteCode);
         BerInteger asn1Integer = new BerInteger();
         asn1Integer.decode(berInputStream, true);
-        Assert.assertEquals(-255, asn1Integer.value);
-    }
-
-    public static String getByteArrayString(byte[] byteArray) {
-        StringBuilder builder = new StringBuilder();
-        int l = 1;
-        for (byte b : byteArray) {
-            if ((l != 1) && ((l - 1) % 8 == 0)) {
-                builder.append(' ');
-            }
-            if ((l != 1) && ((l - 1) % 16 == 0)) {
-                builder.append('\n');
-            }
-            l++;
-            builder.append("0x");
-            String hexString = Integer.toHexString(b & 0xff);
-            if (hexString.length() == 1) {
-                builder.append(0);
-            }
-            builder.append(hexString + " ");
-        }
-        return builder.toString();
+        Assert.assertEquals(-255, asn1Integer.value.intValue());
     }
 
 }

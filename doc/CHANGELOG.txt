@@ -1,3 +1,30 @@
+v1.7.0 27-Jan-2017
+------------------
+
+- fixed bug that the tag default of one module would override that of
+  another module.
+
+- added support for explicitly tagged SEQUENCE, SET, SEQUENCE/SET OF,
+  CHOICE and ANY
+
+- JAXB syntax mode of jasn-compiler is now default. Old syntax can be
+  enabled using the legacy (-l) flag.
+
+- numerous minor improvements to jasn1-compiler to create more
+  comprehensible Java classes.
+
+- BerInteger is now based on BigInteger instead of long. Thus it can
+  code integer values larger than 8 bytes.
+
+- fixed name clash when a sequence element of type SEQUENCE OF has the
+  same name as the SEQUENCE OF type, e.g. SEQUENCE { test SEQUENCE OF
+  Test }
+
+- fixed BerReal bug when mantissa is larger than Integer.MAX
+
+- added encode and decode functions to all generated classes that take
+  only a stream as parameter
+
 v1.6.0 03-Oct-2016
 ------------------
 
@@ -27,7 +54,7 @@ v1.6.0 03-Oct-2016
 
 - added support for UTCTime
 
-- fixed support for tagged SEQUENCE OFs such as SEQUENCE OF [3]
+- fixed support for SEQUENCE OFs of tagged types such as SEQUENCE OF [3]
   INTEGER
 
 v1.5.0 10-Dec-2015

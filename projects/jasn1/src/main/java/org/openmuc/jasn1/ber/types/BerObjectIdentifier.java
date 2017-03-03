@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-15 Fraunhofer ISE
+ * Copyright 2011-17 Fraunhofer ISE
  *
  * This file is part of jASN1.
  * For more information visit http://www.openmuc.org
@@ -26,30 +26,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.openmuc.jasn1.ber.BerByteArrayOutputStream;
-import org.openmuc.jasn1.ber.BerIdentifier;
 import org.openmuc.jasn1.ber.BerLength;
+import org.openmuc.jasn1.ber.BerTag;
 
 public class BerObjectIdentifier {
 
-    public final static BerIdentifier identifier = new BerIdentifier(BerIdentifier.UNIVERSAL_CLASS,
-            BerIdentifier.PRIMITIVE, BerIdentifier.OBJECT_IDENTIFIER_TAG);
-    protected BerIdentifier id;
+    public final static BerTag tag = new BerTag(BerTag.UNIVERSAL_CLASS, BerTag.PRIMITIVE, BerTag.OBJECT_IDENTIFIER_TAG);
 
     public byte[] code = null;
 
     public int[] value;
 
     public BerObjectIdentifier() {
-        id = identifier;
     }
 
     public BerObjectIdentifier(byte[] code) {
-        id = identifier;
         this.code = code;
     }
 
     public BerObjectIdentifier(int[] value) {
-        id = identifier;
         if ((value.length < 2) || ((value[0] == 0 || value[0] == 1) && (value[1] > 39)) || value[0] > 2) {
             throw new IllegalArgumentException("invalid object identifier components");
         }
@@ -63,64 +58,71 @@ public class BerObjectIdentifier {
 
     }
 
-    public int encode(BerByteArrayOutputStream os, boolean explicit) throws IOException {
+    public int encode(BerByteArrayOutputStream os) throws IOException {
+        return encode(os, true);
+    }
 
-        int codeLength;
+    public int encode(BerByteArrayOutputStream os, boolean withTag) throws IOException {
 
         if (code != null) {
-            codeLength = code.length;
             for (int i = code.length - 1; i >= 0; i--) {
                 os.write(code[i]);
             }
+            if (withTag) {
+                return tag.encode(os) + code.length;
+            }
+            return code.length;
         }
-        else {
 
-            int firstSubidentifier = 40 * value[0] + value[1];
+        int firstSubidentifier = 40 * value[0] + value[1];
 
-            int subidentifier;
+        int subidentifier;
 
-            codeLength = 0;
+        int codeLength = 0;
 
-            for (int i = (value.length - 1); i > 0; i--) {
+        for (int i = (value.length - 1); i > 0; i--) {
 
-                if (i == 1) {
-                    subidentifier = firstSubidentifier;
-                }
-                else {
-                    subidentifier = value[i];
-                }
-
-                // get length of subidentifier
-                int subIDLength = 1;
-                while (subidentifier > (Math.pow(2, (7 * subIDLength)) - 1)) {
-                    subIDLength++;
-                }
-
-                os.write(subidentifier & 0x7f);
-
-                for (int j = 1; j <= (subIDLength - 1); j++) {
-                    os.write(((subidentifier >> (7 * j)) & 0xff) | 0x80);
-                }
-
-                codeLength += subIDLength;
+            if (i == 1) {
+                subidentifier = firstSubidentifier;
+            }
+            else {
+                subidentifier = value[i];
             }
 
-            codeLength += BerLength.encodeLength(os, codeLength);
+            // get length of subidentifier
+            int subIDLength = 1;
+            while (subidentifier > (Math.pow(2, (7 * subIDLength)) - 1)) {
+                subIDLength++;
+            }
 
+            os.write(subidentifier & 0x7f);
+
+            for (int j = 1; j <= (subIDLength - 1); j++) {
+                os.write(((subidentifier >> (7 * j)) & 0xff) | 0x80);
+            }
+
+            codeLength += subIDLength;
         }
-        if (explicit) {
-            codeLength += id.encode(os);
+
+        codeLength += BerLength.encodeLength(os, codeLength);
+
+        if (withTag) {
+            codeLength += tag.encode(os);
         }
 
         return codeLength;
     }
 
-    public int decode(InputStream is, boolean explicit) throws IOException {
+    public int decode(InputStream is) throws IOException {
+        return decode(is, true);
+    }
+
+    public int decode(InputStream is, boolean withTag) throws IOException {
 
         int codeLength = 0;
 
-        if (explicit) {
-            codeLength += id.decodeAndCheck(is);
+        if (withTag) {
+            codeLength += tag.decodeAndCheck(is);
         }
 
         BerLength length = new BerLength();

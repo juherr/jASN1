@@ -1,0 +1,35 @@
+/*
+ * Copyright 2011-17 Fraunhofer ISE
+ *
+ * This file is part of jASN1.
+ * For more information visit http://www.openmuc.org
+ *
+ * jASN1 is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * jASN1 is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with jASN1.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
+jASN1 consists of two projects: jasn1-compiler (licensed under GPLv3)
+and the jasn1 library (licensed under LGPLv2.1). Java classes
+generated using the jasn1-compiler may be licensed under any license
+of your choice.
+    
+Dependencies
+------------
+
+Information about the licenses of open source dependencies packaged
+with jASN1 can be found in the folder named "dependencies" inside the
+distribution.
+
+You may request the source code of the dependencies by sending a mail
+through our website at openmuc.org.

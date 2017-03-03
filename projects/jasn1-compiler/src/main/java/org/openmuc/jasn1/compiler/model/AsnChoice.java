@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-15 Fraunhofer ISE
+ * Copyright 2011-17 Fraunhofer ISE
  *
  * This file is part of jASN1.
  * For more information visit http://www.openmuc.org
@@ -25,6 +25,6 @@ import java.util.List;
 
 public class AsnChoice extends AsnConstructedType {
 
-    public List<AsnComponentType> componentTypes = new ArrayList<>();
+    public List<AsnElementType> componentTypes = new ArrayList<>();
 
 }

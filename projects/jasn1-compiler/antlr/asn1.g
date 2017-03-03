@@ -243,9 +243,9 @@ module_definition returns [AsnModule module]
 	:	(mid = module_identifier
 		{ module.moduleIdentifier = mid; 	})
 		DEFINITIONS_KW 
-		(( e:EXPLICIT_KW {module.tagDefault = e.getText();}
-		  |i:IMPLICIT_KW {module.tagDefault = i.getText();}
-		  |a:AUTOMATIC_KW {module.tagDefault = a.getText();}
+		(( e:EXPLICIT_KW {module.tagDefault = AsnModule.TagDefault.EXPLICIT;}
+		  |i:IMPLICIT_KW {module.tagDefault = AsnModule.TagDefault.IMPLICIT;}
+		  |a:AUTOMATIC_KW {module.tagDefault = AsnModule.TagDefault.AUTOMATIC;}
 		 ) TAGS_KW {module.tag = true;} |) 
 		(EXTENSIBILITY_KW IMPLIED_KW {module.extensible=true;} | )
 		ASSIGN_OP 
@@ -483,7 +483,7 @@ boolean_type returns [Object obj]
 	;
 				
 choice_type	returns [Object obj]
-{AsnChoice ch = new AsnChoice(); List<AsnComponentType> eltplst; 
+{AsnChoice ch = new AsnChoice(); List<AsnElementType> eltplst; 
 obj = null;}
 	: (	CHOICE_KW L_BRACE (eltplst = elementType_list {ch.componentTypes = eltplst ;}) R_BRACE ) 
 		{obj = ch; eltplst = null; ch = null;}
@@ -545,7 +545,7 @@ relativeOid_type returns [Object obj]
 		
 sequence_type returns [Object obj]
 {AsnSequenceSet seq = new AsnSequenceSet();
-List<AsnComponentType> eltplist ; AsnConstraint cnstrnt ; obj = null;}
+List<AsnElementType> eltplist ; AsnConstraint cnstrnt ; obj = null;}
 	:  ( SEQUENCE_KW {seq.isSequence = true;} 
 	    L_BRACE 
 	   (eltplist = elementType_list {seq.componentTypes = eltplist;})? 
@@ -557,48 +557,63 @@ List<AsnComponentType> eltplist ; AsnConstraint cnstrnt ; obj = null;}
 	
 sequenceof_type returns [AsnSequenceOf obj]
 {AsnSequenceOf seqof = new AsnSequenceOf();
-AsnConstraint cnstrnt; obj = null; Object referencedAsnType ; String s ;}
+AsnConstraint cnstrnt; obj = null; AsnElementType referencedAsnType ; String s ;}
 	:  ( SEQUENCE_KW {seqof.isSequenceOf = true;}
 	         (cnstrnt = constraint{seqof.constraint = cnstrnt;})? OF_KW 
-		( referencedAsnType = type 
-		{	if((AsnDefinedType.class).isInstance(referencedAsnType)){
-		  		seqof.isDefinedType=true;
-				seqof.typeName = ((AsnDefinedType)referencedAsnType).typeName ; 
-			}
-			else{	
-				seqof.typeReference = (AsnType) referencedAsnType ; 
-			}
+		( referencedAsnType = sequenceof_component 
+		{
+                seqof.componentType = referencedAsnType;
 		}) )
 		{obj = seqof;  cnstrnt = null; seqof=null;}		
 	;
-	
+
+
+sequenceof_component	returns [AsnElementType eletyp]
+{eletyp = new AsnElementType();AsnValue val; 
+Object obj; AsnTag tg; String s;}
+	: (	(lid:LOWER {eletyp.name = lid.getText();})? 
+		(tg = tag { eletyp.tag = tg ;})? 
+		(s = tag_default {eletyp.tagType = s ;})? 
+		(obj = type) )
+		{
+			if((AsnDefinedType.class).isInstance(obj)){
+				eletyp.isDefinedType=true;
+				eletyp.typeName = ((AsnDefinedType)obj).typeName ; 
+			} else{		
+				eletyp.typeReference = obj;
+			}
+		}
+	;
+
+
+
 set_type returns [Object obj]
 {AsnSequenceSet set = new AsnSequenceSet();
-List<AsnComponentType> eltplist ;obj = null;}
+List<AsnElementType> eltplist ;obj = null;}
 	:  ( SET_KW L_BRACE (eltplist =  elementType_list {set.componentTypes = eltplist ;})? R_BRACE )
 		{obj = set ; eltplist = null; set = null;}
 	;
 		
 setof_type	returns [Object obj]
-{AsnSequenceOf setof = new AsnSequenceOf();
+{AsnSequenceOf setof = new AsnSequenceOf(); setof.componentType = new AsnElementType();
 AsnConstraint cns; obj = null;
 Object obj1 ; String s;}
 	:	(SET_KW	
 	(cns = constraint {setof.constraint = cns ;})? OF_KW 
 		(obj1 = type 
 		{	if((AsnDefinedType.class).isInstance(obj1)){
-		  		setof.isDefinedType=true;
-				setof.typeName = ((AsnDefinedType)obj1).typeName ; 
+		  		setof.componentType.isDefinedType=true;
+				setof.componentType.typeName = ((AsnDefinedType)obj1).typeName ; 
 			}
 			else{
-				setof.typeReference = (AsnType) obj1;
+				setof.componentType.typeReference = (AsnType) obj1;
 			} 
 		}) )
 		{obj = setof; cns = null; obj1=null; setof=null;} 		
 	;
 
 tagged_type returns [Object obj]
-{AsnNamedType tgtyp = new AsnNamedType();
+{AsnTaggedType tgtyp = new AsnTaggedType();
 AsnTag tg; Object obj1 = null; String s; obj = null;}
 	:	((tg = tag {tgtyp.tag = tg ;}) 
 		(s = tag_default { tgtyp.tagType = s ;})? 
@@ -743,14 +758,14 @@ typeorvalue returns [Object obj]
 	  {obj = obj1; obj1=null;}
 	;
 
-elementType_list returns [List<AsnComponentType> elelist]
-{elelist = new ArrayList<>(); AsnComponentType eletyp; int i=1; }
+elementType_list returns [List<AsnElementType> elelist]
+{elelist = new ArrayList<>(); AsnElementType eletyp; int i=1; }
 	:	(ELLIPSIS | eletyp = elementType {if (eletyp.name.isEmpty()) {eletyp.name = "element" + i;};elelist.add(eletyp);i++; }
 	    (COMMA (ELLIPSIS | (eletyp = elementType {if (eletyp.name.isEmpty()) {eletyp.name = "element" + i;};elelist.add(eletyp);i++; })))*)
 	;
 
-elementType	returns [AsnComponentType eletyp]
-{eletyp = new AsnComponentType();AsnValue val; 
+elementType	returns [AsnElementType eletyp]
+{eletyp = new AsnElementType();AsnValue val; 
 Object obj; AsnTag tg; String s;}
 	: (	((lid:LOWER {eletyp.name = lid.getText();})? 
 		(tg = tag { eletyp.tag = tg ;})? 
