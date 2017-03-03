@@ -55,7 +55,7 @@ public class BerOctetStringTest {
     @Test
     public void toStringTest() {
         BerOctetString octetString = new BerOctetString(new byte[] { 1, 2, (byte) 0xa0 });
-        Assert.assertEquals("0102a0", octetString.toString());
+        Assert.assertEquals("0102A0", octetString.toString());
     }
 
 }

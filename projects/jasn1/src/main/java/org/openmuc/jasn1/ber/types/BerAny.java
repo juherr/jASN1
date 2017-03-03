@@ -23,9 +23,8 @@ package org.openmuc.jasn1.ber.types;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.xml.bind.DatatypeConverter;
-
 import org.openmuc.jasn1.ber.BerByteArrayOutputStream;
+import org.openmuc.jasn1.util.HexConverter;
 
 public class BerAny {
 
@@ -54,7 +53,7 @@ public class BerAny {
 
     @Override
     public String toString() {
-        return DatatypeConverter.printHexBinary(value);
+        return HexConverter.toShortHexString(value);
     }
 
 }

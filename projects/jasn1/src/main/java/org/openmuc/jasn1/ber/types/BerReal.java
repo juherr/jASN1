@@ -112,13 +112,17 @@ public class BerReal {
             return 0;
         }
 
+        // because IEEE double-precision format is (-1)^sign * 1.b51b50..b0 * 2^(e-1023) we need to subtract 1023 and 52
+        // from the exponent to get an exponent corresponding to an integer matissa as need here.
         exponent -= 1075; // 1023 + 52 = 1075
 
+        // trailing zeros of the mantissa should be removed. Therefor find out how much the mantissa can be shifted and
+        // the exponent can be increased
         int exponentIncr = 0;
-        while (((longBits >> exponentIncr) & 0xff) == 0x00) {
+        while (((mantissa >> exponentIncr) & 0xff) == 0x00) {
             exponentIncr += 8;
         }
-        while (((longBits >> exponentIncr) & 0x01) == 0x00) {
+        while (((mantissa >> exponentIncr) & 0x01) == 0x00) {
             exponentIncr++;
         }
 
@@ -198,8 +202,11 @@ public class BerReal {
         byte[] byteCode = new byte[length.val];
         Util.readFully(is, byteCode);
 
-        codeLength += length.val;
+        if ((byteCode[0] & 0x80) != 0x80) {
+            throw new IOException("Only binary REAL encoding is supported");
+        }
 
+        codeLength += length.val;
         int tempLength = 1;
 
         int sign = 1;
@@ -222,7 +229,7 @@ public class BerReal {
 
         long mantissa = 0;
         for (int i = 0; i < length.val - tempLength; i++) {
-            mantissa |= ((long) byteCode[i + tempLength]) << (8 * (length.val - tempLength - i - 1));
+            mantissa |= (byteCode[i + tempLength] & 0xffL) << (8 * (length.val - tempLength - i - 1));
         }
 
         value = sign * mantissa * Math.pow(2, exponent);

@@ -26,6 +26,7 @@ import java.io.InputStream;
 import org.openmuc.jasn1.ber.BerByteArrayOutputStream;
 import org.openmuc.jasn1.ber.BerLength;
 import org.openmuc.jasn1.ber.BerTag;
+import org.openmuc.jasn1.util.HexConverter;
 
 public class BerOctetString {
 
@@ -86,15 +87,7 @@ public class BerOctetString {
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder();
-        for (byte element : value) {
-            String hexString = Integer.toHexString(element & 0xff);
-            if (hexString.length() == 1) {
-                builder.append("0");
-            }
-            builder.append(hexString);
-        }
-        return builder.toString();
+        return HexConverter.toShortHexString(value);
     }
 
 }

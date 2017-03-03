@@ -31,9 +31,7 @@ class Util {
     }
 
     static void readFully(InputStream is, byte[] buffer, int off, int len) throws IOException {
-
         do {
-
             int bytesRead = is.read(buffer, off, len);
             if (bytesRead == -1) {
                 throw new EOFException("Unexpected end of input stream.");
@@ -41,9 +39,7 @@ class Util {
 
             len -= bytesRead;
             off += bytesRead;
-
         } while (len > 0);
-
     }
 
 }
