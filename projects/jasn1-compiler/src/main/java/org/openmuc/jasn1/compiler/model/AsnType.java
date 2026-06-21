@@ -20,8 +20,11 @@
  */
 package org.openmuc.jasn1.compiler.model;
 
+import java.util.List;
+
 public abstract class AsnType {
 
     public String name = "";
+    public List<AsnParameter> parameters = null;
 
 }

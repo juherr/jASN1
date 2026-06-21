@@ -13,7 +13,8 @@ the jasn1 library (licensed under LGPLv2.1). The jasn1-compiler is an
 application that creates Java classes from ASN.1 syntax. These
 generated classes can then be used together with the jasn1 library to
 efficiently encode and decode messages using the Basic Encoding Rules
-(BER).
+(BER). The encoded bytes also confirm to the Distinguished Encoding
+Rules (DER) which is a subset of BER.
 
 The software has been tested under Linux, Android and Windows.
 
@@ -43,7 +44,7 @@ The jasn1-compiler uses ANTLR to parse the ASN.1 definitions. The
 excellent grammar to generate the ANTLR parser was taken from the
 BinaryNotes ASN.1 Framework (http://bnotes.sourceforge.net/ licensed
 under the Apache 2.0 license).  Copyright 2006-2011 Abdulla
-Abdurakhmanov (abdulla@latestbit.com)
+Abdurakhmanov
 
 == How to use jASN1
 

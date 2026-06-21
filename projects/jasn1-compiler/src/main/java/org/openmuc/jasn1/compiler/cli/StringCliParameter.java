@@ -33,7 +33,7 @@ public class StringCliParameter extends ValueCliParameter {
     public void appendDescription(StringBuilder sb) {
         super.appendDescription(sb);
         if (value != null) {
-            sb.append(" Default is ").append(value).append(".");
+            sb.append(" Default is \"").append(value).append("\".");
         }
     }
 }

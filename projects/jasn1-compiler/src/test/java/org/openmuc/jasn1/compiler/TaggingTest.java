@@ -239,6 +239,7 @@ public class TaggingTest {
         Assert.assertEquals(3, sequence.getImplicitlyTaggedInt().value.intValue());
         Assert.assertEquals(true, untaggedChoice.getMyBoolean().value);
         Assert.assertEquals(4, sequence.getTaggedChoice().getMyInteger().value.intValue());
+        System.out.println(DatatypeConverter.printHexBinary(sequence.getTaggedAny().value));
         Assert.assertArrayEquals(DatatypeConverter.parseHexBinary("020101"), sequence.getTaggedAny().value);
         Assert.assertNull(sequence.getUntaggedChoice2());
 

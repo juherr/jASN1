@@ -22,6 +22,7 @@ package org.openmuc.jasn1.ber.types;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +30,9 @@ import org.openmuc.jasn1.ber.BerByteArrayOutputStream;
 import org.openmuc.jasn1.ber.BerLength;
 import org.openmuc.jasn1.ber.BerTag;
 
-public class BerObjectIdentifier {
+public class BerObjectIdentifier implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     public final static BerTag tag = new BerTag(BerTag.UNIVERSAL_CLASS, BerTag.PRIMITIVE, BerTag.OBJECT_IDENTIFIER_TAG);
 
@@ -206,6 +209,18 @@ public class BerObjectIdentifier {
             objIDString += "." + value[i];
         }
         return objIDString;
+    }
+
+    public BerObjectIdentifier append(int value) {
+        if (this.value == null) {
+            return new BerObjectIdentifier(new int[] { value });
+        }
+        int[] values = new int[this.value.length + 1];
+        for (int i = 0; i < this.value.length; ++i) {
+            values[i] = this.value[i];
+        }
+        values[values.length - 1] = value;
+        return new BerObjectIdentifier(values);
     }
 
 }

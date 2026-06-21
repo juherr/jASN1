@@ -27,16 +27,15 @@ import java.math.BigInteger;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openmuc.jasn1.ber.BerByteArrayOutputStream;
-import org.openmuc.jasn1.ber.BerTag;
 import org.openmuc.jasn1.ber.BerLength;
+import org.openmuc.jasn1.ber.BerTag;
 
 public class BerIntegerTest {
 
     public class IntegerUnivPrim extends BerInteger {
 
         // in the final version identifier needs to be static
-        protected final BerTag identifier = new BerTag(BerTag.APPLICATION_CLASS,
-                BerTag.PRIMITIVE, 2);
+        protected final BerTag identifier = new BerTag(BerTag.APPLICATION_CLASS, BerTag.PRIMITIVE, 2);
 
         IntegerUnivPrim(BigInteger val) {
             super(val);

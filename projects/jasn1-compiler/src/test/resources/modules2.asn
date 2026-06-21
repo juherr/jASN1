@@ -5,7 +5,7 @@ BEGIN
 IMPORTS     Datez
 FROM MODULES-MODULE2;
 
-
+EmployeeNumber-z ::= [APPLICATION 2] IMPLICIT INTEGER
 
 PersonnelRecordzz ::= [APPLICATION 0] IMPLICIT SET {
 	name Namezz,

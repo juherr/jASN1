@@ -23,23 +23,27 @@ package org.openmuc.jasn1.compiler;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.openmuc.jasn1.ber.BerByteArrayOutputStream;
+import org.openmuc.jasn1.ber.types.BerEmbeddedPdv;
+import org.openmuc.jasn1.ber.types.BerInteger;
 import org.openmuc.jasn1.ber.types.string.BerVisibleString;
 import org.openmuc.jasn1.compiler.modules.module1.ChildInformation;
 import org.openmuc.jasn1.compiler.modules.module1.Date;
-import org.openmuc.jasn1.compiler.modules.module1.EmployeeNumber;
 import org.openmuc.jasn1.compiler.modules.module1.MyBitString;
 import org.openmuc.jasn1.compiler.modules.module1.MyDate1;
 import org.openmuc.jasn1.compiler.modules.module1.MyInt;
 import org.openmuc.jasn1.compiler.modules.module1.MyInt2;
 import org.openmuc.jasn1.compiler.modules.module1.Name;
 import org.openmuc.jasn1.compiler.modules.module1.PersonnelRecord;
+import org.openmuc.jasn1.compiler.modules.module1.PersonnelRecord.TestSequenceOf2;
+import org.openmuc.jasn1.compiler.modules.module1.PersonnelRecord.TestSequenceOf2.SEQUENCE;
 import org.openmuc.jasn1.compiler.modules.module1.TestChoice;
+import org.openmuc.jasn1.compiler.modules.module1.TestSequenceOf;
+import org.openmuc.jasn1.compiler.modules.module2.EmployeeNumberZ;
 
 public class ModulesTest {
 
@@ -57,7 +61,6 @@ public class ModulesTest {
         MyInt2 myInt2Encode = new MyInt2(2);
         berOS.reset();
         myInt2Encode.encode(berOS, true);
-        System.out.println("myInt2: " + HexConverter.toShortHexString(berOS.getArray()));
 
         MyInt2 myInt2Decode = new MyInt2();
         byte[] code = HexConverter.fromShortHexString("a303020102");
@@ -67,44 +70,67 @@ public class ModulesTest {
 
         PersonnelRecord pr = new PersonnelRecord();
 
-        pr.name = new Name();
-        pr.name.givenName = new BerVisibleString("givenName".getBytes());
-        pr.name.familyName = new BerVisibleString("familyName".getBytes());
-        pr.name.initial = new BerVisibleString("initial".getBytes());
+        Name name = new Name();
+        name.setGivenName(new BerVisibleString("givenName".getBytes()));
+        name.setFamilyName(new BerVisibleString("familyName".getBytes()));
+        name.setInitial(new BerVisibleString("initial".getBytes()));
+        pr.setName(name);
 
-        pr.title = new BerVisibleString("title".getBytes());
+        pr.setTitle(new BerVisibleString("title".getBytes()));
 
-        pr.number = new EmployeeNumber(1);
+        pr.setNumber(new EmployeeNumberZ(1));
 
-        pr.dateOfHire = new Date("23121981".getBytes());
+        pr.setDateOfHire(new Date("23121981".getBytes()));
 
-        pr.nameOfSpouse = pr.name;
+        pr.setNameOfSpouse(name);
 
         ChildInformation child = new ChildInformation();
-        child.name = new Name("child name".getBytes());
-        child.dateOfBirth = new Date("12121912".getBytes());
-        List<ChildInformation> children = new ArrayList<>();
-        children.add(child);
-        children.add(child);
-        pr.children = new PersonnelRecord.Children(children);
+        child.setName(new Name("child name".getBytes()));
+        child.setDateOfBirth(new Date("12121912".getBytes()));
 
-        pr.testBitString = new MyBitString(new byte[] { (byte) 0x80, (byte) 0xff }, 10);
+        PersonnelRecord.Children children = new PersonnelRecord.Children();
+        List<ChildInformation> childInformation = children.getChildInformation();
+        childInformation.add(child);
+        childInformation.add(child);
 
-        pr.test = new MyInt(3);
+        pr.setTestBitString(new MyBitString(new byte[] { (byte) 0x80, (byte) 0xff }, 10));
 
-        TestChoice testChoice = new TestChoice(child, null);
+        pr.setTest(new MyInt(3));
 
-        pr.test2 = testChoice;
+        TestChoice testChoice = new TestChoice();
+        testChoice.setChoiceElement1(child);
 
-        pr.test3 = testChoice;
+        pr.setTest2(testChoice);
 
-        pr.test4 = testChoice;
+        pr.setTest3(testChoice);
 
-        pr.test5 = testChoice;
+        pr.setTest4(testChoice);
 
-        pr.test6 = testChoice;
+        pr.setTest5(testChoice);
 
-        System.out.println("pr: " + pr);
+        pr.setTest6(testChoice);
+
+        TestSequenceOf testSequenceOf = new TestSequenceOf();
+        List<BerInteger> berIntegers = testSequenceOf.getBerInteger();
+        for (int i = 0; i < 10; i++) {
+            berIntegers.add(new BerInteger(i));
+        }
+        pr.setTestSequenceOf(testSequenceOf);
+
+        TestSequenceOf2 testSequenceOf2 = new TestSequenceOf2();
+        List<SEQUENCE> sequences = testSequenceOf2.getSEQUENCE();
+        for (int i = 0; i < 10; i++) {
+            SEQUENCE sequence = new SEQUENCE();
+            sequence.setTest1(new BerInteger(i++));
+            sequence.setTest2(new BerInteger(i));
+            sequences.add(sequence);
+        }
+        pr.setTestSequenceOf2(testSequenceOf2);
+
+        BerEmbeddedPdv berEmbeddedPdv = new BerEmbeddedPdv();
+        pr.setEmbeddedPdv(berEmbeddedPdv);
+
+        System.out.println("PersonnelRecord.toString():\n" + pr);
     }
 
 }

@@ -23,8 +23,11 @@ package org.openmuc.jasn1.ber;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 
-public class BerTag {
+public class BerTag implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     public static final int UNIVERSAL_CLASS = 0x00;
     public static final int APPLICATION_CLASS = 0x40;
@@ -40,9 +43,12 @@ public class BerTag {
     public static final int OCTET_STRING_TAG = 4;
     public static final int NULL_TAG = 5;
     public static final int OBJECT_IDENTIFIER_TAG = 6;
+    public static final int OBJECT_DESCRIPTOR_TAG = 7;
     public static final int REAL_TAG = 9;
     public static final int ENUMERATED_TAG = 10;
+    public static final int EMBEDDED_PDV_TAG = 11;
     public static final int UTF8_STRING_TAG = 12;
+    public static final int TIME_TAG = 14;
     public static final int NUMERIC_STRING_TAG = 18;
     public static final int PRINTABLE_STRING_TAG = 19;
     public static final int TELETEX_STRING_TAG = 20;
@@ -55,6 +61,10 @@ public class BerTag {
     public static final int GENERAL_STRING_TAG = 27;
     public static final int UNIVERSAL_STRING_TAG = 28;
     public static final int BMP_STRING_TAG = 30;
+    public static final int DATE_TAG = 31;
+    public static final int TIME_OF_DAY_TAG = 32;
+    public static final int DATE_TIME_TAG = 33;
+    public static final int DURATION_TAG = 34;
 
     public byte[] tagBytes = null;
     public int tagClass;
@@ -95,6 +105,9 @@ public class BerTag {
     }
 
     public int encode(BerByteArrayOutputStream os) throws IOException {
+        if (tagBytes == null) {
+            code();
+        }
         for (int i = (tagBytes.length - 1); i >= 0; i--) {
             os.write(tagBytes[i]);
         }

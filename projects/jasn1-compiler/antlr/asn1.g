@@ -27,10 +27,8 @@ options	{
 tokens {
 	
 ABSENT_KW				=	"ABSENT"			;
-ABSTRACT_SYNTAX_KW		=	"ABSTRACT-SYNTAX"	;
 ALL_KW					=	"ALL"				;
 ANY_KW					=	"ANY"				;
-ANY_NODECODE_KW			=	"ANY_NODECODE"		;
 ARGUMENT_KW				=	"ARGUMENT"			;
 APPLICATION_KW			=	"APPLICATION"		;
 AUTOMATIC_KW			=	"AUTOMATIC"			;
@@ -100,10 +98,10 @@ SEQUENCE_KW				=	"SEQUENCE"			;
 SET_KW					=	"SET"				;
 SIZE_KW					=	"SIZE"				;
 STRING_KW				=	"STRING"			;
+SYNTAX_KW               =   "SYNTAX"            ;
 TAGS_KW					=	"TAGS"				;
 TELETEX_STR_KW			=	"TeletexString"		;
 TRUE_KW					=	"TRUE"				;
-TYPE_IDENTIFIER_KW		=	"TYPE-IDENTIFIER"	;
 T61_STR_KW              =   "T61String"         ;
 UNION_KW				=	"UNION"				;
 UNIQUE_KW				=	"UNIQUE"			;
@@ -114,6 +112,12 @@ UTF8_STR_KW             =	"UTF8String"		;
 VIDEOTEX_STR_KW			=	"VideotexString"	;
 VISIBLE_STR_KW			=	"VisibleString"		;
 WITH_KW					=	"WITH"				;
+TIME_KW                 =   "TIME"              ;
+DATE_KW                    =   "DATE"              ;
+TIME_OF_DAY_KW          =   "TIME-OF-DAY"       ;
+DATE_TIME_KW            =   "DATE-TIME"         ;
+DURATION_KW             =   "DURATION"          ;
+
 }
 
 // Operators
@@ -124,6 +128,7 @@ COLON				:	':'		;
 COMMA				:	','		;
 COMMENT				:	"--"	;
 DOT					:	'.'		;
+AMPERSAND			:	'&'		;
 DOTDOT				:	".."	;
 ELLIPSIS			:	"..."	;
 EXCLAMATION			:	'!'		;
@@ -141,6 +146,7 @@ SEMI				:	';'		;
 SINGLE_QUOTE		:	"'"		;
 CHARB				:	"'B"	;
 CHARH				:	"'H"	;
+AT_SIGN             :  '@'      ;
 
 // Whitespace -- ignored
 
@@ -165,6 +171,10 @@ ML_COMMENT
 	: "/*" (('*' ~'/') | (('\r')? '\n') { newline(); } | ~'*')* "*/"
 		{$setType(Token.SKIP);  }
 	;
+
+//WITH_SYNTAX_CONTENT
+//	: L_BRACE ((~'}')*);
+
 
 NUMBER	:	('0'..'9')+ ;
 
@@ -324,8 +334,8 @@ ArrayList arl; AsnOidComponentList cmplist;}
 	
 symbol_list returns[ArrayList symlist]
 {symlist = new ArrayList(); String s=""; }
-	:	((s = symbol {symlist.add(s); })
-		(COMMA (s = symbol {symlist.add(s); }))*) 
+	:	((s = symbol {symlist.add(s); })(L_BRACE R_BRACE)?
+		(COMMA (s = symbol {symlist.add(s); })(L_BRACE R_BRACE)?)*) 
 	; 
 
 symbol returns [String s]
@@ -365,59 +375,132 @@ macroName returns [String s]
  	;
 
 assignment[AsnModule module]	
-{Object obj ; Object objv; AsnValue val;	}
+{Object obj ; Object objv; AsnValueAssignment valueAssignment; AsnInformationObjectClass asnInformationObjectClass; List<AsnParameter> parameterListVal;} :
+    // Type Assignment Definition
+        (up:UPPER  ASSIGN_OP	(obj=type) 
+            {
+                ((AsnType)obj).name = up.getText();
+                module.typesByName.put(((AsnType)obj).name,(AsnType)obj);
+            }
+        )
 
-// Type Assignment Definition
-	:	(up:UPPER ASSIGN_OP	(obj=type) 
-{
-			((AsnType)obj).name = up.getText();
-            module.typesByName.put(((AsnType)obj).name,(AsnType)obj);
-		})
+	|
+        (up2:UPPER (parameterListVal = parameterList)  ASSIGN_OP	(obj=type) 
+            {
+                ((AsnType)obj).name = up2.getText();
+                ((AsnType)obj).parameters = parameterListVal;
+                module.typesByName.put(((AsnType)obj).name,(AsnType)obj);
+            }
+        )
 
-// Value Assignment definition	
-	|	(lid:LOWER (objv = type ) ASSIGN_OP (val = value) 
-		{
-   			val.name=lid.getText();
-			module.asnValues.add(val);
-		})
-// Definition of Macro type. Consume the definitions . No Actions
+        // Value Assignment definition	
+	|   valueAssignment = valueAssignment
+            {
+                module.asnValueAssignmentsByName.put(valueAssignment.name, valueAssignment);
+            }
+        // Object Class
+    |   asnInformationObjectClass = informationObjectClass
+            {
+                module.objectClassesByName.put(asnInformationObjectClass.name,asnInformationObjectClass);
+            }
 
-	|(UPPER "MACRO" ASSIGN_OP BEGIN_KW (~(END_KW) )* END_KW)=>  UPPER "MACRO" ASSIGN_OP BEGIN_KW (~(END_KW))* END_KW
-// ***************************************************
-// Define the following
-// ***************************************************
-//	|XMLValueAssignment 
-//	|ValueSetTypeAssignment 
-//	|ObjectClassAssignment 
-//	|ObjectAssignment 
-//	|ObjectSetAssignment 
-//	|ParameterizedAssignment
+    | UPPER UPPER ASSIGN_OP constraint3 //L_BRACE L_BRACE syntaxTokens R_BRACE (BAR L_BRACE syntaxTokens R_BRACE)* R_BRACE
+
+        // ***************************************************
+        // Define the following
+        // ***************************************************
+        //	|XMLValueAssignment 
+        //	|ValueSetTypeAssignment 
+        //	|ObjectClassAssignment 
+        //	|ObjectAssignment 
+        //	|ObjectSetAssignment 
+        //	|ParameterizedAssignment
 	;
 
-/*TYPES===============================================================*/
 
-type returns [Object obj]		
+valueAssignment returns [AsnValueAssignment valueAssignment]
+{Object valueType; AsnValue value; valueAssignment = new AsnValueAssignment();}
+	:
+        lid:LOWER (valueType = type ) ASSIGN_OP (value = value2) 
+        {
+            valueAssignment.name=lid.getText();
+            valueAssignment.type = valueType;
+            valueAssignment.value = value;
+        }
+    ;
+
+
+informationObjectClass returns [AsnInformationObjectClass informationObjectClass]
+{informationObjectClass = new AsnInformationObjectClass(); List<AsnElementType> elementList; List<String> syntaxTokens;}
+	:  ( up:UPPER {informationObjectClass.name = up.getText();} ASSIGN_OP CLASS_KW
+       L_BRACE 
+	   (elementList = objectClassElements {informationObjectClass.elementList=elementList;})? 
+	    R_BRACE (WITH_KW SYNTAX_KW constraint3)?
+    );
+
+syntaxTokens returns [List<String> syntaxTokens]
+{ syntaxTokens = new ArrayList<String>(); } :
+       ( up:UPPER {syntaxTokens.add(up.getText());} |
+         lo:LOWER {syntaxTokens.add(lo.getText());} |
+         COMMA {syntaxTokens.add(",");} |
+         AMPERSAND {syntaxTokens.add("&");} |
+        C_STRING |
+        DOT |
+        NULL_KW |
+         BY_KW {syntaxTokens.add("BY");}  | num:NUMBER {syntaxTokens.add(num.getText());} | L_PAREN {syntaxTokens.add("(");} | R_PAREN {syntaxTokens.add(")");} )*
+    ;
+
+objectClassElements returns [List<AsnElementType> elelist]
+{elelist = new ArrayList<>(); AsnElementType eletyp; int i=1; }
+	:	(ELLIPSIS | eletyp = objectClassElement {if (eletyp.name.isEmpty()) {eletyp.name = "element" + i;};elelist.add(eletyp);i++; }
+	    (COMMA (ELLIPSIS | (eletyp = objectClassElement {if (eletyp.name.isEmpty()) {eletyp.name = "element" + i;};elelist.add(eletyp);i++; })))*)
+	;
+
+objectClassElement returns [AsnElementType eletyp]
+{eletyp = new AsnElementType();AsnValue val; 
+AsnType obj; AsnTag tg; String s;}
+	: (((	(AMPERSAND(lid:LOWER {eletyp.name = lid.getText();}) 
+        	(obj = type)
+            (UNIQUE_KW)?
+            ( (OPTIONAL_KW {eletyp.isOptional=true;})
+		| (DEFAULT_KW { eletyp.isDefault = true;} 
+		 val = value {eletyp.value = val;} ))? )
+	)
+		{
+			if((AsnDefinedType.class).isInstance(obj)){
+				eletyp.isDefinedType=true;
+				eletyp.definedType = (AsnDefinedType)obj ; 
+			} else{		
+				eletyp.typeReference = obj;
+			}
+		}
+        ) |
+        (AMPERSAND(up:UPPER {eletyp.name = up.getText(); eletyp.typeReference = new AsnAny(); }))
+    )
+            
+	;
+
+
+
+type returns [AsnType obj]		
 {obj = null;}
 	:	(obj = built_in_type)
 	|	(obj = defined_type)		// Referenced Type
 	|	(obj = selection_type ) 		// Referenced Type
-	|	(obj = macros_type)
 	;
 
-built_in_type returns [Object obj]
+built_in_type returns [AsnType obj]
 {obj = null;}
 	:	(obj = any_type)
-	|	(obj = anyNoDecode_type)
 	|	(obj = bit_string_type)
 	|	(obj = boolean_type )
 	|	(obj = character_str_type)
 	|	(obj = choice_type)
-	|	(obj = embedded_type) EMBEDDED_KW  PDV_KW		
+	|	(obj = embedded_type)		
 	|	(obj = enum_type) 
 	|	(obj = external_type) 
 	|	(obj = integer_type )
 	|	(obj = null_type )
-//	|	ObjectClassFieldType OBJECT_DESCRIPTOR_KW
 	|	(obj = object_identifier_type)
 	|	(obj = octetString_type)
 	|	(obj = real_type )
@@ -434,13 +517,7 @@ any_type returns [AsnAny an]
 	: (	ANY_KW  ( DEFINED_KW BY_KW {an.isDefinedBy = true ;} lid:LOWER { an.definedByType = lid.getText();})? )
 	;
 
-anyNoDecode_type returns [Object obj]
-{obj = null;AsnAnyNoDecode an = new AsnAnyNoDecode();}
-	: (	ANY_NODECODE_KW  ( DEFINED_KW BY_KW {an.isDefinedBy = true ;} lid:LOWER { an.definedByType = lid.getText();})? )
-		{obj = an ;  an = null;}
-	;
-	
-bit_string_type	returns [Object obj]
+bit_string_type	returns [AsnBitString obj]
 {AsnBitString bstr = new AsnBitString(); 
 AsnNamedNumberList nnlst ; AsnConstraint cnstrnt;obj = null;}
 	:	(BIT_KW STRING_KW (nnlst =namedNumber_list { bstr.namedNumberList = nnlst;})? 
@@ -449,7 +526,7 @@ AsnNamedNumberList nnlst ; AsnConstraint cnstrnt;obj = null;}
 	;
 
 // Includes Useful types as well
-character_str_type returns [Object obj]
+character_str_type returns [AsnCharacterString obj]
 {AsnCharacterString cstr = new AsnCharacterString();
 String s ; AsnConstraint cnstrnt; obj = null;}
 	:	((CHARACTER_KW STRING_KW {cstr.isUCSType = true;})
@@ -475,75 +552,82 @@ character_set returns [String s]
 	|	(s13:UTC_TIME_KW		{s = "UtcTime";})
 	|	(s14:VIDEOTEX_STR_KW	{s = s14.getText();})
 	|	(s15:VISIBLE_STR_KW		{s = s15.getText();})
-	;		
-boolean_type returns [Object obj]
+  	|	(s16:OBJECT_DESCRIPTOR_KW {s = s16.getText();})
+	|	(TIME_KW        		{s = "Time";})
+	|	(DATE_KW		        {s = "Date";})
+	|	(TIME_OF_DAY_KW		    {s = "TimeOfDay";})
+	|	(DATE_TIME_KW		    {s = "DateTime";})
+	|	(DURATION_KW		    {s = "Duration";})
+	;
+
+boolean_type returns [AsnBoolean obj]
 {obj = null;}
 	: BOOLEAN_KW 
 	  {obj = new AsnBoolean();}
 	;
 				
-choice_type	returns [Object obj]
+choice_type	returns [AsnChoice obj]
 {AsnChoice ch = new AsnChoice(); List<AsnElementType> eltplst; 
 obj = null;}
 	: (	CHOICE_KW L_BRACE (eltplst = elementType_list {ch.componentTypes = eltplst ;}) R_BRACE ) 
 		{obj = ch; eltplst = null; ch = null;}
 	;
 
-embedded_type returns [Object obj]
+embedded_type returns [AsnEmbeddedPdv obj]
 {obj = null;}
 	:	(EMBEDDED_KW  PDV_KW)
-		{obj = new AsnEmbedded();}
+		{obj = new AsnEmbeddedPdv();}
 	;
-enum_type returns [Object obj]
+enum_type returns [AsnEnum obj]
 {AsnEnum enumtyp = new AsnEnum() ;
 AsnNamedNumberList nnlst; obj = null;}
 	: ( ENUMERATED_KW (nnlst = namedNumber_list { enumtyp.namedNumberList = nnlst;}) )
-	  {obj = enumtyp ; enumtyp=null;}	
+	  {obj = enumtyp ; enumtyp=null;}
 	;
 		
-external_type returns [Object obj]
+external_type returns [AsnType obj]
 {obj = null; }
 	: EXTERNAL_KW {obj = new AsnExternal();}
 	;
 
-integer_type returns [Object obj]	
+integer_type returns [AsnType obj]	
 {AsnInteger intgr = new AsnInteger();
 AsnNamedNumberList numlst; AsnConstraint cnstrnt; obj=null;}
-	: (	INTEGER_KW (numlst = namedNumber_list {intgr.namedNumberList = numlst;}
-		| cnstrnt = constraint {intgr.constraint = cnstrnt;})? )
+	: (	INTEGER_KW (numlst = namedNumber_list {intgr.namedNumberList = numlst;})?
+            (cnstrnt = constraint {intgr.constraint = cnstrnt;})? )
 		{obj = intgr ; numlst = null ; cnstrnt = null; intgr = null; }
 	;
 		
-null_type returns [Object obj]
+null_type returns [AsnType obj]
 {AsnNull nll = new AsnNull(); obj = null;}
 	: NULL_KW
 	  {obj = nll; nll = null ; }
 	;
 
-object_identifier_type returns [Object obj]
+object_identifier_type returns [AsnType obj]
 {AsnObjectIdentifier objident = new AsnObjectIdentifier(); obj = null;}
 	: OBJECT_KW IDENTIFIER_KW 
 	  {obj = objident; objident = null;}	
 	; 
 	
-octetString_type returns [Object obj]
+octetString_type returns [AsnType obj]
 {AsnOctetString oct = new AsnOctetString();
 AsnConstraint cnstrnt ; obj = null;}
 	: (	OCTET_KW STRING_KW (cnstrnt = constraint{oct.constraint = cnstrnt;})? )
 		{obj = oct ; cnstrnt = null;}
 	;
 
-real_type returns [Object obj]
+real_type returns [AsnType obj]
 {AsnReal rl = new AsnReal();obj = null;}
 	: REAL_KW  {obj = rl ; rl = null;}		
 	;
 
-relativeOid_type returns [Object obj]
+relativeOid_type returns [AsnType obj]
 {obj = null; }
 	: RELATIVE_KW MINUS OID_KW {obj = new AsnRelativeOid();}
 	;
 		
-sequence_type returns [Object obj]
+sequence_type returns [AsnType obj]
 {AsnSequenceSet seq = new AsnSequenceSet();
 List<AsnElementType> eltplist ; AsnConstraint cnstrnt ; obj = null;}
 	:  ( SEQUENCE_KW {seq.isSequence = true;} 
@@ -570,7 +654,7 @@ AsnConstraint cnstrnt; obj = null; AsnElementType referencedAsnType ; String s ;
 
 sequenceof_component	returns [AsnElementType eletyp]
 {eletyp = new AsnElementType();AsnValue val; 
-Object obj; AsnTag tg; String s;}
+AsnType obj; AsnTag tg; String s;}
 	: (	(lid:LOWER {eletyp.name = lid.getText();})? 
 		(tg = tag { eletyp.tag = tg ;})? 
 		(s = tag_default {eletyp.tagType = s ;})? 
@@ -578,7 +662,7 @@ Object obj; AsnTag tg; String s;}
 		{
 			if((AsnDefinedType.class).isInstance(obj)){
 				eletyp.isDefinedType=true;
-				eletyp.typeName = ((AsnDefinedType)obj).typeName ; 
+				eletyp.definedType = (AsnDefinedType)obj; 
 			} else{		
 				eletyp.typeReference = obj;
 			}
@@ -587,14 +671,14 @@ Object obj; AsnTag tg; String s;}
 
 
 
-set_type returns [Object obj]
+set_type returns [AsnType obj]
 {AsnSequenceSet set = new AsnSequenceSet();
 List<AsnElementType> eltplist ;obj = null;}
 	:  ( SET_KW L_BRACE (eltplist =  elementType_list {set.componentTypes = eltplist ;})? R_BRACE )
 		{obj = set ; eltplist = null; set = null;}
 	;
 		
-setof_type	returns [Object obj]
+setof_type	returns [AsnType obj]
 {AsnSequenceOf setof = new AsnSequenceOf(); setof.componentType = new AsnElementType();
 AsnConstraint cns; obj = null;
 Object obj1 ; String s;}
@@ -603,7 +687,7 @@ Object obj1 ; String s;}
 		(obj1 = type 
 		{	if((AsnDefinedType.class).isInstance(obj1)){
 		  		setof.componentType.isDefinedType=true;
-				setof.componentType.typeName = ((AsnDefinedType)obj1).typeName ; 
+				setof.componentType.definedType = (AsnDefinedType)obj1; 
 			}
 			else{
 				setof.componentType.typeReference = (AsnType) obj1;
@@ -612,15 +696,15 @@ Object obj1 ; String s;}
 		{obj = setof; cns = null; obj1=null; setof=null;} 		
 	;
 
-tagged_type returns [Object obj]
+tagged_type returns [AsnType obj]
 {AsnTaggedType tgtyp = new AsnTaggedType();
-AsnTag tg; Object obj1 = null; String s; obj = null;}
+AsnTag tg; AsnType obj1 = null; String s; obj = null;}
 	:	((tg = tag {tgtyp.tag = tg ;}) 
 		(s = tag_default { tgtyp.tagType = s ;})? 
 		(obj1 = type 
 		{	if((AsnDefinedType.class).isInstance(obj1)){
 		  		tgtyp.isDefinedType=true;
-				tgtyp.typeName = ((AsnDefinedType)obj1).typeName ; 
+                tgtyp.definedType=(AsnDefinedType)obj1;
 			}
 			else{	
 				tgtyp.typeReference = obj1; 
@@ -648,17 +732,17 @@ class_NUMBER returns [AsnClassNumber cnum]
 	|	(lid:LOWER  {s=lid.getText(); cnum.name = s ;}) )		
 	;
 
-defined_type returns [Object obj]	
+defined_type returns [AsnType obj]	
 {AsnDefinedType deftype = new AsnDefinedType();
 AsnConstraint cnstrnt; obj = null;}
-	:	((up:UPPER {deftype.isModuleReference = true ;deftype.moduleReference = up.getText();} 
-			DOT )? 
-		(up1:UPPER {deftype.typeName = up1.getText();})
+	:	((up:UPPER {deftype.moduleOrObjectClassReference = up.getText();} 
+			DOT )? ( AMPERSAND { deftype.isObjectClassField = true; } )? 
+		((up1:UPPER {deftype.typeName = up1.getText();}) | (lo:LOWER {deftype.typeName = lo.getText();}))
 		(cnstrnt = constraint{deftype.constraint = cnstrnt;})? )
 		{obj = deftype; deftype=null ; cnstrnt = null;}
 	;
 
-selection_type returns [Object obj]
+selection_type returns [AsnType obj]
 {AsnSelectionType seltype = new AsnSelectionType();
 obj = null;Object obj1;}
 	:	((lid:LOWER { seltype.selectionID = lid.getText();})
@@ -668,83 +752,6 @@ obj = null;Object obj1;}
 	;
 
 
-macros_type	returns [Object obj]
-{obj = null;}
-		:	(obj = operation_macro)
-		|	(obj = error_macro)
-		|	(obj = objecttype_macro)
-		;
-
-operation_macro	returns [Object obj]
-{OperationMacro op = new OperationMacro();
-String s ;obj = null; Object obj1; Object obj2;}
-	: (	"OPERATION"
-		(ARGUMENT_KW (ld1:LOWER {op.argumentTypeIdentifier = ld1.getText();})?
-		((obj2 = type)
-			{op.argumentType = obj2; op.isArgumentName=true;
-				if((AsnDefinedType.class).isInstance(obj2))
-					op.argumentName = ((AsnDefinedType)obj2).typeName;
-				else
-					op.argumentName = op.argumentTypeIdentifier;
-			}
-		))?
-		(RESULT_KW  {op.isResult=true;} ((SEMI)=>SEMI|((LOWER)? type)=>(ld2:LOWER {op.resultTypeIdentifier = ld2.getText();})?
-		(obj1=type 
-			{op.resultType=obj1;op.isResultName=true;
-				if((AsnDefinedType.class).isInstance(obj1))
-					op.resultName = ((AsnDefinedType)obj1).typeName;
-				else
-					op.resultName = op.resultTypeIdentifier;
-			}
-		)|))?
-		(ERRORS_KW L_BRACE (operation_errorlist[op]
-				{op.isErrors=true;}|) R_BRACE )?
-		(LINKED_KW L_BRACE (linkedOp_list[op]
-			{op.isLinkedOperation = true ;})?	 R_BRACE )? )
-		{obj = op;}
-	;
-
-operation_errorlist[OperationMacro oper]
-{Object obj;}
-	:	obj = typeorvalue {oper.errorList.add(obj);}
-		(COMMA (obj = typeorvalue {oper.errorList.add(obj);}))*
-	;
-	
-linkedOp_list[OperationMacro oper]
-{Object obj;}
-	:	obj = typeorvalue {oper.linkedOpList.add(obj);}
-		(COMMA (obj = typeorvalue {oper.linkedOpList.add(obj);}))*
-	;
-	
-error_macro	returns [Object obj]
-{ErrorMacro merr = new ErrorMacro();obj = null;
-Object obj1;}
-	:  ( ERROR_KW  (PARAMETER_KW {merr.isParameter = true; }
-		(( lw:LOWER { merr.parameterName = lw.getText(); })? 
-		(obj1 = type 
-		{	if((AsnDefinedType.class).isInstance(obj1)){
-				merr.isDefinedType=true;
-				merr.typeName = ((AsnDefinedType)obj1).typeName ; 
-			}
-			else{
-				merr.typeReference = obj1 ;
-			}
-		}) ) )? )
-		{obj = merr ; merr = null;}
-	;
-	
-objecttype_macro returns [Object obj]
-{ObjectType objtype = new ObjectType();
-AsnValue val; obj = null; String s; Object typ;} 
-	: ("OBJECT-TYPE" "SYNTAX" (typ = type {objtype.type=typ;} )
-		("ACCESS" lid:LOWER {objtype.accessPart = lid.getText();})
-	  ("STATUS" lid1:LOWER {objtype.statusPart = lid1.getText();}) 
-	  ("DESCRIPTION" CHARACTER_KW STRING_KW)?
-	  ("REFERENCE" CHARACTER_KW STRING_KW)? 
-	  ("INDEX" L_BRACE (typeorvaluelist[objtype]) R_BRACE)? 
-	  ("DEFVAL" L_BRACE ( val = value {objtype.value = val;}) R_BRACE )? )
-	  {obj= objtype; objtype = null;}	
-	;
 
 typeorvaluelist[ObjectType objtype]
 {Object obj; }
@@ -766,7 +773,7 @@ elementType_list returns [List<AsnElementType> elelist]
 
 elementType	returns [AsnElementType eletyp]
 {eletyp = new AsnElementType();AsnValue val; 
-Object obj; AsnTag tg; String s;}
+AsnType obj; AsnTag tg; String s;}
 	: (	((lid:LOWER {eletyp.name = lid.getText();})? 
 		(tg = tag { eletyp.tag = tg ;})? 
 		(s = tag_default {eletyp.tagType = s ;})? 
@@ -777,7 +784,7 @@ Object obj; AsnTag tg; String s;}
 		{
 			if((AsnDefinedType.class).isInstance(obj)){
 				eletyp.isDefinedType=true;
-				eletyp.typeName = ((AsnDefinedType)obj).typeName ; 
+				eletyp.definedType = (AsnDefinedType)obj; 
 			} else{		
 				eletyp.typeReference = obj;
 			}
@@ -794,20 +801,52 @@ namedNumber_list returns [AsnNamedNumberList nnlist]
 namedNumber	returns [AsnNamedNumber nnum]
 {nnum = new AsnNamedNumber() ;AsnSignedNumber i; 
 AsnDefinedValue s;	}
-	:	(lid:LOWER {nnum.name = lid.getText();} L_PAREN 
+	:	(lid:LOWER {nnum.name = lid.getText();} (L_PAREN 
 		(i = signed_number {nnum.signedNumber = i;nnum.isSignedNumber=true;}
-		| (s = defined_value {nnum.definedValue=s;})) R_PAREN	)
+		| (s = defined_value {nnum.definedValue=s;})) R_PAREN)?	)
 	;
 	
 constraint returns [AsnConstraint cnstrnt]
-{cnstrnt=new AsnConstraint();}
-	:(L_PAREN 
-		(element_set_specs[cnstrnt]{cnstrnt.isElementSetSpecs=true;})? 
-		(exception_spec[cnstrnt])? 
-	  R_PAREN)*
-    |   (element_set_specs[cnstrnt]{cnstrnt.isElementSetSpecs=true;})? 
-		(exception_spec[cnstrnt])? 
-	;
+{cnstrnt=new AsnConstraint();} :
+        (SIZE_KW { cnstrnt.tokens.add("SIZE");})?
+        (cnstrnt=constraint2 |
+        cnstrnt=constraint3)*
+    ;
+
+constraint2 returns [AsnConstraint cnstrnt]
+{cnstrnt=new AsnConstraint();} :
+        L_PAREN 
+        (
+            cnstrnt=constraint2 |
+            ~R_PAREN )*
+        R_PAREN
+    ;    
+
+constraint3 returns [AsnConstraint cnstrnt]
+{cnstrnt=new AsnConstraint();} :
+        L_BRACE 
+        (
+            cnstrnt=constraint3 |
+            ~R_BRACE )*
+        R_BRACE
+    ;    
+
+
+parameterList returns [List<AsnParameter> parameters]
+{parameters = new ArrayList<AsnParameter>(); AsnParameter parameterVal;} :
+        L_BRACE
+        parameterVal = parameter {parameters.add(parameterVal);}
+        (COMMA parameterVal = parameter {parameters.add(parameterVal);})*
+        R_BRACE
+;
+
+parameter returns [AsnParameter parameter]
+{parameter = new AsnParameter();} :
+        (((up:UPPER {parameter.paramGovernor = up.getText();}) | (lo:LOWER {parameter.paramGovernor = lo.getText();})) COLON)?
+        (up2:UPPER {parameter.dummyReference = up2.getText();}) | (lo2:LOWER {parameter.dummyReference = lo2.getText();})
+;
+
+
 
 exception_spec[AsnConstraint cnstrnt]
 {AsnSignedNumber signum; AsnDefinedValue defval;
@@ -852,8 +891,8 @@ intersections returns [Intersection intersect]
 constraint_elements	returns [ConstraintElements cnsElem]
 { cnsElem = new ConstraintElements(); AsnValue val;
 AsnConstraint cns; ElementSetSpec elespec;Object typ; }
-	:	(value)=>(val = value {cnsElem.isValue=true;cnsElem.value=val;})
-	|	(value_range[cnsElem])=>(value_range[cnsElem]	{cnsElem.isValueRange=true;})
+	:  (val = value {cnsElem.isValue=true;cnsElem.value=val;})
+    |   (value_range[cnsElem])=>(value_range[cnsElem]	{cnsElem.isValueRange=true;})
 	|	(SIZE_KW cns=constraint {cnsElem.isSizeConstraint=true;cnsElem.constraint=cns;})
 	|	(FROM_KW cns=constraint {cnsElem.isAlphabetConstraint=true;cnsElem.constraint=cns;})
 	|	(L_PAREN elespec=element_set_spec {cnsElem.isElementSetSpec=true;cnsElem.elespec=elespec;} R_PAREN)
@@ -864,6 +903,7 @@ AsnConstraint cns; ElementSetSpec elespec;Object typ; }
 		|	
 		(COMPONENTS_KW {cnsElem.isWithComponents=true;}
 		L_BRACE (ELLIPSIS COMMA)? type_constraint_list[cnsElem] R_BRACE )))
+
 	;
 
 value_range[ConstraintElements cnsElem]
@@ -893,7 +933,7 @@ named_constraint returns [NamedConstraint namecns]
 value returns [AsnValue value]
 {value = new AsnValue(); AsnSequenceValue seqval;
 AsnDefinedValue defval;String aStr;AsnSignedNumber num; 
-AsnOidComponentList cmplst;}		
+AsnOidComponentList cmplst;List<String> valueInBracesTokens;}		
 
 	: 	(TRUE_KW)=>(TRUE_KW 				{value.isTrueKW = true; })
 	|	(FALSE_KW)=>(FALSE_KW				{value.isFalseKW = true;})
@@ -909,6 +949,38 @@ AsnOidComponentList cmplst;}
 	|	(PLUS_INFINITY_KW)=>(PLUS_INFINITY_KW		{value.isPlusInfinity = true;})
 	|	(MINUS_INFINITY_KW)=>(MINUS_INFINITY_KW		{value.isMinusInfinity = true;})
 	;
+
+
+value2 returns [AsnValue value]
+{value = new AsnValue(); AsnSequenceValue seqval;
+AsnDefinedValue defval;String aStr;AsnSignedNumber num; 
+AsnOidComponentList cmplst;List<String> valueInBracesTokens;}		
+
+	: 	(TRUE_KW)=>(TRUE_KW 				{value.isTrueKW = true; })
+	|	(FALSE_KW)=>(FALSE_KW				{value.isFalseKW = true;})
+	|	(NULL_KW)=>(NULL_KW				{value.isNullKW = true;})
+	|	(C_STRING)=>(c:C_STRING				{value.isCString=true; value.cStr = c.getText();})
+	|	(defined_value)=>(defval = defined_value {value.isDefinedValue = true; value.definedValue = defval;})
+	|	(signed_number)=>(num = signed_number	{value.isSignedNumber=true ; value.signedNumber = num;}) 
+	|	(choice_value[value])=>(choice_value[value]	{value.isChoiceValue = true;})
+    |   (valueInBracesTokens = valueInBraces {value.isValueInBraces=true;value.valueInBracesTokens = valueInBracesTokens;}) 
+	|	(PLUS_INFINITY_KW)=>(PLUS_INFINITY_KW		{value.isPlusInfinity = true;})
+	|	(MINUS_INFINITY_KW)=>(MINUS_INFINITY_KW		{value.isMinusInfinity = true;})
+	;
+
+
+valueInBraces returns [List<String> valueInBracesTokens]
+{List<String> syntaxTokens; valueInBracesTokens = new ArrayList<String>();}
+    : (// lo:LOWER {informationObjectAssignment.name = lo.getText();}
+       // up:UPPER {informationObjectAssignment.className = up.getText();}
+       // ASSIGN_OP
+        L_BRACE
+//        (~(R_BRACE))*
+            ((syntaxTokens = syntaxTokens {valueInBracesTokens.addAll(syntaxTokens); }) )
+        R_BRACE 
+        )
+     ;
+
 
 cstr_value[AsnValue value]
 {AsnBitOrOctetStringValue bstrval = new AsnBitOrOctetStringValue();

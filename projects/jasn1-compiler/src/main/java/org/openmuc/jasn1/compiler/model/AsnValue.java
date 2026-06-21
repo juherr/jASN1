@@ -20,6 +20,8 @@
  */
 package org.openmuc.jasn1.compiler.model;
 
+import java.util.List;
+
 public class AsnValue {
     String bStr;
     public AsnBitOrOctetStringValue bStrValue;
@@ -48,74 +50,7 @@ public class AsnValue {
     public AsnSequenceOfValue seqOfVal;
     public AsnSequenceValue seqval;
     public AsnSignedNumber signedNumber;
-    public String typeName;
+    public boolean isValueInBraces = false;
+    public List<String> valueInBracesTokens;
 
-    // ~--- constructors -------------------------------------------------------
-
-    // Default Constructor
-    public AsnValue() {
-    }
-
-    // ~--- methods ------------------------------------------------------------
-
-    // toString() Method Definition
-    @Override
-    public String toString() {
-        String ts = "";
-
-        if ((name != null) && (typeName != null)) {
-            ts += (name + "\t" + typeName);
-        }
-
-        if (isTrueKW) {
-            ts += ("\tTRUE");
-        }
-        else if (isFalseKW) {
-            ts += ("\tFALSE");
-        }
-        else if (isNullKW) {
-            ts += ("\tNULL");
-        }
-        else if (isPlusInfinity) {
-            ts += ("\tplusInfinity");
-        }
-        else if (isMinusInfinity) {
-            ts += ("\tminusInfinity");
-        }
-        else if (isCString) {
-            ts += ("\t" + cStr);
-        }
-        else if (isBStrOrOstrValue) {
-            ts += ("\t" + bStrValue);
-        }
-        else if (isCStrValue) {
-            ts += ("\t" + cStrValue);
-        }
-        else if (isSequenceValue) {
-            ts += ("\t" + seqval);
-        }
-        else if (isChoiceValue) {
-            ts += ("\t" + chval);
-        }
-        else if (isEnumIntValue) {
-            ts += ("\t" + enumIntVal);
-        }
-        else if (isSignedNumber) {
-            ts += signedNumber;
-        }
-        else if (isAsnOIDValue) {
-            ts += oidval;
-        }
-        else if (isSequenceOfValue) {
-            ts += seqOfVal;
-        }
-        else if (isDefinedValue) {
-            ts += (definedValue);
-        }
-        else {
-            ts += ("Unknown     Value");
-        }
-
-        return ts;
-    }
 }

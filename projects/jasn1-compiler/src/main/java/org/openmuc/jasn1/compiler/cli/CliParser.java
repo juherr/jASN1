@@ -45,6 +45,11 @@ public class CliParser {
 
     public void parseArguments(String[] args) throws CliParseException {
 
+        if (args.length > 0 && HELP.equals(args[0])) {
+            System.out.println(getUsageString());
+            System.exit(0);
+        }
+
         List<CliParameter> parameters = null;
 
         int i = 0;
@@ -54,10 +59,6 @@ public class CliParser {
         else {
             if (args.length == 0) {
                 throw new CliParseException("No parameters found.");
-            }
-            else if (HELP.equals(args[0])) {
-                System.out.println(getUsageString());
-                System.exit(0);
             }
             for (ParameterGroup parameterGroup : commandLineParameterGroups) {
                 if (parameterGroup.name.equals(args[0].toLowerCase())) {

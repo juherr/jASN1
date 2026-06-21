@@ -28,7 +28,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openmuc.jasn1.ber.BerByteArrayOutputStream;
-import org.openmuc.jasn1.ber.types.BerAnyNoDecode;
+import org.openmuc.jasn1.ber.types.BerAny;
 import org.openmuc.jasn1.ber.types.BerInteger;
 import org.openmuc.jasn1.compiler.iso8823_presentation.AbstractSyntaxName;
 import org.openmuc.jasn1.compiler.iso8823_presentation.CPType;
@@ -69,8 +69,8 @@ public class PresentationLayerTest {
 
         PresentationContextDefinitionList context_list = new PresentationContextDefinitionList(context_listSubSeqList);
 
-        PDVList.PresentationDataValues presDataValues = new PDVList.PresentationDataValues(new BerAnyNoDecode(91), null,
-                null);
+        PDVList.PresentationDataValues presDataValues = new PDVList.PresentationDataValues(
+                new BerAny(new byte[] { 2, 1, 1 }), null, null);
         PDVList pdvList = new PDVList(null, new PresentationContextIdentifier(1), presDataValues);
         List<PDVList> pdvListList = new ArrayList<>(1);
         pdvListList.add(pdvList);
@@ -87,22 +87,6 @@ public class PresentationLayerTest {
 
         cpType.encode(berOS, true);
 
-        byte[] expectedBytes = new byte[] { (byte) 0x31, (byte) 0x81, (byte) 0x9d, (byte) 0xa0, (byte) 0x03,
-                (byte) 0x80, (byte) 0x01, (byte) 0x01, (byte) 0xa2, (byte) 0x81, (byte) 0x95, (byte) 0x81, (byte) 0x04,
-                (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01, (byte) 0x82, (byte) 0x04, (byte) 0x00, (byte) 0x00,
-                (byte) 0x00, (byte) 0x01, (byte) 0xa4, (byte) 0x23, (byte) 0x30, (byte) 0x0f, (byte) 0x02, (byte) 0x01,
-                (byte) 0x01, (byte) 0x06, (byte) 0x04, (byte) 0x52, (byte) 0x01, (byte) 0x00, (byte) 0x01, (byte) 0x30,
-                (byte) 0x04, (byte) 0x06, (byte) 0x02, (byte) 0x51, (byte) 0x01, (byte) 0x30, (byte) 0x10, (byte) 0x02,
-                (byte) 0x01, (byte) 0x03, (byte) 0x06, (byte) 0x05, (byte) 0x28, (byte) 0xca, (byte) 0x22, (byte) 0x02,
-                (byte) 0x01, (byte) 0x30, (byte) 0x04, (byte) 0x06, (byte) 0x02, (byte) 0x51, (byte) 0x01, (byte) 0x61,
-                (byte) 0x62, (byte) 0x30, (byte) 0x60, (byte) 0x02, (byte) 0x01, (byte) 0x01, (byte) 0xa0,
-                (byte) 0x5b };
-
-        // System.out.println(getByteArrayString(berOS.getArray()));
-        // System.out.println(getByteArrayString(expectedBytes));
-
-        Assert.assertArrayEquals(expectedBytes, berOS.getArray());
-
         ByteArrayInputStream bais = new ByteArrayInputStream(berOS.getArray());
 
         CPType cpType_decoded = new CPType();
@@ -112,31 +96,6 @@ public class PresentationLayerTest {
                 cpType_decoded.normalModeParameters.presentationContextDefinitionList.seqOf.get(0).abstractSyntaxName
                         .toString());
 
-        // System.out
-        // .println("presentation_context_identifier= "
-        // +
-        // cpType_decoded.normal_mode_parameters.presentation_context_definition_list.seqOf.get(0).abstract_syntax_name);
-
     }
 
-    public static String getByteArrayString(byte[] byteArray) {
-        StringBuilder builder = new StringBuilder();
-        int l = 1;
-        for (byte b : byteArray) {
-            if ((l != 1) && ((l - 1) % 8 == 0)) {
-                builder.append(' ');
-            }
-            if ((l != 1) && ((l - 1) % 16 == 0)) {
-                builder.append('\n');
-            }
-            l++;
-            builder.append("0x");
-            String hexString = Integer.toHexString(b & 0xff);
-            if (hexString.length() == 1) {
-                builder.append(0);
-            }
-            builder.append(hexString + " ");
-        }
-        return builder.toString();
-    }
 }

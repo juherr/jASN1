@@ -32,6 +32,7 @@ import org.openmuc.jasn1.compiler.cli.CliParseException;
 import org.openmuc.jasn1.compiler.cli.CliParser;
 import org.openmuc.jasn1.compiler.cli.FlagCliParameter;
 import org.openmuc.jasn1.compiler.cli.StringCliParameter;
+import org.openmuc.jasn1.compiler.cli.StringListCliParameter;
 import org.openmuc.jasn1.compiler.model.AsnModel;
 import org.openmuc.jasn1.compiler.model.AsnModule;
 import org.openmuc.jasn1.compiler.parser.ASNLexer;
@@ -39,7 +40,7 @@ import org.openmuc.jasn1.compiler.parser.ASNParser;
 
 public class Compiler {
 
-    public final static String VERSION = "1.7.1";
+    public final static String VERSION = "1.8.0";
 
     public static void main(String args[]) throws Exception {
 
@@ -62,16 +63,16 @@ public class Compiler {
                         "Enable legacy mode. Earlier versions of the jASN1 compiler generated classes that had public member variables instead of getters and setters. This flag enables the old kind of classes.")
                 .buildFlagParameter();
 
-        StringCliParameter asn1Files = new CliParameterBuilder("-f").setMandatory()
-                .setDescription("Comma separated ASN.1 files defining one or more modules.")
-                .buildStringParameter("asn1_files");
+        StringListCliParameter asn1Files = new CliParameterBuilder("-f").setMandatory()
+                .setDescription("ASN.1 files defining one or more modules.")
+                .buildStringListParameter("file");
 
         List<CliParameter> cliParameters = new ArrayList<>();
+        cliParameters.add(asn1Files);
         cliParameters.add(outputBaseDir);
         cliParameters.add(basePackageName);
         cliParameters.add(supportIndefiniteLength);
         cliParameters.add(legacyMode);
-        cliParameters.add(asn1Files);
 
         CliParser cliParser = new CliParser("jasn1-compiler",
                 "The compiler reads the ASN.1 definitions from the given files and generates corresponding Java classes that can be used to conveniently encode and decode BER data.");
@@ -85,26 +86,21 @@ public class Compiler {
             System.exit(1);
         }
 
-        System.out.println("Generated code will be saved in: " + outputBaseDir.getValue());
+        System.out.println("Generated code will be saved in " + outputBaseDir.getValue());
         if (supportIndefiniteLength.isSelected()) {
             System.out.println("Java classes will support decoding indefinite length.");
         }
 
         HashMap<String, AsnModule> modulesByName = new HashMap<>();
 
-        for (String inputFile : asn1Files.getValue().split(",")) {
-            System.out.println("Parsing file: " + inputFile);
-            AsnModel model = getJavaModelFromAsn1File(inputFile);
-            for (String modName : model.modulesByName.keySet()) {
-                System.out.println("modname: " + modName);
-            }
+        for (String asn1File : asn1Files.getValue()) {
+            System.out.println("Parsing \"" + asn1File + "\"");
+            AsnModel model = getJavaModelFromAsn1File(asn1File);
             modulesByName.putAll(model.modulesByName);
         }
 
         BerClassWriter classWriter = new BerClassWriter(modulesByName, outputBaseDir.getValue(),
                 basePackageName.getValue(), !legacyMode.isSelected(), supportIndefiniteLength.isSelected());
-
-        System.out.println("Generating Java classes...");
 
         classWriter.translate();
         System.out.println("done");

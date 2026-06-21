@@ -22,13 +22,16 @@ package org.openmuc.jasn1.ber.types;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 
 import org.openmuc.jasn1.ber.BerByteArrayOutputStream;
 import org.openmuc.jasn1.ber.BerLength;
 import org.openmuc.jasn1.ber.BerTag;
 import org.openmuc.jasn1.util.HexConverter;
 
-public class BerOctetString {
+public class BerOctetString implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     public final static BerTag tag = new BerTag(BerTag.UNIVERSAL_CLASS, BerTag.PRIMITIVE, BerTag.OCTET_STRING_TAG);
 

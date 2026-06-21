@@ -20,7 +20,13 @@
  */
 package org.openmuc.jasn1.compiler.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class AsnConstraint {
+
+    public List<String> tokens = new ArrayList();
+
     public ElementSetSpec addElemSetSpec;
     public AsnDefinedValue definedValue;
     public ElementSetSpec elemSetSpec;

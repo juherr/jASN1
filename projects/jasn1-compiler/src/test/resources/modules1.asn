@@ -1,7 +1,7 @@
 MODULES-MODULE1 DEFINITIONS  IMPLICIT TAGS ::=
 BEGIN
 
-IMPORTS     EmployeeNumberz
+IMPORTS     EmployeeNumber-z
 FROM MODULES-MODULE2
 			EmployeeNumberzz
 , 			Datezz
@@ -11,7 +11,7 @@ FROM MODULES-MODULE3;
 PersonnelRecord ::= [APPLICATION 0] IMPLICIT SEQUENCE {
 	name Name,
 	title [0] VisibleString,
-	number EmployeeNumber,
+	number EmployeeNumber-z,
 	dateOfHire [1] Date,
 	nameOfSpouse [2] Name,
 	children [3] IMPLICIT SEQUENCE OF ChildInformation DEFAULT {},
@@ -21,9 +21,17 @@ PersonnelRecord ::= [APPLICATION 0] IMPLICIT SEQUENCE {
 	test3 TestChoice,
 	test4 [8] TestChoice OPTIONAL,
 	test5 [9] TestChoice,
-	test6 [10] TestChoice
-	
+	test6 [10] TestChoice,
+	employeeNumber-z CHOICE {
+		employeeNumber-z EmployeeNumber-z
+    } OPTIONAL,
+    code VisibleString,
+    testSequenceOf TestSequenceOf,
+    testSequenceOf2 SEQUENCE OF SEQUENCE { test1 INTEGER, test2 INTEGER },
+    embeddedPdv EMBEDDED PDV
 }
+
+TestSequenceOf ::= SEQUENCE OF INTEGER
 
 TestChoice3 ::= [11] TestChoice2
 
@@ -95,16 +103,21 @@ END
 MODULES-MODULE2 DEFINITIONS::=
 BEGIN
 
-EXPORTS EmployeeNumberz
+EXPORTS EmployeeNumber-z
 ,		Datez;
 
 PersonnelRecordz ::= [APPLICATION 0] IMPLICIT SET {
 	name Namez,
 	title [0] VisibleString,
-	number EmployeeNumberz,
+	number EmployeeNumber-z,
 	dateOfHire [1] Datez,
 	nameOfSpouse [2] Namez,
 	children [3] IMPLICIT SEQUENCE OF ChildInformationz DEFAULT {}
+}
+
+TestChoice ::= CHOICE {
+	element1 INTEGER,
+	element2 INTEGER
 }
 
 ChildInformationz ::= SET {
@@ -118,7 +131,7 @@ Namez ::= [APPLICATION 1] IMPLICIT SEQUENCE {
 	familyName VisibleString
 }
 
-EmployeeNumberz ::= [APPLICATION 2] IMPLICIT INTEGER
+EmployeeNumber-z ::= [APPLICATION 2] IMPLICIT INTEGER
 Datez ::= [APPLICATION 3] IMPLICIT T61String -- YYYYMMDD
 Datez2 ::= [APPLICATION 3] IMPLICIT ISO646String -- YYYYMMDD
 

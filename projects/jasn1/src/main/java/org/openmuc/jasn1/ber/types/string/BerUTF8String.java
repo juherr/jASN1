@@ -30,6 +30,8 @@ import org.openmuc.jasn1.ber.types.BerOctetString;
 
 public class BerUTF8String extends BerOctetString {
 
+    private static final long serialVersionUID = 1L;
+
     public final static BerTag tag = new BerTag(BerTag.UNIVERSAL_CLASS, BerTag.PRIMITIVE, BerTag.UTF8_STRING_TAG);
 
     public BerUTF8String() {

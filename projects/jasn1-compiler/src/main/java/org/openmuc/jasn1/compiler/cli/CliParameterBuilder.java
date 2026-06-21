@@ -1,5 +1,7 @@
 package org.openmuc.jasn1.compiler.cli;
 
+import java.util.List;
+
 public class CliParameterBuilder {
 
     final String name;
@@ -42,6 +44,14 @@ public class CliParameterBuilder {
 
     public StringCliParameter buildStringParameter(String parameterName) {
         return new StringCliParameter(this, parameterName);
+    }
+
+    public StringListCliParameter buildStringListParameter(String parameterName) {
+        return new StringListCliParameter(this, parameterName);
+    }
+
+    public StringListCliParameter buildStringListParameter(String parameterName, List<String> defaultValue) {
+        return new StringListCliParameter(this, parameterName, defaultValue);
     }
 
     public FlagCliParameter buildFlagParameter() {

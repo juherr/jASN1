@@ -29,6 +29,8 @@ import org.openmuc.jasn1.ber.types.BerOctetString;
 
 public class BerIA5String extends BerOctetString {
 
+    private static final long serialVersionUID = 1L;
+
     public final static BerTag tag = new BerTag(BerTag.UNIVERSAL_CLASS, BerTag.PRIMITIVE, BerTag.IA5_STRING_TAG);
 
     public BerIA5String() {

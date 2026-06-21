@@ -37,7 +37,6 @@ ChoiceOfDirectTypes ::= CHOICE {
 		myBoolean [4] BOOLEAN
 	},
 	taggedAny [6] ANY,
-	taggedAnyNoDecode [7] ANY_NODECODE,
 	untaggedChoice2 CHOICE {
 		myInteger [8] INTEGER,
 		myBoolean [9] BOOLEAN
@@ -60,10 +59,7 @@ ChoiceOfIndirectTypes ::= CHOICE {
 	taggedChoice2 [15] TaggedChoice,
 	untaggedAny TaggedAny,
 	taggedAny [8] UntaggedAny,
-	taggedAny2 [18] TaggedAny,
-	untaggedAnyNoDecode TaggedAnyNoDecode,
-	taggedAnyNoDecode [9] UntaggedAnyNoDecode,
-	taggedAnyNoDecode2 [19] TaggedAnyNoDecode
+	taggedAny2 [18] TaggedAny
 }
 
 --===================SEQUENCE===============================
@@ -109,7 +105,6 @@ SequenceOfDirectTypes ::= [43] SEQUENCE {
 		myBoolean [4] BOOLEAN
 	},
 	taggedAny [6] ANY,
-	taggedAnyNoDecode [7] ANY_NODECODE OPTIONAL,
 	untaggedChoice2 CHOICE {
 		myInteger [8] INTEGER,
 		myBoolean [9] BOOLEAN
@@ -134,10 +129,7 @@ SequenceOfIndirectTypes ::= SEQUENCE {
 	taggedChoice2 [15] TaggedChoice,
 	untaggedAny TaggedAny,
 	taggedAny [8] UntaggedAny,
-	taggedAny2 [18] TaggedAny,
-	untaggedAnyNoDecode TaggedAnyNoDecode,
-	taggedAnyNoDecode [9] UntaggedAnyNoDecode,
-	taggedAnyNoDecode2 [19] TaggedAnyNoDecode
+	taggedAny2 [18] TaggedAny
 }
 
 SequenceOfIndirectOptionalTypes ::= SEQUENCE {
@@ -156,10 +148,7 @@ SequenceOfIndirectOptionalTypes ::= SEQUENCE {
 	taggedChoice2 [15] TaggedChoice OPTIONAL,
 	untaggedAny TaggedAny OPTIONAL,
 	taggedAny [8] UntaggedAny OPTIONAL,
-	taggedAny2 [18] TaggedAny OPTIONAL,
-	untaggedAnyNoDecode TaggedAnyNoDecode OPTIONAL,
-	taggedAnyNoDecode [9] UntaggedAnyNoDecode OPTIONAL,
-	taggedAnyNoDecode2 [19] TaggedAnyNoDecode OPTIONAL
+	taggedAny2 [18] TaggedAny OPTIONAL
 }
 
 --===================SEQUENCE OF============================
@@ -178,10 +167,6 @@ ExplicitlyTaggedSetOf ::= [33] EXPLICIT SET OF INTEGER
 UntaggedAny ::= ANY
 
 TaggedAny ::= [7] ANY
-
-UntaggedAnyNoDecode ::= ANY_NODECODE
-
-TaggedAnyNoDecode ::= [9] ANY_NODECODE
 
 --=====================INTEGER============================
 

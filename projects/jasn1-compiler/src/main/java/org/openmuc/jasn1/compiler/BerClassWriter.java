@@ -25,13 +25,16 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.openmuc.jasn1.ber.BerTag;
+import org.openmuc.jasn1.ber.types.BerObjectIdentifier;
 import org.openmuc.jasn1.compiler.model.AsnAny;
-import org.openmuc.jasn1.compiler.model.AsnAnyNoDecode;
 import org.openmuc.jasn1.compiler.model.AsnBitString;
 import org.openmuc.jasn1.compiler.model.AsnBoolean;
 import org.openmuc.jasn1.compiler.model.AsnCharacterString;
@@ -40,13 +43,16 @@ import org.openmuc.jasn1.compiler.model.AsnClassNumber;
 import org.openmuc.jasn1.compiler.model.AsnConstructedType;
 import org.openmuc.jasn1.compiler.model.AsnDefinedType;
 import org.openmuc.jasn1.compiler.model.AsnElementType;
+import org.openmuc.jasn1.compiler.model.AsnEmbeddedPdv;
 import org.openmuc.jasn1.compiler.model.AsnEnum;
+import org.openmuc.jasn1.compiler.model.AsnInformationObjectClass;
 import org.openmuc.jasn1.compiler.model.AsnInteger;
 import org.openmuc.jasn1.compiler.model.AsnModule;
 import org.openmuc.jasn1.compiler.model.AsnModule.TagDefault;
 import org.openmuc.jasn1.compiler.model.AsnNull;
 import org.openmuc.jasn1.compiler.model.AsnObjectIdentifier;
 import org.openmuc.jasn1.compiler.model.AsnOctetString;
+import org.openmuc.jasn1.compiler.model.AsnParameter;
 import org.openmuc.jasn1.compiler.model.AsnReal;
 import org.openmuc.jasn1.compiler.model.AsnSequenceOf;
 import org.openmuc.jasn1.compiler.model.AsnSequenceSet;
@@ -54,6 +60,7 @@ import org.openmuc.jasn1.compiler.model.AsnTag;
 import org.openmuc.jasn1.compiler.model.AsnTaggedType;
 import org.openmuc.jasn1.compiler.model.AsnType;
 import org.openmuc.jasn1.compiler.model.AsnUniversalType;
+import org.openmuc.jasn1.compiler.model.AsnValueAssignment;
 import org.openmuc.jasn1.compiler.model.SymbolsFromModule;
 
 public class BerClassWriter {
@@ -95,8 +102,14 @@ public class BerClassWriter {
         public TypeStructure typeStructure;
     }
 
+    private static final Set<String> reservedKeywords = Collections
+            .unmodifiableSet(new TreeSet<>(Arrays.asList("public", "private", "protected", "final", "void", "int",
+                    "short", "float", "double", "long", "byte", "char", "String", "throw", "throws", "new", "static",
+                    "volatile", "if", "else", "for", "switch", "case", "enum", "this", "super", "boolean", "class",
+                    "abstract", "package", "import", "null", "code", "getClass", "setClass")));
+
     private TagDefault tagDefault;
-    private final String outputBaseDir;
+    private File outputBaseDir;
     private final String basePackageName;
     private int indentNum = 0;
     BufferedWriter out;
@@ -111,17 +124,27 @@ public class BerClassWriter {
             boolean jaxbMode, boolean supportIndefiniteLength) throws IOException {
         this.supportIndefiniteLength = supportIndefiniteLength;
         this.jaxbMode = jaxbMode;
-        this.outputBaseDir = outputBaseDir;
+        this.outputBaseDir = new File(outputBaseDir);
+
         if (basePackageName.isEmpty()) {
             this.basePackageName = "";
         }
         else {
+            this.outputBaseDir = new File(this.outputBaseDir, basePackageName.replace('.', '/'));
             this.basePackageName = basePackageName + ".";
         }
         this.modulesByName = modulesByName;
     }
 
     public void translate() throws IOException {
+        for (AsnModule module : modulesByName.values()) {
+            for (SymbolsFromModule symbolsFromModule : module.importSymbolFromModuleList) {
+                if (modulesByName.get(symbolsFromModule.modref) == null) {
+                    throw new IOException("Module \"" + module.moduleIdentifier.name + "\" imports missing module \""
+                            + symbolsFromModule.modref + "\".");
+                }
+            }
+        }
 
         for (AsnModule module : modulesByName.values()) {
             translateModule(module);
@@ -129,21 +152,35 @@ public class BerClassWriter {
 
     }
 
+    int[] toIntArray(List<Integer> list) {
+        int[] ret = new int[list.size()];
+        for (int i = 0; i < ret.length; i++) {
+            ret[i] = list.get(i);
+        }
+        return ret;
+    }
+
     public void translateModule(AsnModule module) throws IOException {
 
-        System.out.println("Generating classes for module: " + module.moduleIdentifier.name);
+        System.out.println("Generating classes for module \"" + module.moduleIdentifier.name + "\"");
 
-        outputDirectory = new File(outputBaseDir, module.moduleIdentifier.name.replace('-', '/').toLowerCase());
-        outputDirectory.mkdirs();
+        outputDirectory = new File(outputBaseDir,
+                sanitizeModuleName(module.moduleIdentifier.name).replace('-', '/').toLowerCase());
 
         this.module = module;
         tagDefault = module.tagDefault;
 
         for (AsnType typeDefinition : module.typesByName.values()) {
 
+            if (typeDefinition instanceof AsnDefinedType) {
+                if (getInformationObjectClass(((AsnDefinedType) typeDefinition).typeName, module) != null) {
+                    continue;
+                }
+            }
+
             String typeName = cleanUpName(typeDefinition.name);
 
-            writeClassHeader(typeName);
+            writeClassHeader(typeName, module);
 
             if (typeDefinition instanceof AsnTaggedType) {
 
@@ -151,17 +188,15 @@ public class BerClassWriter {
 
                 Tag tag = getTag(asnTaggedType);
 
-                String assignedTypeName = asnTaggedType.typeName;
-
-                if (!assignedTypeName.isEmpty()) {
-                    writeRetaggingTypeClass(typeName, assignedTypeName, typeDefinition, tag);
+                if (asnTaggedType.definedType != null) {
+                    writeRetaggingTypeClass(typeName, asnTaggedType.definedType.typeName, typeDefinition, tag);
                 }
                 else {
 
-                    AsnType assignedAsnType = (AsnType) asnTaggedType.typeReference;
+                    AsnType assignedAsnType = asnTaggedType.typeReference;
 
                     if (assignedAsnType instanceof AsnConstructedType) {
-                        writeConstructedTypeClass(typeName, assignedAsnType, tag, false);
+                        writeConstructedTypeClass(typeName, assignedAsnType, tag, false, null);
                     }
                     else {
                         writeRetaggingTypeClass(typeName, getBerType(assignedAsnType), typeDefinition, tag);
@@ -173,7 +208,7 @@ public class BerClassWriter {
                 writeRetaggingTypeClass(typeName, ((AsnDefinedType) typeDefinition).typeName, typeDefinition, null);
             }
             else if (typeDefinition instanceof AsnConstructedType) {
-                writeConstructedTypeClass(typeName, typeDefinition, null, false);
+                writeConstructedTypeClass(typeName, typeDefinition, null, false, null);
             }
             else {
                 writeRetaggingTypeClass(typeName, getBerType(typeDefinition), typeDefinition, null);
@@ -181,6 +216,174 @@ public class BerClassWriter {
 
             out.close();
         }
+
+        writeOidValues(module);
+
+    }
+
+    private void writeOidValues(AsnModule module) throws IOException {
+        boolean first = true;
+        List<String> values = new ArrayList<>(module.asnValueAssignmentsByName.keySet());
+        Collections.sort(values);
+        for (String valueName : values) {
+            if (module.asnValueAssignmentsByName.get(valueName).type instanceof AsnObjectIdentifier) {
+                BerObjectIdentifier oid;
+                try {
+                    oid = parseObjectIdentfierValue(valueName, module);
+                } catch (IllegalStateException e) {
+                    System.out.println("Warning: could not parse object identifier value: " + e.getMessage());
+                    continue;
+                }
+                StringBuilder sb = new StringBuilder("public static final BerObjectIdentifier " + cleanUpName(valueName)
+                        + " = new BerObjectIdentifier(new int[]{");
+                if (first == true) {
+                    first = false;
+                    writeClassHeader("OidValues", module);
+                    write("public final class OidValues {");
+                }
+
+                boolean firstOidComponent = true;
+                for (int i : oid.value) {
+                    if (firstOidComponent) {
+                        firstOidComponent = false;
+                    }
+                    else {
+                        sb.append(", ");
+                    }
+                    sb.append(i);
+                }
+                sb.append("});");
+                write(sb.toString());
+
+            }
+        }
+        if (first == false) {
+            write("}");
+            out.close();
+        }
+    }
+
+    private String sanitizeModuleName(String name) {
+        String[] moduleParts = name.split("-");
+        String toReturn = "";
+        for (String part : moduleParts) {
+            toReturn += sanitize(part.toLowerCase()) + "-";
+        }
+        if (!toReturn.isEmpty()) {
+            toReturn = toReturn.substring(0, toReturn.length() - 1);
+        }
+        return toReturn;
+    }
+
+    private BerObjectIdentifier parseObjectIdentfierValue(String name, AsnModule module) throws IOException {
+
+        AsnValueAssignment valueAssignment = module.asnValueAssignmentsByName.get(name);
+
+        if (valueAssignment == null || !(valueAssignment.type instanceof AsnObjectIdentifier)) {
+            return null;
+            // throw new IOException(
+            // "no object identifier named \"" + name + "\" in module \"" + module.moduleIdentifier.name);
+        }
+
+        if (!valueAssignment.value.isValueInBraces) {
+            throw new IllegalStateException(
+                    "value of object identifier \"" + valueAssignment.name + "\" is not defined in braces.");
+        }
+        List<Integer> oidComponents = new ArrayList<>();
+
+        List<String> tokens = valueAssignment.value.valueInBracesTokens;
+
+        for (int i = 0; i < tokens.size(); i++) {
+            String token = tokens.get(i);
+
+            if (Character.isDigit(token.charAt(0))) {
+                oidComponents.add(Integer.parseInt(token));
+            }
+            else if (Character.isLetter(token.charAt(0))) {
+                if ((tokens.size() == i + 1) || !tokens.get(i + 1).equals("(")) {
+                    // this is either a value reference of another object identifier or a registered name
+                    if (!parseRegisteredOidComponentName(oidComponents, token)) {
+
+                        BerObjectIdentifier oid = parseObjectIdentfierValue(token, module);
+                        if (oid == null) {
+                            for (SymbolsFromModule symbolsFromModule : module.importSymbolFromModuleList) {
+                                for (String importedTypeName : symbolsFromModule.symbolList) {
+                                    if (token.equals(importedTypeName)) {
+                                        oid = parseObjectIdentfierValue(token,
+                                                modulesByName.get(symbolsFromModule.modref));
+                                    }
+                                }
+                            }
+                        }
+                        if (oid == null) {
+                            throw new IllegalStateException("AsnValueAssigment \"" + token
+                                    + "\" was not found in module \"" + module.moduleIdentifier.name + "\"");
+                        }
+                        for (int element : oid.value) {
+                            oidComponents.add(element);
+                        }
+                    }
+                }
+            }
+        }
+        return new BerObjectIdentifier(toIntArray(oidComponents));
+    }
+
+    private boolean parseRegisteredOidComponentName(List<Integer> oidComponents, String token) throws IOException {
+        if (oidComponents.size() == 0) {
+            switch (token) {
+            case "itu-t":
+            case "ccitt":
+                oidComponents.add(0);
+                return true;
+            case "iso":
+                oidComponents.add(1);
+                return true;
+            case "joint-iso-itu-t":
+            case "joint-iso-ccitt":
+                oidComponents.add(2);
+                return true;
+            }
+        }
+        else if (oidComponents.size() == 1) {
+            switch (oidComponents.get(0)) {
+            case 0:
+                switch (token) {
+                case "recommendation":
+                    oidComponents.add(0);
+                    return true;
+                case "question":
+                    oidComponents.add(1);
+                    return true;
+                case "administration":
+                    oidComponents.add(2);
+                    return true;
+                case "network-operator":
+                    oidComponents.add(3);
+                    return true;
+                case "identified-organization":
+                    oidComponents.add(4);
+                    return true;
+                }
+
+            case 1:
+                switch (token) {
+                case "standard":
+                    oidComponents.add(0);
+                    return true;
+                case "registration-authority":
+                    oidComponents.add(1);
+                    return true;
+                case "member-body":
+                    oidComponents.add(2);
+                    return true;
+                case "identified-organization":
+                    oidComponents.add(3);
+                    return true;
+                }
+            }
+        }
+        return false;
 
     }
 
@@ -190,8 +393,9 @@ public class BerClassWriter {
      * 
      * @param asnTaggedType
      * @return the tag from the AsnTaggedType structure
+     * @throws IOException
      */
-    private Tag getTag(AsnTaggedType asnTaggedType) {
+    private Tag getTag(AsnTaggedType asnTaggedType) throws IOException {
 
         AsnTag asnTag = asnTaggedType.tag;
 
@@ -239,7 +443,7 @@ public class BerClassWriter {
         }
 
         if (tag.type == TagType.IMPLICIT) {
-            if (isDirectChoice(asnTaggedType) || isDirectAny(asnTaggedType)) {
+            if (isDirectAnyOrChoice(asnTaggedType)) {
                 tag.type = TagType.EXPLICIT;
             }
         }
@@ -262,10 +466,15 @@ public class BerClassWriter {
         name = replaceCharByCamelCase(name, '-');
         name = replaceCharByCamelCase(name, '_');
 
-        if (name.equals("null")) {
-            name = name + "_";
+        return sanitize(name);
+    }
+
+    private String sanitize(String name) {
+        String result = replaceCharByCamelCase(name, '.');
+        if (reservedKeywords.contains(result)) {
+            result += "_";
         }
-        return name;
+        return result;
     }
 
     private String replaceCharByCamelCase(String name, char charToBeReplaced) {
@@ -285,8 +494,12 @@ public class BerClassWriter {
         return name;
     }
 
-    private void writeConstructedTypeClass(String className, AsnType asnType, Tag tag, boolean asInternalClass)
-            throws IOException {
+    private void writeConstructedTypeClass(String className, AsnType asnType, Tag tag, boolean asInternalClass,
+            List<String> listOfSubClassNames) throws IOException {
+
+        if (listOfSubClassNames == null) {
+            listOfSubClassNames = new ArrayList<>();
+        }
 
         String isStaticStr = "";
         if (asInternalClass) {
@@ -294,20 +507,22 @@ public class BerClassWriter {
         }
 
         if (asnType instanceof AsnSequenceSet) {
-            writeSequenceOrSetClass(className, (AsnSequenceSet) asnType, tag, isStaticStr);
+            writeSequenceOrSetClass(className, (AsnSequenceSet) asnType, tag, isStaticStr, listOfSubClassNames);
         }
         else if (asnType instanceof AsnSequenceOf) {
-            writeSequenceOfClass(className, (AsnSequenceOf) asnType, tag, isStaticStr);
+            writeSequenceOfClass(className, (AsnSequenceOf) asnType, tag, isStaticStr, listOfSubClassNames);
         }
         else if (asnType instanceof AsnChoice) {
-            writeChoiceClass(className, (AsnChoice) asnType, tag, isStaticStr);
+            writeChoiceClass(className, (AsnChoice) asnType, tag, isStaticStr, listOfSubClassNames);
         }
     }
 
-    private void writeChoiceClass(String className, AsnChoice asn1TypeElement, Tag tag, String isStaticStr)
-            throws IOException {
+    private void writeChoiceClass(String className, AsnChoice asn1TypeElement, Tag tag, String isStaticStr,
+            List<String> listOfSubClassNames) throws IOException {
 
-        write("public" + isStaticStr + " class " + className + " {\n");
+        write("public" + isStaticStr + " class " + className + " implements Serializable {\n");
+
+        write("private static final long serialVersionUID = 1L;\n");
 
         write("public byte[] code = null;");
 
@@ -320,15 +535,28 @@ public class BerClassWriter {
 
         addAutomaticTagsIfNeeded(componentTypes);
 
+        if (asn1TypeElement.parameters != null) {
+            List<AsnParameter> parameters = asn1TypeElement.parameters;
+            replaceParamtersByAnyTypes(componentTypes, parameters);
+        }
+
+        for (AsnElementType componentType : componentTypes) {
+            if (componentType.typeReference != null && (componentType.typeReference instanceof AsnConstructedType)) {
+                listOfSubClassNames.add(getClassNameOfComponent(componentType));
+            }
+        }
+
         for (AsnElementType componentType : componentTypes) {
 
-            if (componentType.typeReference != null && (componentType.typeReference instanceof AsnConstructedType)) {
+            if (isInnerType(componentType)) {
 
                 String subClassName = getClassNameOfComponent(componentType);
-                writeConstructedTypeClass(subClassName, (AsnType) componentType.typeReference, null, true);
+                writeConstructedTypeClass(subClassName, componentType.typeReference, null, true, listOfSubClassNames);
 
             }
         }
+
+        setClassNamesOfComponents(listOfSubClassNames, componentTypes);
 
         writePublicMembers(componentTypes);
 
@@ -354,22 +582,129 @@ public class BerClassWriter {
 
     }
 
-    private void writeSequenceOrSetClass(String className, AsnSequenceSet asnSequenceSet, Tag tag, String isStaticStr)
-            throws IOException {
+    private void setClassNamesOfComponents(List<String> listOfSubClassNames, List<AsnElementType> componentTypes) {
+        for (AsnElementType element : componentTypes) {
+            element.className = getClassNameOfComponent(listOfSubClassNames, element);
+        }
+    }
 
-        write("public" + isStaticStr + " class " + className + " {\n");
+    private String getClassNameOfComponent(AsnElementType asnElementType) throws IOException {
+        if (asnElementType.className != "") {
+            return asnElementType.className;
+        }
+        return getClassNameOfComponent(null, asnElementType);
+    }
+
+    private String getClassNameOfComponent(List<String> listOfSubClassNames, AsnTaggedType element) {
+
+        if (listOfSubClassNames == null) {
+            listOfSubClassNames = new ArrayList<>();
+        }
+
+        if (element.typeReference == null) {
+
+            if (element.definedType.isObjectClassField) {
+
+                AsnInformationObjectClass informationObjectClass = getInformationObjectClass(
+                        element.definedType.moduleOrObjectClassReference, module);
+                if (informationObjectClass == null) {
+                    throw new CompileException("no information object class of name \""
+                            + element.definedType.moduleOrObjectClassReference + "\" found");
+                }
+
+                for (AsnElementType elementType : informationObjectClass.elementList) {
+                    if (elementType.name.equals(element.definedType.typeName)) {
+                        return getClassNameOfComponent(listOfSubClassNames, elementType);
+                    }
+                }
+
+                throw new IllegalStateException(
+                        "Could not find field \"" + element.definedType.typeName + "\" of information object class \""
+                                + element.definedType.moduleOrObjectClassReference + "\"");
+            }
+            else {
+
+                String cleanedUpClassName = cleanUpName(element.definedType.typeName);
+                for (String subClassName : listOfSubClassNames) {
+                    if (subClassName.equals(cleanedUpClassName)) {
+                        String moduleName = module.moduleIdentifier.name;
+
+                        for (SymbolsFromModule syms : this.module.importSymbolFromModuleList) {
+                            if (syms.symbolList.contains(element.definedType.typeName)) {
+                                moduleName = syms.modref;
+                                break;
+                            }
+                        }
+
+                        return basePackageName + sanitizeModuleName(moduleName).replace('-', '.').toLowerCase() + "."
+                                + cleanedUpClassName;
+
+                    }
+
+                }
+                return cleanedUpClassName;
+            }
+        }
+        else {
+            AsnType typeDefinition = element.typeReference;
+
+            if (typeDefinition instanceof AsnConstructedType) {
+                return cleanUpName(capitalizeFirstCharacter(element.name));
+            }
+            else {
+                return getBerType(typeDefinition);
+            }
+
+        }
+
+    }
+
+    private AsnInformationObjectClass getInformationObjectClass(String objectClassReference, AsnModule module) {
+        AsnInformationObjectClass ioClass = module.objectClassesByName.get(objectClassReference);
+        if (ioClass == null) {
+            AsnType asnType = module.typesByName.get(objectClassReference);
+            if (asnType == null) {
+                // TODO check for other modules
+                return null;
+            }
+            else {
+                if (asnType instanceof AsnDefinedType) {
+                    return getInformationObjectClass(((AsnDefinedType) asnType).typeName, module);
+                }
+            }
+        }
+        return ioClass;
+    }
+
+    private void writeSequenceOrSetClass(String className, AsnSequenceSet asnSequenceSet, Tag tag, String isStaticStr,
+            List<String> listOfSubClassNames) throws IOException {
+
+        write("public" + isStaticStr + " class " + className + " implements Serializable {\n");
+
+        write("private static final long serialVersionUID = 1L;\n");
 
         List<AsnElementType> componentTypes = asnSequenceSet.componentTypes;
 
         addAutomaticTagsIfNeeded(componentTypes);
 
+        if (asnSequenceSet.parameters != null) {
+            List<AsnParameter> parameters = asnSequenceSet.parameters;
+            replaceParamtersByAnyTypes(componentTypes, parameters);
+        }
+
+        for (AsnElementType componentType : componentTypes) {
+            if (componentType.typeReference != null && (componentType.typeReference instanceof AsnConstructedType)) {
+                listOfSubClassNames.add(getClassNameOfComponent(componentType));
+            }
+        }
+
         for (AsnElementType componentType : componentTypes) {
 
-            if (componentType.typeReference != null && (componentType.typeReference instanceof AsnConstructedType)) {
+            if (isInnerType(componentType)) {
 
                 String subClassName = getClassNameOfComponent(componentType);
 
-                writeConstructedTypeClass(subClassName, (AsnType) componentType.typeReference, null, true);
+                writeConstructedTypeClass(subClassName, componentType.typeReference, null, true, listOfSubClassNames);
 
             }
 
@@ -391,6 +726,8 @@ public class BerClassWriter {
         write("public static final BerTag tag = new BerTag(" + getBerTagParametersString(mainTag) + ");\n");
 
         write("public byte[] code = null;");
+
+        setClassNamesOfComponents(listOfSubClassNames, componentTypes);
 
         writePublicMembers(componentTypes);
 
@@ -427,6 +764,22 @@ public class BerClassWriter {
 
     }
 
+    private void replaceParamtersByAnyTypes(List<AsnElementType> componentTypes, List<AsnParameter> parameters) {
+        for (AsnParameter parameter : parameters) {
+            if (parameter.paramGovernor == null) {
+                for (AsnElementType componentType : componentTypes) {
+                    if (componentType.definedType != null
+                            && componentType.definedType.typeName.equals(parameter.dummyReference)) {
+
+                        componentType.typeReference = new AsnAny();
+                        componentType.definedType = null;
+                        componentType.isDefinedType = false;
+                    }
+                }
+            }
+        }
+    }
+
     private void writeSimpleDecodeFunction(String param) throws IOException {
         write("public int decode(InputStream is) throws IOException {");
         write("return decode(is, " + param + ");");
@@ -439,17 +792,19 @@ public class BerClassWriter {
         write("}\n");
     }
 
-    private void writeSequenceOfClass(String className, AsnSequenceOf asnSequenceOf, Tag tag, String isStaticStr)
-            throws IOException {
+    private void writeSequenceOfClass(String className, AsnSequenceOf asnSequenceOf, Tag tag, String isStaticStr,
+            List<String> listOfSubClassNames) throws IOException {
 
-        write("public" + isStaticStr + " class " + className + " {\n");
+        write("public" + isStaticStr + " class " + className + " implements Serializable {\n");
+
+        write("private static final long serialVersionUID = 1L;\n");
 
         AsnElementType componentType = asnSequenceOf.componentType;
 
-        String referencedTypeName = getClassNameOfSequenceOfElement(className, componentType);
+        String referencedTypeName = getClassNameOfSequenceOfElement(componentType, listOfSubClassNames);
 
-        if (componentType.typeReference != null && (componentType.typeReference instanceof AsnConstructedType)) {
-            writeConstructedTypeClass(referencedTypeName, (AsnType) componentType.typeReference, null, true);
+        if (isInnerType(componentType)) {
+            writeConstructedTypeClass(referencedTypeName, componentType.typeReference, null, true, listOfSubClassNames);
         }
 
         Tag mainTag;
@@ -507,7 +862,7 @@ public class BerClassWriter {
 
         writeEncodeAndSaveFunction();
 
-        writeSequenceOrSetOfToStringFunction(referencedTypeName);
+        writeSequenceOrSetOfToStringFunction(referencedTypeName, componentType);
 
         write("}\n");
 
@@ -517,6 +872,8 @@ public class BerClassWriter {
             throws IOException {
 
         write("public class " + typeName + " extends " + cleanUpName(assignedTypeName) + " {\n");
+
+        write("private static final long serialVersionUID = 1L;\n");
 
         if (tag != null) {
 
@@ -564,7 +921,7 @@ public class BerClassWriter {
 
         if (tag != null) {
 
-            if (isDirectAny((AsnTaggedType) typeDefinition) || isDirectChoice((AsnTaggedType) typeDefinition)) {
+            if (isDirectAnyOrChoice((AsnTaggedType) typeDefinition)) {
                 writeSimpleEncodeFunction();
             }
 
@@ -585,7 +942,7 @@ public class BerClassWriter {
             write("int codeLength;\n");
 
             if (tag.type == TagType.EXPLICIT) {
-                if (isDirectAny((AsnTaggedType) typeDefinition) || isDirectChoice((AsnTaggedType) typeDefinition)) {
+                if (isDirectAnyOrChoice((AsnTaggedType) typeDefinition)) {
                     write("codeLength = super.encode(os);");
                 }
                 else {
@@ -604,7 +961,7 @@ public class BerClassWriter {
             write("return codeLength;");
             write("}\n");
 
-            if (isDirectAny((AsnTaggedType) typeDefinition) || isDirectChoice((AsnTaggedType) typeDefinition)) {
+            if (isDirectAnyOrChoice((AsnTaggedType) typeDefinition)) {
                 writeSimpleDecodeFunction("true");
             }
 
@@ -621,12 +978,8 @@ public class BerClassWriter {
                 write("BerLength length = new BerLength();");
                 write("codeLength += length.decode(is);\n");
 
-                if (isDirectChoice((AsnTaggedType) typeDefinition)) {
+                if (isDirectAnyOrChoice((AsnTaggedType) typeDefinition)) {
                     write("codeLength += super.decode(is, null);\n");
-                }
-                else if (getUniversalType(typeDefinition) instanceof AsnAny
-                        || getUniversalType(typeDefinition) instanceof AsnAnyNoDecode) {
-                    write("codeLength += super.decode(is, length.val);\n");
                 }
                 else {
                     write("codeLength += super.decode(is, true);\n");
@@ -712,7 +1065,7 @@ public class BerClassWriter {
 
         }
 
-        write("throw new IOException(\"Error encoding BerChoice: No item in choice was selected.\");");
+        write("throw new IOException(\"Error encoding CHOICE: No element of CHOICE was selected.\");");
 
         write("}\n");
 
@@ -833,7 +1186,7 @@ public class BerClassWriter {
         }
         else {
 
-            if (isDirectAny(componentType) || isDirectChoice(componentType)) {
+            if (isDirectAnyOrChoice(componentType)) {
                 write("codeLength += seqOf.get(i).encode(os);");
             }
             else {
@@ -872,7 +1225,7 @@ public class BerClassWriter {
             return ", false";
         }
         else {
-            if (isDirectAny(componentType) || isDirectChoice(componentType)) {
+            if (isDirectAnyOrChoice(componentType)) {
                 return "";
             }
             else {
@@ -915,6 +1268,7 @@ public class BerClassWriter {
             write("}\n");
         }
 
+        // TODO rename "choiceDecodeLength" because it could also be of type ANY
         String initChoiceDecodeLength = "int ";
 
         for (int j = 0; j < componentTypes.size(); j++) {
@@ -929,13 +1283,7 @@ public class BerClassWriter {
                 write("if (berTag.equals(" + getBerTagParametersString(componentTag) + ")) {");
 
                 if (componentTag.type == TagType.EXPLICIT) {
-                    if (isDirectAny(componentType)) {
-                        write("BerLength length = new BerLength();");
-                        write("codeLength += length.decode(is);");
-                    }
-                    else {
-                        write("codeLength += BerLength.skip(is);");
-                    }
+                    write("codeLength += BerLength.skip(is);");
                 }
 
                 write(getName(componentType) + " = new " + getClassNameOfComponent(componentType) + "();");
@@ -948,12 +1296,7 @@ public class BerClassWriter {
 
             }
             else {
-                if (isDirectChoice(componentType)) {
-
-                    System.out.println("CHOICE without TAG within another CHOICE: "
-                            + getClassNameOfComponent(componentType)
-                            + " You could consider integrating the inner CHOICE in the parent CHOICE in order to reduce the number of Java classes/objects.");
-
+                if (isDirectAnyOrChoice(componentType)) {
                     write(getName(componentType) + " = new " + getClassNameOfComponent(componentType) + "();");
 
                     write(initChoiceDecodeLength + "choiceDecodeLength = " + getName(componentType) + ".decode(is"
@@ -991,7 +1334,7 @@ public class BerClassWriter {
             write("}\n");
         }
 
-        write("throw new IOException(\"Error decoding BerChoice: Tag matched to no item.\");");
+        write("throw new IOException(\"Error decoding CHOICE: Tag \" + berTag + \" matched to no item.\");");
 
         write("}\n");
 
@@ -1069,9 +1412,7 @@ public class BerClassWriter {
                     write("}");
                 }
                 if (j != (componentTypes.size() - 1)) {
-                    if (!isTaglessAny(componentTypes.get(j + 1))) {
-                        write("subCodeLength += berTag.decode(is);");
-                    }
+                    write("subCodeLength += berTag.decode(is);");
                 }
 
                 write("}");
@@ -1088,7 +1429,7 @@ public class BerClassWriter {
             }
             else {
 
-                if (isDirectChoice(componentType)) {
+                if (isDirectAnyOrChoice(componentType)) {
 
                     write(getName(componentType) + " = new " + getClassNameOfComponent(componentType) + "();");
 
@@ -1145,11 +1486,6 @@ public class BerClassWriter {
                     }
 
                 }
-                else if (isTaglessAny(componentType)) {
-                    write(getName(componentType) + " = new " + getClassNameOfComponent(componentType) + "();");
-                    write("subCodeLength += " + getName(componentType) + ".decode(is, totalLength - subCodeLength);");
-                    write("return codeLength;");
-                }
                 else {
 
                     write("if (berTag.equals(" + getClassNameOfComponent(componentType) + ".tag)) {");
@@ -1164,9 +1500,7 @@ public class BerClassWriter {
                         write("}");
                     }
                     if (j != (componentTypes.size() - 1)) {
-                        if (!isTaglessAny(componentTypes.get(j + 1))) {
-                            write("subCodeLength += berTag.decode(is);");
-                        }
+                        write("subCodeLength += berTag.decode(is);");
                     }
 
                     write("}");
@@ -1194,16 +1528,17 @@ public class BerClassWriter {
 
     }
 
-    private boolean isTaglessAny(AsnElementType componentType) {
-        return (!hasTag(componentType) && isDirectAny(componentType));
-    }
-
     private void writeSequenceOrSetOfDecodeFunction(AsnElementType componentType, String classNameOfSequenceOfElement,
             boolean hasExplicitTag, boolean isSequence) throws IOException {
+
+        Tag componentTag = getTag(componentType);
+
         write("public int decode(InputStream is, boolean withTag) throws IOException {");
         write("int codeLength = 0;");
         write("int subCodeLength = 0;");
-        write("BerTag berTag = new BerTag();");
+        if (componentTag != null || supportIndefiniteLength) {
+            write("BerTag berTag = new BerTag();");
+        }
 
         write("if (withTag) {");
         write("codeLength += tag.decodeAndCheck(is);");
@@ -1213,7 +1548,7 @@ public class BerClassWriter {
         write("codeLength += length.decode(is);");
         write("int totalLength = length.val;\n");
 
-        if (supportIndefiniteLength == true) {
+        if (supportIndefiniteLength) {
             writeSequenceOfDecodeIndefiniteLenghtPart(componentType, classNameOfSequenceOfElement, hasExplicitTag);
         }
 
@@ -1237,8 +1572,6 @@ public class BerClassWriter {
         write("while (subCodeLength < totalLength) {");
         write(classNameOfSequenceOfElement + " element = new " + classNameOfSequenceOfElement + "();");
 
-        Tag componentTag = getTag(componentType);
-
         String explicitEncoding = getExplicitDecodingParameter(componentType);
 
         if (componentTag != null) {
@@ -1250,11 +1583,8 @@ public class BerClassWriter {
             }
             else {
                 write("subCodeLength += berTag.decode(is);");
-                if (isDirectChoice(componentType)) {
+                if (isDirectAnyOrChoice(componentType)) {
                     explicitEncoding = ", berTag";
-                }
-                else if (isDirectAny(componentType)) {
-                    explicitEncoding = "";
                 }
                 else {
                     explicitEncoding = ", false";
@@ -1264,13 +1594,8 @@ public class BerClassWriter {
         }
         else {
 
-            if (isDirectChoice(componentType)) {
+            if (isDirectAnyOrChoice(componentType)) {
                 write("subCodeLength += element.decode(is, null);");
-            }
-            else if (isDirectAny(componentType)) {
-                write("subCodeLength += new BerTag().decode(is);");
-                write("subCodeLength += length.decode(is);");
-                write("subCodeLength += element.decode(is, length.val);");
             }
             else {
                 write("subCodeLength += element.decode(is, true);");
@@ -1292,19 +1617,171 @@ public class BerClassWriter {
         return "BerTag." + tag.tagClass + "_CLASS, BerTag." + tag.typeStructure.toString() + ", " + tag.value;
     }
 
-    private void writeChoiceToStringFunction(List<AsnElementType> componentTypes) throws IOException {
+    private void writeToStringFunction() throws IOException {
         write("public String toString() {");
+        write("StringBuilder sb = new StringBuilder();");
+        write("appendAsString(sb, 0);");
+        write("return sb.toString();");
+        write("}\n");
+    }
+
+    private void writeChoiceToStringFunction(List<AsnElementType> componentTypes) throws IOException {
+        writeToStringFunction();
+
+        write("public void appendAsString(StringBuilder sb, int indentLevel) {\n");
 
         for (int j = 0; j < componentTypes.size(); j++) {
             AsnElementType componentType = componentTypes.get(j);
 
             write("if (" + getName(componentType) + " != null) {");
-            write("return \"CHOICE{" + getName(componentType) + ": \" + " + getName(componentType) + " + \"}\";");
+
+            if (!isPrimitive(getUniversalType(componentType))) {
+                write("sb.append(\"" + getName(componentType) + ": \");");
+                write(getName(componentType) + ".appendAsString(sb, indentLevel + 1);");
+            }
+            else {
+                write("sb.append(\"" + getName(componentType) + ": \").append(" + getName(componentType) + ");");
+            }
+            write("return;");
             write("}\n");
+        }
+
+        write("sb.append(\"<none>\");");
+
+        write("}\n");
+
+    }
+
+    private void writeSequenceOrSetToStringFunction(List<AsnElementType> componentTypes) throws IOException {
+
+        writeToStringFunction();
+
+        write("public void appendAsString(StringBuilder sb, int indentLevel) {\n");
+
+        write("sb.append(\"{\");");
+
+        boolean checkIfFirstSelectedElement = componentTypes.size() > 1;
+
+        int j = 0;
+
+        for (AsnElementType componentType : componentTypes) {
+
+            if (isOptional(componentType)) {
+                if (j == 0 && componentTypes.size() > 1) {
+                    write("boolean firstSelectedElement = true;");
+                }
+                write("if (" + getName(componentType) + " != null) {");
+            }
+
+            if (j != 0) {
+                if (checkIfFirstSelectedElement) {
+
+                    write("if (!firstSelectedElement) {");
+
+                }
+                write("sb.append(\",\\n\");");
+                if (checkIfFirstSelectedElement) {
+                    write("}");
+                }
+            }
+            else {
+                write("sb.append(\"\\n\");");
+            }
+
+            write("for (int i = 0; i < indentLevel + 1; i++) {");
+            write("sb.append(\"\\t\");");
+            write("}");
+            if (!isOptional(componentType)) {
+                write("if (" + getName(componentType) + " != null) {");
+            }
+            if (!isPrimitive(getUniversalType(componentType))) {
+                write("sb.append(\"" + getName(componentType) + ": \");");
+                write(getName(componentType) + ".appendAsString(sb, indentLevel + 1);");
+            }
+            else {
+                write("sb.append(\"" + getName(componentType) + ": \").append(" + getName(componentType) + ");");
+            }
+            if (!isOptional(componentType)) {
+                write("}");
+                write("else {");
+                write("sb.append(\"" + getName(componentType) + ": <empty-required-field>\");");
+                write("}");
+            }
+
+            if (isOptional(componentType)) {
+                if (checkIfFirstSelectedElement) {
+                    write("firstSelectedElement = false;");
+                }
+                write("}");
+            }
+            else {
+                checkIfFirstSelectedElement = false;
+            }
+
+            write("");
+
+            j++;
 
         }
 
-        write("return \"unknown\";");
+        write("sb.append(\"\\n\");");
+        write("for (int i = 0; i < indentLevel; i++) {");
+        write("sb.append(\"\\t\");");
+        write("}");
+        write("sb.append(\"}\");");
+
+        write("}\n");
+
+    }
+
+    private void writeSequenceOrSetOfToStringFunction(String referencedTypeName, AsnElementType componentType)
+            throws IOException {
+
+        writeToStringFunction();
+
+        write("public void appendAsString(StringBuilder sb, int indentLevel) {\n");
+
+        write("sb.append(\"{\\n\");");
+        write("for (int i = 0; i < indentLevel + 1; i++) {");
+        write("sb.append(\"\\t\");");
+        write("}");
+
+        write("if (seqOf == null) {");
+        write("sb.append(\"null\");");
+        write("}");
+        write("else {");
+        write("Iterator<" + referencedTypeName + "> it = seqOf.iterator();");
+        write("if (it.hasNext()) {");
+
+        if (!isPrimitive(getUniversalType(componentType))) {
+            write("it.next().appendAsString(sb, indentLevel + 1);");
+        }
+        else {
+            write("sb.append(it.next());");
+        }
+
+        write("while (it.hasNext()) {");
+        write("sb.append(\",\\n\");");
+        write("for (int i = 0; i < indentLevel + 1; i++) {");
+        write("sb.append(\"\\t\");");
+        write("}");
+
+        if (!isPrimitive(getUniversalType(componentType))) {
+            write("it.next().appendAsString(sb, indentLevel + 1);");
+        }
+        else {
+            write("sb.append(it.next());");
+        }
+
+        write("}");
+        write("}");
+        write("}\n");
+
+        write("sb.append(\"\\n\");");
+        write("for (int i = 0; i < indentLevel; i++) {");
+        write("sb.append(\"\\t\");");
+        write("}");
+        write("sb.append(\"}\");");
 
         write("}\n");
 
@@ -1317,54 +1794,22 @@ public class BerClassWriter {
         String explicitEncoding;
 
         if (tag != null && tag.type == TagType.EXPLICIT) {
-            if (isDirectChoice(componentType)) {
+            if (isDirectAnyOrChoice(componentType)) {
                 explicitEncoding = ", null";
-            }
-            else if (isDirectAny(componentType)) {
-                explicitEncoding = ", length.val";
             }
             else {
                 explicitEncoding = ", true";
             }
         }
         else {
-            if (isDirectChoice(componentType)) {
+            if (isDirectAnyOrChoice(componentType)) {
                 explicitEncoding = ", berTag";
-            }
-            else if (isDirectAny(componentType)) {
-                explicitEncoding = ", length.val";
-                // throw new IOException("ANY within CHOICE has no tag: " + getClassNameOfComponent(componentType));
             }
             else {
                 explicitEncoding = ", false";
             }
         }
         return explicitEncoding;
-    }
-
-    private void writeSequenceOrSetOfToStringFunction(String referencedTypeName) throws IOException {
-        write("public String toString() {");
-
-        write("StringBuilder sb = new StringBuilder(\"SEQUENCE OF{\");\n");
-
-        write("if (seqOf == null) {");
-        write("sb.append(\"null\");");
-        write("}");
-        write("else {");
-        write("Iterator<" + referencedTypeName + "> it = seqOf.iterator();");
-        write("if (it.hasNext()) {");
-        write("sb.append(it.next());");
-        write("while (it.hasNext()) {");
-        write("sb.append(\", \").append(it.next());");
-        write("}");
-        write("}");
-        write("}\n");
-
-        write("sb.append(\"}\");\n");
-
-        write("return sb.toString();");
-        write("}\n");
-
     }
 
     private void writeSequenceOfDecodeIndefiniteLenghtPart(AsnElementType componentType,
@@ -1387,12 +1832,8 @@ public class BerClassWriter {
 
         write(classNameOfSequenceOfElement + " element = new " + classNameOfSequenceOfElement + "();");
 
-        if (isDirectChoice(componentType)) {
+        if (isDirectAnyOrChoice(componentType)) {
             write("subCodeLength += element.decode(is, berTag);");
-        }
-        else if (isDirectAny(componentType)) {
-            write("subCodeLength += length.decode(is);");
-            write("subCodeLength += element.decode(is, length.val);");
         }
         else {
             write("subCodeLength += element.decode(is, false);");
@@ -1403,7 +1844,7 @@ public class BerClassWriter {
         write("}");
     }
 
-    private void addAutomaticTagsIfNeeded(List<AsnElementType> componentTypes) {
+    private void addAutomaticTagsIfNeeded(List<AsnElementType> componentTypes) throws IOException {
         if (tagDefault != TagDefault.AUTOMATIC) {
             return;
         }
@@ -1452,6 +1893,10 @@ public class BerClassWriter {
         write("codeLength += length.decode(is);\n");
         write("int totalLength = length.val;");
 
+        if (supportIndefiniteLength == true) {
+            writeSetDecodeIndefiniteLenghtPart(componentTypes);
+        }
+
         write("while (subCodeLength < totalLength) {");
         write("subCodeLength += berTag.decode(is);");
 
@@ -1468,10 +1913,10 @@ public class BerClassWriter {
                 elseString = "else ";
             }
 
-            if (isDirectChoice(componentType)) {
+            if (isDirectAnyOrChoice(componentType)) {
 
                 if (!isExplicit(componentTag)) {
-                    throw new IOException("choice within set has no explict tag.");
+                    throw new IOException("choice or ANY within set has no explicit tag.");
                 }
                 write(elseString + "if (berTag.equals(" + getBerTagParametersString(componentTag) + ")) {");
 
@@ -1488,7 +1933,7 @@ public class BerClassWriter {
             else {
 
                 if (componentTag != null) {
-                    if (isExplicit(componentTag) || !isPrimitive(componentType)) {
+                    if (isExplicit(componentTag)) {
                         write(elseString + "if (berTag.equals(" + getBerTagParametersString(componentTag) + ")) {");
                     }
                     else {
@@ -1496,12 +1941,7 @@ public class BerClassWriter {
                     }
                     if (isExplicit(componentTag)) {
                         write("subCodeLength += new BerLength().decode(is);");
-                        if (isDirectAny(componentType)) {
-                            explicitEncoding = ", length.val";
-                        }
-                        else {
-                            explicitEncoding = ", true";
-                        }
+                        explicitEncoding = ", true";
                     }
                 }
                 else {
@@ -1558,7 +1998,7 @@ public class BerClassWriter {
 
             String explicitEncoding;
 
-            if (isDirectChoice(componentType)) {
+            if (isDirectAnyOrChoice(componentType)) {
                 if (isExplicit(componentTag)) {
                     write("if (berTag.equals(" + getBerTagParametersString(componentTag) + ")) {");
 
@@ -1595,59 +2035,23 @@ public class BerClassWriter {
                 explicitEncoding = ", false";
 
                 if (componentTag != null) {
-                    if (isExplicit(componentTag) || !isPrimitive(componentType)) {
-                        if (getUniversalType(componentType) instanceof AsnAnyNoDecode) {
-                            write("if (berTag.tagNumber == " + componentTag.value + ") {");
-                        }
-                        else {
-                            write("if (berTag.equals(" + getBerTagParametersString(componentTag) + ")) {");
-                        }
-                    }
-                    else {
-                        write("if (berTag.equals(" + getBerTagParametersString(componentTag) + ")) {");
-                    }
+                    write("if (berTag.equals(" + getBerTagParametersString(componentTag) + ")) {");
 
                     if (isExplicit(componentTag)) {
                         write("codeLength += length.decode(is);");
-                        if (isDirectAny(componentType)) {
-                            explicitEncoding = ", length.val";
-                        }
-                        else {
-                            explicitEncoding = ", true";
-                        }
+                        explicitEncoding = ", true";
                     }
                 }
                 else {
-                    if (!isDirectAny(componentType)) {
-                        write("if (berTag.equals(" + getClassNameOfComponent(componentType) + ".tag)) {");
-                    }
+                    write("if (berTag.equals(" + getClassNameOfComponent(componentType) + ".tag)) {");
                 }
 
                 write(getName(componentType) + " = new " + getClassNameOfComponent(componentType) + "();");
-
-                if (isDirectAny(componentType)) {
-                    write("subCodeLength += " + getName(componentType) + ".decode(is, length.val);");
-
-                }
-                else {
-                    write("subCodeLength += " + getName(componentType) + ".decode(is" + explicitEncoding + ");");
-                }
-
+                write("subCodeLength += " + getName(componentType) + ".decode(is" + explicitEncoding + ");");
                 write("subCodeLength += berTag.decode(is);");
-
-                if (componentTag != null || !isDirectAny(componentType)) {
-                    write("}");
-                }
+                write("}");
 
             }
-
-            // TODO has be reinserted:
-            // if (!isOptional(componentType) && ((!(getUniversalType(componentType) instanceof AsnChoice))
-            // || hasExplicitTag(componentType))) {
-            // write("else {");
-            // write("throw new IOException(\"Tag does not match required sequence element identifer.\");");
-            // write("}");
-            // }
 
         }
 
@@ -1665,60 +2069,99 @@ public class BerClassWriter {
         write("}\n");
     }
 
-    private void writeSequenceOrSetToStringFunction(List<AsnElementType> componentTypes) throws IOException {
-        write("public String toString() {");
+    private void writeSetDecodeIndefiniteLenghtPart(List<AsnElementType> componentTypes) throws IOException {
+        write("if (totalLength == -1) {");
+        write("subCodeLength += berTag.decode(is);\n");
 
-        write("StringBuilder sb = new StringBuilder(\"SEQUENCE{\");");
-
-        boolean checkIfFirstSelectedElement = true;
-
-        int j = 0;
+        String initChoiceDecodeLength = "int ";
 
         for (AsnElementType componentType : componentTypes) {
 
-            if (isOptional(componentType)) {
-                if (j == 0) {
-                    write("boolean firstSelectedElement = true;");
+            Tag componentTag = getTag(componentType);
+
+            write("if (berTag.tagNumber == 0 && berTag.tagClass == 0 && berTag.primitive == 0) {");
+            write("int nextByte = is.read();");
+            write("if (nextByte != 0) {");
+            write("if (nextByte == -1) {");
+            write("throw new EOFException(\"Unexpected end of input stream.\");");
+            write("}");
+            write("throw new IOException(\"Decoded sequence has wrong end of contents octets\");");
+            write("}");
+            write("codeLength += subCodeLength + 1;");
+            write("return codeLength;");
+            write("}");
+
+            String explicitEncoding;
+
+            if (isDirectAnyOrChoice(componentType)) {
+                if (isExplicit(componentTag)) {
+                    write("if (berTag.equals(" + getBerTagParametersString(componentTag) + ")) {");
+
+                    write("subCodeLength += length.decode(is);");
+                    explicitEncoding = "null";
                 }
-                write("if (" + getName(componentType) + " != null) {");
-            }
-
-            if (j != 0) {
-                if (checkIfFirstSelectedElement) {
-
-                    write("if (!firstSelectedElement) {");
-
+                else {
+                    explicitEncoding = "berTag";
                 }
-                write("sb.append(\", \");");
-                if (checkIfFirstSelectedElement) {
+
+                write(getName(componentType) + " = new " + getClassNameOfComponent(componentType) + "();");
+
+                write(initChoiceDecodeLength + "choiceDecodeLength = " + getName(componentType) + ".decode(is, "
+                        + explicitEncoding + ");");
+                if (!isExplicit(componentTag)) {
+                    initChoiceDecodeLength = "";
+                }
+                write("if (choiceDecodeLength != 0) {");
+                write("subCodeLength += choiceDecodeLength;");
+
+                write("subCodeLength += berTag.decode(is);");
+                write("}");
+                write("else {");
+                write(getName(componentType) + " = null;");
+                write("}\n");
+
+                if (isExplicit(componentTag)) {
                     write("}");
                 }
-            }
 
-            write("sb.append(\"" + getName(componentType) + ": \").append(" + getName(componentType) + ");");
-
-            if (isOptional(componentType)) {
-                if (checkIfFirstSelectedElement) {
-                    write("firstSelectedElement = false;");
-                }
-                write("}");
             }
             else {
-                checkIfFirstSelectedElement = false;
+
+                explicitEncoding = ", false";
+
+                if (componentTag != null) {
+                    write("if (berTag.equals(" + getBerTagParametersString(componentTag) + ")) {");
+
+                    if (isExplicit(componentTag)) {
+                        write("codeLength += length.decode(is);");
+                        explicitEncoding = ", true";
+                    }
+                }
+                else {
+                    write("if (berTag.equals(" + getClassNameOfComponent(componentType) + ".tag)) {");
+                }
+
+                write(getName(componentType) + " = new " + getClassNameOfComponent(componentType) + "();");
+                write("subCodeLength += " + getName(componentType) + ".decode(is" + explicitEncoding + ");");
+                write("subCodeLength += berTag.decode(is);");
+                write("}");
+
             }
-
-            write("");
-
-            j++;
 
         }
 
-        write("sb.append(\"}\");");
+        write("int nextByte = is.read();");
+        write("if (berTag.tagNumber != 0 || berTag.tagClass != 0 || berTag.primitive != 0");
+        write("|| nextByte != 0) {");
+        write("if (nextByte == -1) {");
+        write("throw new EOFException(\"Unexpected end of input stream.\");");
+        write("}");
+        write("throw new IOException(\"Decoded sequence has wrong end of contents octets\");");
+        write("}");
+        write("codeLength += subCodeLength + 1;");
 
-        write("return sb.toString();");
-
+        write("return codeLength;");
         write("}\n");
-
     }
 
     private void writeEncodeTag(Tag tag) throws IOException {
@@ -1762,144 +2205,6 @@ public class BerClassWriter {
 
     }
 
-    private boolean isPrimitiveOrRetaggedPrimitive(AsnType asnType) throws IOException {
-        return isPrimitiveOrRetaggedPrimitive(asnType, module);
-    }
-
-    private boolean isPrimitiveOrRetaggedPrimitive(AsnType asnType, AsnModule module) throws IOException {
-
-        if ((asnType instanceof AsnSequenceSet) || (asnType instanceof AsnSequenceOf)) {
-            return false;
-        }
-        else if (asnType instanceof AsnTaggedType) {
-            AsnTaggedType asnTaggedType = (AsnTaggedType) asnType;
-
-            if (asnTaggedType.typeReference != null) {
-                return isPrimitiveOrRetaggedPrimitive((AsnType) (asnTaggedType.typeReference));
-            }
-            else {
-                return isPrimitiveOrRetaggedPrimitive(asnTaggedType.typeName, module);
-            }
-        }
-        else if (asnType instanceof AsnDefinedType) {
-            return isPrimitiveOrRetaggedPrimitive(((AsnDefinedType) asnType).typeName, module);
-        }
-        else if (asnType instanceof AsnChoice) {
-            return false;
-        }
-        else {
-            return true;
-        }
-    }
-
-    private boolean isPrimitiveOrRetaggedPrimitive(String typeName, AsnModule module) throws IOException {
-
-        AsnType asnType = module.typesByName.get(typeName);
-        if (asnType != null) {
-            return isPrimitive(asnType, module);
-        }
-        for (SymbolsFromModule symbolsFromModule : module.importSymbolFromModuleList) {
-            for (String importedTypeName : symbolsFromModule.symbolList) {
-                if (typeName.equals(importedTypeName)) {
-                    return isPrimitiveOrRetaggedPrimitive(typeName, modulesByName.get(symbolsFromModule.modref));
-                }
-            }
-        }
-        throw new IllegalStateException("Type definition \"" + typeName + "\" was not found in module \""
-                + module.moduleIdentifier.name + "\"");
-    }
-
-    private boolean isPrimitive(AsnType asnType) {
-        return isPrimitive(asnType, module);
-    }
-
-    private boolean isPrimitive(AsnType asnType, AsnModule module) {
-
-        if ((asnType instanceof AsnSequenceSet) || (asnType instanceof AsnSequenceOf)) {
-            return false;
-        }
-        else if (asnType instanceof AsnTaggedType) {
-            AsnTaggedType asnTaggedType = (AsnTaggedType) asnType;
-
-            if (hasExplicitTag(asnTaggedType)) {
-                return false;
-            }
-
-            if (asnTaggedType.typeReference != null) {
-                return isPrimitive((AsnType) (asnTaggedType.typeReference));
-            }
-            else {
-                return isPrimitive(asnTaggedType.typeName, module);
-            }
-        }
-        else if (asnType instanceof AsnDefinedType) {
-            return isPrimitive(((AsnDefinedType) asnType).typeName, module);
-        }
-        else if (asnType instanceof AsnChoice) {
-            return false;
-        }
-        else {
-            return true;
-        }
-    }
-
-    private boolean isPrimitive(String typeName, AsnModule module) {
-
-        AsnType asnType = module.typesByName.get(typeName);
-        if (asnType != null) {
-            return isPrimitive(asnType, module);
-        }
-        for (SymbolsFromModule symbolsFromModule : module.importSymbolFromModuleList) {
-            for (String importedTypeName : symbolsFromModule.symbolList) {
-                if (typeName.equals(importedTypeName)) {
-                    return isPrimitive(typeName, modulesByName.get(symbolsFromModule.modref));
-                }
-            }
-        }
-        throw new IllegalStateException("Type definition \"" + typeName + "\" was not found in module \""
-                + module.moduleIdentifier.name + "\"");
-    }
-
-    private AsnUniversalType getUniversalType(AsnType asnType) throws IOException {
-        return getUniversalType(asnType, module);
-    }
-
-    private AsnUniversalType getUniversalType(AsnType asnType, AsnModule module) throws IOException {
-
-        if (asnType instanceof AsnTaggedType) {
-            AsnTaggedType asnTaggedType = (AsnTaggedType) asnType;
-            if (asnTaggedType.typeReference != null) {
-                return (AsnUniversalType) asnTaggedType.typeReference;
-            }
-            else {
-                return getUniversalType(asnTaggedType.typeName, module);
-            }
-        }
-        else if (asnType instanceof AsnDefinedType) {
-            return getUniversalType(((AsnDefinedType) asnType).typeName, module);
-        }
-        else {
-            return (AsnUniversalType) asnType;
-        }
-    }
-
-    private AsnUniversalType getUniversalType(String typeName, AsnModule module) throws IOException {
-
-        AsnType asnType = module.typesByName.get(typeName);
-        if (asnType != null) {
-            return getUniversalType(asnType, module);
-        }
-        for (SymbolsFromModule symbolsFromModule : module.importSymbolFromModuleList) {
-            for (String importedTypeName : symbolsFromModule.symbolList) {
-                if (typeName.equals(importedTypeName)) {
-                    return getUniversalType(typeName, modulesByName.get(symbolsFromModule.modref));
-                }
-            }
-        }
-        throw new IllegalStateException("Type definition \"" + typeName + "\" was not found in module \""
-                + module.moduleIdentifier.name + "\"");
-    }
-
     private String getName(AsnElementType componentType) {
         return cleanUpName(componentType.name);
     }
@@ -1910,39 +2215,6 @@ public class BerClassWriter {
 
     private boolean isExplicit(Tag tag) {
         return (tag != null) && (tag.type == TagType.EXPLICIT);
-    }
-
-    // TODO remove:
-    private boolean hasExplicitTag(AsnTaggedType taggedType) {
-        if (!hasTag(taggedType)) {
-            return false;
-        }
-        if (isDirectChoice(taggedType) || isDirectAny(taggedType)) {
-            return true;
-        }
-
-        return isExplicit(taggedType.tagType);
-
-    }
-
-    private boolean isExplicit(String tagType) {
-        if (tagType.isEmpty()) {
-            return (tagDefault == TagDefault.EXPLICIT);
-        }
-        else if (tagType.equals("IMPLICIT")) {
-            return false;
-        }
-        else if (tagType.equals("EXPLICIT")) {
-            return true;
-        }
-        else {
-            throw new IllegalStateException("unexpected tag type: " + tagType);
-        }
-
-    }
-
-    private boolean hasTag(AsnTaggedType taggedType) {
-        return taggedType.tag != null;
     }
 
     private void writeEncodeConstructor(String className, List<AsnElementType> componentTypes) throws IOException {
@@ -1990,31 +2262,37 @@ public class BerClassWriter {
     private void writePublicMembers(List<AsnElementType> componentTypes) throws IOException {
         for (AsnElementType element : componentTypes) {
             if (jaxbMode) {
-                write("private " + getClassNameOfComponent(element) + " " + cleanUpName(element.name) + " = null;");
+                write("private " + element.className + " " + cleanUpName(element.name) + " = null;");
             }
             else {
-                write("public " + getClassNameOfComponent(element) + " " + cleanUpName(element.name) + " = null;");
+                write("public " + element.className + " " + cleanUpName(element.name) + " = null;");
             }
         }
         write("");
     }
 
+    private boolean isInnerType(AsnElementType element) {
+        return element.typeReference != null && (element.typeReference instanceof AsnConstructedType);
+    }
+
     private void writeGetterAndSetter(List<AsnElementType> componentTypes) throws IOException {
         for (AsnElementType element : componentTypes) {
             String typeName = getClassNameOfComponent(element);
-            String instanceName = cleanUpName(element.name);
-            write("public void set" + capitalizeFirstCharacter(instanceName) + "(" + typeName + " " + instanceName
-                    + ") {");
-            write("this." + instanceName + " = " + instanceName + ";");
+            String getterName = cleanUpName("get" + capitalizeFirstCharacter(element.name));
+            String setterName = cleanUpName("set" + capitalizeFirstCharacter(element.name));
+            String variableName = cleanUpName(element.name);
+            write("public void " + setterName + "(" + typeName + " " + variableName + ") {");
+            write("this." + variableName + " = " + variableName + ";");
             write("}\n");
-            write("public " + typeName + " get" + capitalizeFirstCharacter(instanceName) + "() {");
-            write("return " + instanceName + ";");
+            write("public " + typeName + " " + getterName + "() {");
+            write("return " + variableName + ";");
             write("}\n");
         }
     }
 
     private void writeGetterForSeqOf(String referencedTypeName) throws IOException {
-        write("public List<" + referencedTypeName + "> get" + referencedTypeName + "() {");
+        write("public List<" + referencedTypeName + "> get"
+                + referencedTypeName.substring(referencedTypeName.lastIndexOf('.') + 1) + "() {");
         write("if (seqOf == null) {");
         write("seqOf = new ArrayList<" + referencedTypeName + ">();");
         write("}");
@@ -2022,11 +2300,23 @@ public class BerClassWriter {
         write("}\n");
     }
 
-    private String getClassNameOfSequenceOfElement(String className, AsnElementType componentType) throws IOException {
+    private String getClassNameOfSequenceOfElement(AsnElementType componentType, List<String> listOfSubClassNames)
+            throws IOException {
         String classNameOfSequenceElement = getClassNameOfSequenceOfElement(componentType);
-        if (classNameOfSequenceElement.equals(className)) {
-            return basePackageName + module.moduleIdentifier.name.replace('-', '.').toLowerCase() + "."
-                    + classNameOfSequenceElement;
+        for (String subClassName : listOfSubClassNames) {
+            if (classNameOfSequenceElement.equals(subClassName)) {
+                String moduleName = module.moduleIdentifier.name;
+
+                for (SymbolsFromModule syms : this.module.importSymbolFromModuleList) {
+                    if (syms.symbolList.contains(classNameOfSequenceElement)) {
+                        moduleName = syms.modref;
+                        break;
+                    }
+                }
+
+                return basePackageName + sanitizeModuleName(moduleName).replace('-', '.').toLowerCase() + "."
+                        + classNameOfSequenceElement;
+            }
         }
         return classNameOfSequenceElement;
 
@@ -2034,10 +2324,10 @@ public class BerClassWriter {
 
     private String getClassNameOfSequenceOfElement(AsnElementType componentType) throws IOException {
         if (componentType.typeReference == null) {
-            return cleanUpName(componentType.typeName);
+            return cleanUpName(componentType.definedType.typeName);
         }
         else {
-            AsnType typeDefinition = (AsnType) componentType.typeReference;
+            AsnType typeDefinition = componentType.typeReference;
             return getClassNameOfSequenceOfTypeReference(typeDefinition);
         }
     }
@@ -2074,26 +2364,6 @@ public class BerClassWriter {
 
         }
         return getBerType(typeDefinition);
-    }
-
-    private String getClassNameOfComponent(AsnElementType asnElementType) throws IOException {
-
-        if (asnElementType.typeReference == null) {
-            return cleanUpName(asnElementType.typeName);
-        }
-        else {
-
-            AsnType typeDefinition = (AsnType) asnElementType.typeReference;
-
-            if (typeDefinition instanceof AsnConstructedType) {
-
-                return cleanUpName(capitalizeFirstCharacter(asnElementType.name));
-
-            }
-
-            return getBerType(typeDefinition);
-
-        }
     }
 
     private String capitalizeFirstCharacter(String input) {
@@ -2150,8 +2420,11 @@ public class BerClassWriter {
                     "List<" + getClassNameOfSequenceOfElement(((AsnSequenceOf) typeDefinition).componentType) + ">",
                     "seqOf" };
         }
-        else if (typeDefinition instanceof AsnAny || typeDefinition instanceof AsnAnyNoDecode) {
+        else if (typeDefinition instanceof AsnAny) {
             return new String[] { "byte[]", "value" };
+        }
+        else if (typeDefinition instanceof AsnEmbeddedPdv) {
+            return new String[0];
         }
         else {
             throw new IllegalStateException("type of unknown class: " + typeDefinition.name);
@@ -2184,98 +2457,134 @@ public class BerClassWriter {
         return constructorParameters;
     }
 
-    private boolean isDirectChoice(AsnTaggedType taggedType) {
-
-        if ((!taggedType.typeName.isEmpty() && isDirectChoice(taggedType.typeName, module))
-                || ((taggedType.typeReference != null) && (taggedType.typeReference instanceof AsnChoice))) {
-            return true;
-        }
-        return false;
+    private AsnType followAndGetNextTaggedOrUniversalType(AsnType asnType, AsnModule module) throws CompileException {
+        return followAndGetNextTaggedOrUniversalType(asnType, module, true);
     }
 
-    private boolean isDirectChoice(String typeName, AsnModule module) {
-        if (typeName.startsWith("Ber")) {
-            return false;
-        }
-        else {
-
-            AsnType asnType = module.typesByName.get(typeName);
-
-            if (asnType != null) {
-                if (asnType instanceof AsnDefinedType) {
-                    return isDirectChoice(((AsnDefinedType) asnType).typeName, module);
-                }
-                else if (asnType instanceof AsnChoice) {
-                    return true;
-                }
-                else {
-                    return false;
-                }
+    private AsnType followAndGetNextTaggedOrUniversalType(AsnType asnType, AsnModule module, boolean firstCall)
+            throws CompileException {
+        if (asnType instanceof AsnTaggedType) {
+            if (!firstCall) {
+                return asnType;
             }
+            AsnTaggedType taggedType = (AsnTaggedType) asnType;
+            if (taggedType.definedType != null) {
+                return followAndGetNextTaggedOrUniversalType(taggedType.definedType, module, false);
+            }
+            else {
+                return taggedType.typeReference;
+            }
+        }
+        else if (asnType instanceof AsnDefinedType) {
 
-            for (SymbolsFromModule symbolsFromModule : module.importSymbolFromModuleList) {
-                for (String importedTypeName : symbolsFromModule.symbolList) {
-                    if (typeName.equals(importedTypeName)) {
-                        return isDirectChoice(typeName, modulesByName.get(symbolsFromModule.modref));
+            AsnDefinedType definedType = (AsnDefinedType) asnType;
+
+            if (definedType.isObjectClassField) {
+
+                AsnInformationObjectClass informationObjectClass = getInformationObjectClass(
+                        definedType.moduleOrObjectClassReference, module);
+                if (informationObjectClass == null) {
+                    throw new CompileException("no information object class of name \""
+                            + definedType.moduleOrObjectClassReference + "\" found");
+                }
+
+                for (AsnElementType elementType : informationObjectClass.elementList) {
+                    if (elementType.name.equals(definedType.typeName)) {
+                        return followAndGetNextTaggedOrUniversalType(elementType, module, true);
                     }
                 }
+
+                throw new IllegalStateException("Could not find field \"" + definedType.typeName
+                        + "\" of information object class \"" + definedType.moduleOrObjectClassReference + "\"");
             }
-            throw new IllegalStateException("Type definition \"" + typeName + "\" was not found in module \""
-                    + module.moduleIdentifier.name + "\"");
-
+            else {
+                return followAndGetNextTaggedOrUniversalType(definedType.typeName, module, false);
+            }
         }
-    }
-
-    private boolean isDirectAny(AsnTaggedType taggedType) {
-        if ((!taggedType.typeName.isEmpty() && isDirectAny(taggedType.typeName, module))
-                || ((taggedType.typeReference != null) && ((taggedType.typeReference instanceof AsnAny)
-                        || (taggedType.typeReference instanceof AsnAnyNoDecode)))) {
-            return true;
-        }
-        return false;
-    }
-
-    private boolean isDirectAny(String typeName, AsnModule module) {
-        if (typeName.startsWith("Ber")) {
-            return false;
+        else if (asnType instanceof AsnUniversalType) {
+            return asnType;
         }
         else {
-
-            AsnType asnType = module.typesByName.get(typeName);
-
-            if (asnType != null) {
-                if (asnType instanceof AsnDefinedType) {
-                    return isDirectAny(((AsnDefinedType) asnType).typeName, module);
-                }
-                else if ((asnType instanceof AsnAny) || (asnType instanceof AsnAnyNoDecode)) {
-                    return true;
-                }
-                else {
-                    return false;
-                }
-            }
-
-            for (SymbolsFromModule symbolsFromModule : module.importSymbolFromModuleList) {
-                for (String importedTypeName : symbolsFromModule.symbolList) {
-                    if (typeName.equals(importedTypeName)) {
-                        return isDirectAny(typeName, modulesByName.get(symbolsFromModule.modref));
-                    }
-                }
-            }
-            throw new IllegalStateException("Type definition \"" + typeName + "\" was not found in module \""
-                    + module.moduleIdentifier.name + "\"");
-
+            throw new IllegalStateException();
         }
+
     }
 
-    private void writeClassHeader(String typeName) throws IOException {
+    private AsnType followAndGetNextTaggedOrUniversalType(String typeName, AsnModule module, boolean firstCall)
+            throws CompileException {
+
+        AsnType asnType = module.typesByName.get(typeName);
+        if (asnType != null) {
+            return followAndGetNextTaggedOrUniversalType(asnType, module, false);
+        }
+        for (SymbolsFromModule symbolsFromModule : module.importSymbolFromModuleList) {
+            for (String importedTypeName : symbolsFromModule.symbolList) {
+                if (typeName.equals(importedTypeName)) {
+                    return followAndGetNextTaggedOrUniversalType(typeName, getAsnModule(symbolsFromModule.modref),
+                            false);
+                }
+            }
+        }
+        throw new IllegalStateException("Type definition \"" + typeName + "\" was not found in module \""
+                + module.moduleIdentifier.name + "\"");
+
+    }
+
+    private AsnModule getAsnModule(String moduleName) {
+        AsnModule asnModule = modulesByName.get(moduleName);
+        if (asnModule == null) {
+            throw new CompileException("Definition of imported module \"" + moduleName + "\" not found.");
+        }
+        return asnModule;
+    }
+
+    private boolean isDirectAnyOrChoice(AsnTaggedType taggedType) throws CompileException {
+
+        AsnType followedType = followAndGetNextTaggedOrUniversalType(taggedType, module);
+        return (followedType instanceof AsnAny) || (followedType instanceof AsnChoice);
+
+    }
+
+    private AsnUniversalType getUniversalType(AsnType asnType) throws IOException {
+        return getUniversalType(asnType, module);
+    }
+
+    private AsnUniversalType getUniversalType(AsnType asnType, AsnModule module) throws IOException {
+        while ((asnType = followAndGetNextTaggedOrUniversalType(asnType, module)) instanceof AsnTaggedType) {
+        }
+        return (AsnUniversalType) asnType;
+    }
+
+    private boolean isPrimitive(AsnTaggedType asnTaggedType) throws IOException {
+        AsnType asnType = asnTaggedType;
+        while ((asnType = followAndGetNextTaggedOrUniversalType(asnType, module)) instanceof AsnTaggedType) {
+            if (isExplicit(getTag((AsnTaggedType) asnType))) {
+                return false;
+            }
+        }
+        return isPrimitive((AsnUniversalType) asnType);
+    }
+
+    private boolean isPrimitiveOrRetaggedPrimitive(AsnType asnType) throws IOException {
+        return isPrimitive(getUniversalType(asnType));
+    }
+
+    private boolean isPrimitive(AsnUniversalType asnType) {
+        return !(asnType instanceof AsnConstructedType || asnType instanceof AsnEmbeddedPdv);
+    }
+
+    private void writeClassHeader(String typeName, AsnModule module) throws IOException {
+
+        outputDirectory.mkdirs();
+
         FileWriter fstream = new FileWriter(new File(outputDirectory, typeName + ".java"));
         out = new BufferedWriter(fstream);
 
         write("/**");
         write(" * This class file was automatically generated by jASN1 v" + Compiler.VERSION
                 + " (http://www.openmuc.org)\n */\n");
-        write("package " + basePackageName + module.moduleIdentifier.name.replace('-', '.').toLowerCase() + ";\n");
+        write("package " + basePackageName
+                + sanitizeModuleName(module.moduleIdentifier.name).replace('-', '.').toLowerCase() + ";\n");
 
         write("import java.io.IOException;");
         write("import java.io.EOFException;");
@@ -2285,20 +2594,29 @@ public class BerClassWriter {
         write("import java.util.Iterator;");
         write("import java.io.UnsupportedEncodingException;");
         write("import java.math.BigInteger;");
+        write("import java.io.Serializable;");
 
         write("import org.openmuc.jasn1.ber.*;");
         write("import org.openmuc.jasn1.ber.types.*;");
         write("import org.openmuc.jasn1.ber.types.string.*;\n");
 
-        List<String> modulePackages = new ArrayList<>();
-        for (AsnModule module : modulesByName.values()) {
-            if (module != this.module) {
-                modulePackages.add(module.moduleIdentifier.name.replace('-', '.').toLowerCase());
+        List<String> importedClassesFromOtherModules = new ArrayList<>();
+
+        for (SymbolsFromModule symbolsFromModule : module.importSymbolFromModuleList) {
+            AsnModule importedModule = modulesByName.get(symbolsFromModule.modref);
+            for (String importedSymbol : symbolsFromModule.symbolList) {
+                if (Character.isUpperCase(importedSymbol.charAt(0))) {
+                    if (importedModule.typesByName.get(importedSymbol) != null) {
+                        importedClassesFromOtherModules.add(
+                                sanitizeModuleName(importedModule.moduleIdentifier.name).replace('-', '.').toLowerCase()
+                                        + "." + cleanUpName(importedSymbol) + ";");
+                    }
+                }
             }
         }
-        Collections.sort(modulePackages);
-        for (String modulePackage : modulePackages) {
-            write("import " + basePackageName + modulePackage + ".*;");
+        Collections.sort(importedClassesFromOtherModules);
+        for (String modulePackage : importedClassesFromOtherModules) {
+            write("import " + basePackageName + modulePackage);
         }
         write("");
 

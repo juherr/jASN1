@@ -22,11 +22,16 @@ package org.openmuc.jasn1.ber.types;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 
 import org.openmuc.jasn1.ber.BerByteArrayOutputStream;
+import org.openmuc.jasn1.ber.BerLength;
+import org.openmuc.jasn1.ber.BerTag;
 import org.openmuc.jasn1.util.HexConverter;
 
-public class BerAny {
+public class BerAny implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     public byte[] value;
 
@@ -42,13 +47,38 @@ public class BerAny {
         return value.length;
     }
 
-    public int decode(InputStream is, int length) throws IOException {
-        value = new byte[length];
+    public int decode(InputStream is) throws IOException {
 
-        if (length != 0) {
-            Util.readFully(is, value);
+        return decode(is, null);
+    }
+
+    public int decode(InputStream is, BerTag tag) throws IOException {
+
+        int decodedLength = 0;
+
+        int tagLength;
+
+        if (tag == null) {
+            tag = new BerTag();
+            tagLength = tag.decode(is);
+            decodedLength += tagLength;
         }
-        return length;
+        else {
+            tagLength = tag.encode(new BerByteArrayOutputStream(10));
+        }
+
+        BerLength lengthField = new BerLength();
+        int lengthLength = lengthField.decode(is);
+        decodedLength += lengthLength + lengthField.val;
+
+        value = new byte[tagLength + lengthLength + lengthField.val];
+
+        Util.readFully(is, value, tagLength + lengthLength, lengthField.val);
+        BerByteArrayOutputStream os = new BerByteArrayOutputStream(value, tagLength + lengthLength - 1);
+        BerLength.encodeLength(os, lengthField.val);
+        tag.encode(os);
+
+        return decodedLength;
     }
 
     @Override

@@ -24,7 +24,9 @@ public class AsnTaggedType extends AsnType {
     public boolean isDefinedType;
     public AsnTag tag = null;
     public String tagType = "";
-    public String typeName = "";
-    public Object typeReference = null;
+    public AsnDefinedType definedType = null;
+    // public String typeName = "";
+    public String className = "";
+    public AsnType typeReference = null;
 
 }

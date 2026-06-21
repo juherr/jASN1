@@ -23,8 +23,11 @@ package org.openmuc.jasn1.ber;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 
-public class BerLength {
+public class BerLength implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     public int val;
 

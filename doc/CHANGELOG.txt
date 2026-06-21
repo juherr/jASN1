@@ -1,11 +1,54 @@
-v1.7.1 5-Feb-2017
+v1.8.0 20-Apr-2017
+------------------
+
+- generated classes only import types imported by its module, not all
+  available modules. This prevents name clashes.
+
+- added support for parametrized types
+
+- ANY types are now decoded and encoded differently so that their
+  contents can be easily decoded by another type.
+
+- removed support for ANY_NODECODE
+
+- improved behaviour of compiler interface:
+
+  * package folders no longer need to be part of the base directory
+    specified.
+
+  * files are separated by white space instead of ','
+
+- added support for Information Object Classes
+
+- added support for ENUMERATED lists without value and INTEGERS with
+  both a value list and a constraint
+
+- OID values are now parsed and stored in special class OidValues.java
+
+- correctly fixed name clash of generated classes from the following
+  structure SEQUENCE { test SEQUENCE OF Test }
+
+- packages, fields and methods that clash with reserved Java key words
+  are renamed (thanks to Telespazio Vega)
+
+- added support for EMBEDDED PDV type (thanks to Telespanzio Vega)
+
+- toString() methods of CHOICE, SEQUENCE/SET and SEQUENCE/SET OF use
+  indentation to format returned string.
+
+- added support for TIME, TIME-OF-DAY, DATE, DATE-TIME, DURATION types
+
+- added asCalendar() and asDate() functions to BerUtcTime and
+  BerGeneralizedTime thanks to Andrea Lo Pumo
+
+v1.7.1 05-Feb-2017
 ------------------
 
 - removed dependency on javax.xml.bind.DatatypeConverter so it works
   on Android again. Thanks to Karsten Ohme
 
 - fixed coding ENUMERATED bug, introduced in release 1.7.0, thanks to
-  David Jenlenc
+  David Jelenc
 
 - fixed two more bugs when encoding and decoding REALs, thanks to htw
   saar
@@ -54,7 +97,7 @@ v1.6.0 03-Oct-2016
 - added support for untagged ANY fields
 
 - subclasses of SEQUENCE OF CHOICE .. and SEQUENCE OF SEQUENCE .. are
-  now name "CHOICE" and "SEQUENCE" respectively.
+  now named "CHOICE" and "SEQUENCE" respectively.
 
 - extension marker "..." can now be parsed, but is ignored for now
 

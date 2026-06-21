@@ -23,12 +23,15 @@ package org.openmuc.jasn1.ber.types;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 
 import org.openmuc.jasn1.ber.BerByteArrayOutputStream;
 import org.openmuc.jasn1.ber.BerLength;
 import org.openmuc.jasn1.ber.BerTag;
 
-public class BerBitString {
+public class BerBitString implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     public final static BerTag tag = new BerTag(BerTag.UNIVERSAL_CLASS, BerTag.PRIMITIVE, BerTag.BIT_STRING_TAG);
 
@@ -41,8 +44,15 @@ public class BerBitString {
     }
 
     public BerBitString(byte[] value, int numBits) {
-        if ((numBits < (((value.length - 1) * 8) + 1)) || (numBits > (value.length * 8))) {
-            throw new IllegalArgumentException("numBits out of bound.");
+
+        if (value == null) {
+            throw new NullPointerException("value cannot be null");
+        }
+        if (numBits < 0) {
+            throw new IllegalArgumentException("numBits cannot be negative.");
+        }
+        if (numBits > (value.length * 8)) {
+            throw new IllegalArgumentException("'value' is too short to hold all bits.");
         }
 
         this.value = value;
@@ -105,12 +115,16 @@ public class BerBitString {
 
         value = new byte[length.val - 1];
 
-        int nextByte = is.read();
-        if (nextByte == -1) {
+        int unusedBits = is.read();
+        if (unusedBits == -1) {
             throw new EOFException("Unexpected end of input stream.");
         }
+        if (unusedBits > 7) {
+            throw new IOException(
+                    "Number of unused bits in bit string expected to be less than 8 but is: " + unusedBits);
+        }
 
-        numBits = (value.length * 8) - nextByte;
+        numBits = (value.length * 8) - unusedBits;
 
         if (value.length > 0) {
             Util.readFully(is, value);

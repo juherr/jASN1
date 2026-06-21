@@ -29,6 +29,8 @@ import org.openmuc.jasn1.ber.BerTag;
 
 public class BerEnum extends BerInteger {
 
+    private static final long serialVersionUID = 1L;
+
     public final static BerTag tag = new BerTag(BerTag.UNIVERSAL_CLASS, BerTag.PRIMITIVE, BerTag.ENUMERATED_TAG);
 
     public BerEnum() {

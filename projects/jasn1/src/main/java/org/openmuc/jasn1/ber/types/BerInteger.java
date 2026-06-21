@@ -22,13 +22,16 @@ package org.openmuc.jasn1.ber.types;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.math.BigInteger;
 
 import org.openmuc.jasn1.ber.BerByteArrayOutputStream;
 import org.openmuc.jasn1.ber.BerLength;
 import org.openmuc.jasn1.ber.BerTag;
 
-public class BerInteger {
+public class BerInteger implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     public final static BerTag tag = new BerTag(BerTag.UNIVERSAL_CLASS, BerTag.PRIMITIVE, BerTag.INTEGER_TAG);
 
